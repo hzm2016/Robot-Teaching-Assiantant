@@ -228,17 +228,18 @@ void s526_dac_write(double *vals, int nvals)
         outw(w, ADDR_REG(REG_DAC));
 	
         // Write data to the channel
-	C = vals[i]*DACa[i] + DACb[i];
-	//outw((uint16_t) (65535*(C + 10.0)/20.0), ADDR_REG(REG_ADD));
-	outw((uint16_t) C, ADDR_REG(REG_ADD));
+        //C = vals[i]*DACa[i] + DACb[i];
+        C = vals[i]*3249.0 + 32768.0;
+        //outw((uint16_t) (65535*(C + 10.0)/20.0), ADDR_REG(REG_ADD));
+        outw((uint16_t) C, ADDR_REG(REG_ADD));
 
-	// Start conversion
-	w = 1;
-	outw(w, ADDR_REG(REG_DAC));
-	// Wait for ISR bit to set singalling end of conversion
-	while(!(0x02 & inw(ADDR_REG(REG_ISR)))){}
-	// Reset the interrupt bit
-	outw(0x02, ADDR_REG(REG_ISR));
+        // Start conversion
+        w = 1;
+        outw(w, ADDR_REG(REG_DAC));
+        // Wait for ISR bit to set singalling end of conversion
+        while(!(0x02 & inw(ADDR_REG(REG_ISR)))){}
+        // Reset the interrupt bit
+        outw(0x02, ADDR_REG(REG_ISR));
     }	 
 }
 
@@ -331,9 +332,9 @@ void s526_digitalIO_write(int port, int set)
 
 // Function to initialize counter for measuring pulse width.
 void s526_init_pulse_timer(int channel_number) {
-    const int mode1 = 0x5534;
-    const int mode2 = 0x3534;
-    const int control = 0xC40F;
+    const int mode1 = 0x55AC;
+    const int mode2 = 0x35AC;
+    const int control = 0xC80F;
 
     // Make sure that channel number is withing bounds.
     assert((channel_number <4) && (channel_number >=0));
@@ -356,8 +357,6 @@ void s526_init_pulse_timer(int channel_number) {
 //Function to initialize encoder
 void s526_encoder_init(int channel_number)
 {
-    // Make sure that channel number is withing bounds.
-    assert((channel_number <4) && (channel_number >=0));
     uint16_t w = 0;
 
     const int PR0 = 0;
@@ -401,8 +400,6 @@ void s526_encoder_init(int channel_number)
 //Function to read the encoder count.
 int s526_encoder_read(int channel_number)
 {
-    // Make sure that channel number is withing bounds.
-    assert((channel_number <4) && (channel_number >=0));
     int ret;
     // Always read low word first
     ret = inw(ADDR_REG(REG_C0L + 8 * channel_number));
@@ -427,7 +424,6 @@ int s526_counter_read(int channel_number) {
 
     return ret;
 }
-
 
 //Function to set counter control register
 void s526_counter_set_control_status(int channel_number, int coun_reset, int count_load, int count_arm, int latch_select,
