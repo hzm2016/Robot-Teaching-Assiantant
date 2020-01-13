@@ -8,44 +8,11 @@
 #include <math.h>
 #include "model526.h"
 #include "ftconfig.h"
+#include "rtsetup.h"
 
-/******* Functions for Real-Time task setup *********/
-struct period_info {
-  struct timespec next_period;
-  long period_ns;
-};
+#define TASK_PERIOD_SECONDS 0.01
 
-struct timespec curtime;
-
-static void inc_period(struct period_info *pinfo)
-{
-  pinfo->next_period.tv_nsec += pinfo->period_ns;
-
-  while (pinfo->next_period.tv_nsec >= 1000000000) {
-    /* timespec nsec overflow */
-    pinfo->next_period.tv_sec++;
-    pinfo->next_period.tv_nsec -= 1000000000;
-  }
-}
-
-static void periodic_task_init(struct period_info *pinfo)
-{
-  /* for simplicity, hardcoding a 1ms period */
-  pinfo->period_ns = 10000000;
-
-  clock_gettime(CLOCK_MONOTONIC, &(pinfo->next_period));
-}
-
-static void wait_rest_of_period(struct period_info *pinfo)
-{
-  inc_period(pinfo);
-
-  /* for simplicity, ignoring possibilities of signal wakes */
-  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &pinfo->next_period, NULL);
-}
-
-/******* Functions for Real-Time task setup *********/
-
+static double loop_usage_array[(long)(1.0/TASK_PERIOD_SECONDS)];
 
 /******* Real-Time Thread *********/
 void *thread_func(void *data)
@@ -53,7 +20,15 @@ void *thread_func(void *data)
   struct period_info pinfo;
 
   printf("Initializing Real-Time Task...\n");
-  periodic_task_init(&pinfo);
+  const long task_period_ns = (long) (TASK_PERIOD_SECONDS*(1.0e9));
+  printf("**********\nStep time is: %d ns = %f s\n**********\n", task_period_ns, TASK_PERIOD_SECONDS);
+  periodic_task_init(&pinfo, task_period_ns);
+  static struct timespec curtime;
+  static struct timespec tic;
+  static struct timespec toc;
+  int loops_per_sec = 1.0/TASK_PERIOD_SECONDS;
+  int loop_ctr = 0;
+  printf("Loops per second: %d\n", loops_per_sec);
   printf("Done.\n");
   
 
@@ -68,17 +43,34 @@ void *thread_func(void *data)
   printf("Done.\n");
 
   while (1) {
-
+    // Get the time
+    clock_gettime(CLOCK_MONOTONIC, &tic);
+      /*** DO RT STUFF HERE ***/
+    
       // Read pulse count
       counter_val = s526_counter_read(0);
       // Get pulse timing
       pulse_width = counter_val/27e6;
+
+
+
+      /*** DO RT STUFF HERE ***/
       
+      // Get the time again
+      clock_gettime(CLOCK_MONOTONIC, &toc);
+      int delta_t_s = toc.tv_sec-tic.tv_sec;
+      double delta_t_ms = (toc.tv_nsec - tic.tv_nsec)/1000000.0;
+      loop_usage_array[loop_ctr%loops_per_sec] = delta_t_ms;
       
-      printf("Pulse Width: %.3e\n", pulse_width);
-      clock_gettime(CLOCK_MONOTONIC, &curtime);
-      //printf("Current time: %d s and %f ms.\n", curtime.tv_sec, curtime.tv_nsec/1000000.0);
-    
+
+      if (loop_ctr%loops_per_sec == 0) {
+	
+	printf("Pulse Width: %.3e\n", pulse_width);
+	clock_gettime(CLOCK_MONOTONIC, &curtime);
+	printf("Loop tasks took: %d s and %f ms.\n", delta_t_s, delta_t_ms);
+      }
+      
+      loop_ctr += 1;
 
       wait_rest_of_period(&pinfo);
   }
@@ -86,6 +78,7 @@ void *thread_func(void *data)
   return NULL;
 }
 /******* Real-Time Thread *********/
+
 
 int main(int argc, char* argv[])
 {

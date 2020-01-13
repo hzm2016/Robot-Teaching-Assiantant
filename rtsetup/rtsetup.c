@@ -1,7 +1,5 @@
 #include "rtsetup.h"
 
-
-
 void inc_period(struct period_info *pinfo)
 {
     pinfo->next_period.tv_nsec += pinfo->period_ns;
