@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Project name
-project (ATIDAQ)
+project (ATIDAQ LANGUAGES CXX C)
 
 # Other build flags
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
@@ -22,4 +22,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 add_subdirectory(ATIDAQ)
 add_subdirectory(Model526)
 add_subdirectory(rtsetup)
+add_subdirectory(InnfosCAN)
 add_subdirectory(apps)
