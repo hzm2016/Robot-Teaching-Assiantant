@@ -1,12 +1,18 @@
-#include<linux/can.h>
-#include<sys/socket.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
+
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+
+#include <net/if.h> 
+
+#include <pthread.h>
+
 #include <unistd.h>
-#include<sys/types.h>
-#include<sys/ioctl.h>
-#include<pthread.h>
-#include<stdio.h>
-#include<stdint.h>
-#include<iostream>
+#include <stdio.h>
+#include <stdint.h>
+#include <iostream>
 #include <math.h>
 
 #ifndef _CF_H_

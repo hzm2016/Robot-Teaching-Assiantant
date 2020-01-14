@@ -32,17 +32,15 @@ controller::controller(const char *can_iface_name)
 
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Error while opening socket!");
-        return -1;
     }
 
-    strcpy(ifr.ifr_name = can_iface_name);
+    strcpy(ifr.ifr_name, can_iface_name);
     ioctl(s, SIOCGIFINDEX, &ifr);
     addr1.can_family  = AF_CAN;
     addr1.can_ifindex = ifr.ifr_ifindex;
 
     if(bind(s, (struct sockaddr *)&addr1, sizeof(addr1)) < 0) {
         perror("Error in socket bind");
-        return -2;
     }
     
     /*initialize rx and tx can messages structs*/

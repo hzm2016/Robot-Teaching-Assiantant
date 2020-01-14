@@ -44,7 +44,7 @@ void *thread_func(void *data)
     double pulse_width = 0;
 
     // Initialize the ADC Hardware
-    int32_t ADC_CHANNELS[] = {0, 1, 2, 3, 4, 5};
+    int32_t ADC_CHANNELS[] = {2, 3, 4, 5, 6, 7};
     const int NUM_ADC_CHANNELS = 6;
     double adc_data[NUM_ADC_CHANNELS];
     s526_adc_init(ADC_CHANNELS, NUM_ADC_CHANNELS);
@@ -88,16 +88,22 @@ void *thread_func(void *data)
 
     // Store an unloaded measurement
     //s526_adc_read(ADC_CHANNELS, NUM_ADC_CHANNELS, sample_bias);
+    // Read ADC
+        s526_adc_read(ADC_CHANNELS, NUM_ADC_CHANNELS, adc_data);
+        // Convert into forces and torques
+        for (int tmp_ctr = 0; tmp_ctr < NUM_ADC_CHANNELS; tmp_ctr++) {
+            sample_bias[tmp_ctr] = (float) adc_data[tmp_ctr];
+        }
     // Calibrate
-    //Bias(cal, sample_bias);
+    Bias(cal, sample_bias);
 
-    print("Initializing CAN Hardware....\n");
+    printf("Initializing CAN Hardware....\n");
     controller M0("can0");
 
-    print("Enabling motor....\n");
-    M0.enable_motor(TEST);
-    M0.change_mode(TEST, SPEED_MODE);
-    M0.set_vel_setpoint(TEST, 0.0);
+    printf("Enabling motor....\n");
+    //M0.enable_motor(TEST);
+    //M0.change_mode(TEST, SPEED_MODE);
+    //M0.set_vel_setpoint(TEST, 0.0);
     int toggle_flag = 0;
     
     printf("Done.\n");
@@ -129,11 +135,17 @@ void *thread_func(void *data)
         loop_usage_array[loop_ctr%loops_per_sec] = delta_t_ms;
         
 
-        if (loop_ctr%loops_per_sec == 0) {
+        if (loop_ctr%(loops_per_sec/10) == 0) {
             toggle_flag ^= 1;
-            M0.set_vel_setpoint(TEST, 0.0);
+            //M0.set_vel_setpoint(TEST, toggle_flag*500.0);
             // Print ADC data
             printf("ADC Data :: [");
+            for(int j=0; j<NUM_ADC_CHANNELS; j++)
+            {
+                printf(" %.2f ", adc_data[j]);
+            }
+            printf("]\n");
+            printf("F/T :: [");
             for(int j=0; j<NUM_ADC_CHANNELS; j++)
             {
                 printf(" %.2f ", FT[j]);
