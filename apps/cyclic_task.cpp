@@ -17,75 +17,6 @@ extern "C" {
 
 static double loop_usage_array[(long)(1.0/TASK_PERIOD_SECONDS)];
 
-
-
-int can_init(struct threadArg &canArg1,struct threadArg &canArg2)
-//this function initializes the the CAN sockets and frames
-//Some dummy values were included for easy testing
-
-{
-  //initialse the can parameters
-  int s,s2;
-  struct sockaddr_can addrSource,addr1,addr2;
-  struct can_frame frame,frame2;
-  struct ifreq ifr;
-  struct ifreq ifr2;
-
-  const char *ifname = "can0";
-  const char *ifname2 = "can1";
-
-
-  long long InputData,InputData2,InputData3,InputData4;
-  uint size, i=0;
-
-  if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-    perror("Error while opening socket");
-    return -1;
-  }
-  //experimenting with 2 separate socket
-  if((s2 = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-    perror("Error while opening socket");
-    return -1;
-  }
-
-  strcpy(ifr.ifr_name, ifname);
-  ioctl(s, SIOCGIFINDEX, &ifr);
-  strcpy(ifr2.ifr_name, ifname2);
-  ioctl(s2, SIOCGIFINDEX, &ifr2);
-
-  addr1.can_family  = AF_CAN;
-  addr1.can_ifindex = ifr.ifr_ifindex;
-  //addr1.can_ifindex = 0;
-  addr2.can_family  = AF_CAN;
-  addr2.can_ifindex = ifr2.ifr_ifindex;
-  //addr2.can_ifindex = 0;
-
-
-
-  printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
-  printf("%s at index %d\n", ifname2, ifr2.ifr_ifindex);
-
-  if(bind(s, (struct sockaddr *)&addr1, sizeof(addr1)) < 0) {
-    perror("Error in socket bind");
-    return -2;
-  }
-  if(bind(s2, (struct sockaddr *)&addr2, sizeof(addr2)) < 0) {
-    perror("Error in socket bind2");
-    return -2;
-  }
-
-  frame.can_dlc = size;
-  printf("bytes_arr is %d\n", size);
-  frame2.can_dlc = size;
-
-  canArg1.socket= s;
-  canArg1.frame= frame;
-  canArg2.socket= s2;
-  canArg2.frame= frame2;
-  return 0;
-}
-
-
 /******* Real-Time Thread *********/
 void *thread_func(void *data)
 {
@@ -159,6 +90,15 @@ void *thread_func(void *data)
     //s526_adc_read(ADC_CHANNELS, NUM_ADC_CHANNELS, sample_bias);
     // Calibrate
     //Bias(cal, sample_bias);
+
+    print("Initializing CAN Hardware....\n");
+    controller M0("can0");
+
+    print("Enabling motor....\n");
+    M0.enable_motor(TEST);
+    M0.change_mode(TEST, SPEED_MODE);
+    M0.set_vel_setpoint(TEST, 0.0);
+    int toggle_flag = 0;
     
     printf("Done.\n");
 
@@ -190,7 +130,8 @@ void *thread_func(void *data)
         
 
         if (loop_ctr%loops_per_sec == 0) {
-
+            toggle_flag ^= 1;
+            M0.set_vel_setpoint(TEST, 0.0);
             // Print ADC data
             printf("ADC Data :: [");
             for(int j=0; j<NUM_ADC_CHANNELS; j++)
