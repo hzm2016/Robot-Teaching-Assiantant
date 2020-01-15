@@ -148,7 +148,7 @@ void *thread_func(void *data)
             printf("F/T :: [");
             for(int j=0; j<NUM_ADC_CHANNELS; j++)
             {
-                printf(" %.2f ", FT[j]);
+                printf(" %8.3f ", FT[j]);
             }
             printf("]\n");
 

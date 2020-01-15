@@ -8,7 +8,7 @@ endif()
 project (ATIDAQ LANGUAGES CXX C)
 
 # Other build flags
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -march=atom -mtune=atom")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 

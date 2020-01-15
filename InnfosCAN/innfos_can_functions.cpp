@@ -24,7 +24,7 @@ controller::controller(int writesocket_fd, int readsocket_fd)
 controller::controller(const char *can_iface_name)
 {
     // Initialize CAN Bus Sockets
-    int s,s2;
+    int s, s2;
     struct sockaddr_can addrSource, addr1, addr2;
     struct can_frame frame,frame2;
     struct ifreq ifr;
@@ -96,11 +96,33 @@ bool controller::can_write()
 
 /*MSG HANDLER FUNCTIONS FOR PROCESSING AND ORGANIZING INCOMING MSGS*/
 
+void controller::set_pos_setpoint(uint32_t node_id, float pos_setpoint)
+{
+	//pos_setpoint between -128 to 127.999
+
+	uint32_t send_position=int(round(pos_setpoint*IQ_24));
+	
+	this->tx_msg.node_id = node_id;
+	this->tx_msg.cframe.can_dlc = SIZE_WRITE_3;
+
+	this->tx_msg.cframe.data[0] = SET_POS_SETPOINT;
+	//most significant bit at the left ahnd side
+	this->tx_msg.cframe.data[4] = (send_position & BIT_MASK_0) ;
+	this->tx_msg.cframe.data[3] = (send_position & BIT_MASK_1) >> 8;
+	this->tx_msg.cframe.data[2] = (send_position & BIT_MASK_2) >> 16;
+	this->tx_msg.cframe.data[1] = (send_position & BIT_MASK_3) >> 24;
+
+	can_write();
+	printf("speed %f rpm set to %d: (%x)\n",pos_setpoint, send_position,send_position);
+	
+}
 
 void controller::set_vel_setpoint(uint32_t node_id, float vel_setpoint)
 {
-    uint32_t send_velocity=int(round((vel_setpoint/MAX_SPEED)*IQ_24));
+    //vel_setpoint between -6000 to 6000
 
+    uint32_t send_velocity=int(round((vel_setpoint/MAX_SPEED)*IQ_24));
+	
     this->tx_msg.node_id = node_id;
     this->tx_msg.cframe.can_dlc = SIZE_WRITE_3;
 
@@ -113,8 +135,27 @@ void controller::set_vel_setpoint(uint32_t node_id, float vel_setpoint)
 
     can_write();
     printf("speed %f rpm set to %d: (%x)\n",vel_setpoint, send_velocity,send_velocity);
-    printf("1: (%x) 2: (%x) 3: (%x) 4: (%x) \n",tx_msg.cframe.data[1] , tx_msg.cframe.data[2] ,tx_msg.cframe.data[3],tx_msg.cframe.data[4]  );
+}
 
+void controller::set_cur_setpoint(uint32_t node_id, float cur_setpoint)
+{
+	//cur_setpoint between -33 to 33
+
+	uint32_t send_current=int(round((cur_setpoint/MAX_CURRENT)*IQ_24));
+	
+	this->tx_msg.node_id = node_id;
+	this->tx_msg.cframe.can_dlc = SIZE_WRITE_3;
+
+	this->tx_msg.cframe.data[0] = SET_CUR_SETPOINT;
+	//most significant bit at the left ahnd side
+	this->tx_msg.cframe.data[4] = (send_current & BIT_MASK_0) ;
+	this->tx_msg.cframe.data[3] = (send_current & BIT_MASK_1) >> 8;
+	this->tx_msg.cframe.data[2] = (send_current & BIT_MASK_2) >> 16;
+	this->tx_msg.cframe.data[1] = (send_current & BIT_MASK_3) >> 24;
+
+	can_write();
+	printf("speed %f A set to %d: (%x)\n",cur_setpoint, send_current,send_current);
+	
 }
 
 void controller::enable_motor(uint32_t node_id)
