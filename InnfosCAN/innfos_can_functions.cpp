@@ -52,7 +52,7 @@ controller::controller(const char *can_iface_name)
     this->rx_msg.cframe.can_dlc = 8; 
     write_socket = s;
     read_socket = 0;
-    //printf("read socket: %d, write socket: %d\n",read_socket,write_socket );
+    printf("read socket: %d, write socket: %d\n",read_socket,write_socket );
 }
 
 bool controller::can_read()
@@ -79,10 +79,10 @@ bool controller::can_write()
 {	
     int nbytes;
 
-    #ifndef NDEBUG
-    printf("can_write %d:",write_socket);
-    #endif
+    printf("can_write %d:", write_socket);
 
+    this->tx_msg.cframe.can_id = tx_msg.node_id;
+    
     nbytes = write(this->write_socket, &(tx_msg.cframe), sizeof(struct can_frame));
     if (nbytes < 0) {
             perror("can raw socket write");
@@ -178,7 +178,7 @@ void controller::enable_motor(uint32_t node_id)
 
     can_write();
     #ifndef NDEBUG
-    printf("enabling motor\n");
+    printf("Enabling motor with ID: %d \n", this->tx_msg.node_id);
     #endif
 }
 

@@ -101,10 +101,10 @@ void *thread_func(void *data)
     controller M0("can0");
 
     printf("Enabling motor....\n");
-    //M0.enable_motor(TEST);
-    //M0.change_mode(TEST, SPEED_MODE);
+    M0.enable_motor(5);
+    //M0.change_mode(5, SPEED_MODE);
     //M0.set_vel_setpoint(TEST, 0.0);
-    int toggle_flag = 0;
+    int toggle_flag = 1;
     
     printf("Done.\n");
 
@@ -135,10 +135,19 @@ void *thread_func(void *data)
         loop_usage_array[loop_ctr%loops_per_sec] = delta_t_ms;
         
 
-        if (loop_ctr%(loops_per_sec/10) == 0) {
+        if (loop_ctr%(loops_per_sec) == 0) {
             toggle_flag ^= 1;
-            //M0.set_vel_setpoint(TEST, toggle_flag*500.0);
-            // Print ADC data
+	    if (loop_ctr == 0) {
+	      // Don't do anything
+	    }
+	    else {
+	      if (loop_ctr == 2*loops_per_sec) {
+		M0.change_mode(5, SPEED_MODE);
+	      } else {
+		M0.set_vel_setpoint(5, toggle_flag*500.0);
+	      }
+	    }
+	    // Print ADC data
             printf("ADC Data :: [");
             for(int j=0; j<NUM_ADC_CHANNELS; j++)
             {
