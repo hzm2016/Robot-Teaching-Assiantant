@@ -24,11 +24,10 @@ controller::controller(int writesocket_fd, int readsocket_fd)
 controller::controller(const char *can_iface_name)
 {
     // Initialize CAN Bus Sockets
-    int s, s2;
-    struct sockaddr_can addrSource, addr1, addr2;
-    struct can_frame frame,frame2;
+    int s;
+    struct sockaddr_can addr1;
+    //struct can_frame frame;
     struct ifreq ifr;
-    struct ifreq ifr2;
 
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Error while opening socket!");
@@ -52,7 +51,7 @@ controller::controller(const char *can_iface_name)
     this->tx_msg.cframe.can_dlc = 8; 
     this->rx_msg.cframe.can_dlc = 8; 
     write_socket = s;
-    read_socket = NULL;
+    read_socket = 0;
     //printf("read socket: %d, write socket: %d\n",read_socket,write_socket );
 }
 
@@ -68,18 +67,22 @@ bool controller::can_read()
     // sframe.data[4], sframe.data[5], sframe.data[6], sframe.data[7]); 
   
     /* paranoid check ... */
-    if (nbytes < sizeof(struct can_frame)) {
+    if (nbytes < (int) sizeof(struct can_frame)) {
             perror("read: incomplete CAN frame\n");
             return 1;
     }
-    
+
+    return 0;    
 }
 
 bool controller::can_write()
 {	
     int nbytes;
+
+    #ifndef NDEBUG
     printf("can_write %d:",write_socket);
-    
+    #endif
+
     nbytes = write(this->write_socket, &(tx_msg.cframe), sizeof(struct can_frame));
     if (nbytes < 0) {
             perror("can raw socket write");
@@ -87,11 +90,12 @@ bool controller::can_write()
     }
 
     /* paranoid check ... */
-    if (nbytes < sizeof(struct can_frame)) {
+    if (nbytes < (int) sizeof(struct can_frame)) {
             perror("write: incomplete CAN frame\n");
             return 1;
     }
 
+    return 0;
 }
 
 /*MSG HANDLER FUNCTIONS FOR PROCESSING AND ORGANIZING INCOMING MSGS*/
@@ -113,8 +117,10 @@ void controller::set_pos_setpoint(uint32_t node_id, float pos_setpoint)
 	this->tx_msg.cframe.data[1] = (send_position & BIT_MASK_3) >> 24;
 
 	can_write();
+
+    #ifndef NDEBUG
 	printf("speed %f rpm set to %d: (%x)\n",pos_setpoint, send_position,send_position);
-	
+	#endif
 }
 
 void controller::set_vel_setpoint(uint32_t node_id, float vel_setpoint)
@@ -134,7 +140,9 @@ void controller::set_vel_setpoint(uint32_t node_id, float vel_setpoint)
     this->tx_msg.cframe.data[1] = (send_velocity & BIT_MASK_3) >> 24;
 
     can_write();
+    #ifndef NDEBUG
     printf("speed %f rpm set to %d: (%x)\n",vel_setpoint, send_velocity,send_velocity);
+    #endif
 }
 
 void controller::set_cur_setpoint(uint32_t node_id, float cur_setpoint)
@@ -154,8 +162,9 @@ void controller::set_cur_setpoint(uint32_t node_id, float cur_setpoint)
 	this->tx_msg.cframe.data[1] = (send_current & BIT_MASK_3) >> 24;
 
 	can_write();
+    #ifndef NDEBUG
 	printf("speed %f A set to %d: (%x)\n",cur_setpoint, send_current,send_current);
-	
+	#endif
 }
 
 void controller::enable_motor(uint32_t node_id)
@@ -168,7 +177,9 @@ void controller::enable_motor(uint32_t node_id)
     this->tx_msg.cframe.data[1] = 0x1;
 
     can_write();
+    #ifndef NDEBUG
     printf("enabling motor\n");
+    #endif
 }
 
 void controller::disable_motor(uint32_t node_id)
@@ -180,7 +191,9 @@ void controller::disable_motor(uint32_t node_id)
     this->tx_msg.cframe.data[0] = ENABLE_DISABLE_MOTOR;
     this->tx_msg.cframe.data[1] = 0x0;
     can_write();
+    #ifndef NDEBUG
     printf("disabling motor\n");
+    #endif
 }
     
 void controller::change_mode(uint32_t node_id, uint8_t mode)
@@ -192,7 +205,9 @@ void controller::change_mode(uint32_t node_id, uint8_t mode)
     this->tx_msg.cframe.data[0] = CHANGE_MODE;
     this->tx_msg.cframe.data[1] = mode;
     can_write();
+    #ifndef NDEBUG
     printf("change mode to %d\n",mode);
+    #endif
 }
     
 

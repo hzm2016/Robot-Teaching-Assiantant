@@ -152,7 +152,9 @@ void *thread_func(void *data)
             }
             printf("]\n");
 
+            #ifndef FDEBUG
             printf("Pulse Width: %.3e\n", pulse_width);
+            #endif
             clock_gettime(CLOCK_MONOTONIC, &curtime);
             printf("Loop tasks took: %d s and %f ms.\n", delta_t_s, delta_t_ms);
         }

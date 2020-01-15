@@ -15,8 +15,8 @@
 #include <iostream>
 #include <math.h>
 
-#ifndef _CF_H_
-#define _CF_H_
+#ifndef _INNFOS_CAN_H_
+#define _INNFOS_CAN_H_
 
 #define RTR 1
 
@@ -140,24 +140,18 @@ using namespace std;
 
 /* struct for storing the motor data points */
 
-struct odrive_motor
-{
-
-    float vel_setpoint; //0.01 factor
-
+struct odrive_motor {
+    float vel_setpoint; // 0.01 factor
 };
 
-struct can_frame_odrive
-{
-        can_frame cframe;
-        uint32_t node_id;
-        uint32_t cmd_id;
-       
+struct can_frame_odrive {
+    can_frame cframe;
+    uint32_t node_id;
+    uint32_t cmd_id;
 };
 
 
-class controller{
-
+class controller {
 public:
     /*constructor*/
     controller(int writesocket_fd,int readsocket_f);
@@ -170,15 +164,17 @@ public:
     /*  method to read data from the CAN BUS and populate rx_data class member*/
     bool can_read();
    
-    /* methods that set ODrive parameters*/
+    /* Setpoint Functions */
     void set_pos_setpoint(uint32_t node_id, float pos_setpoint);
     void set_vel_setpoint(uint32_t node_id, float vel_setpoint);
     void set_cur_setpoint(uint32_t node_id, float cur_setpoint);
+
+    /* Motor enable/disable/mode functions */
     void enable_motor(uint32_t node_id);
     void disable_motor(uint32_t node_id);
     void change_mode(uint32_t node_id, uint8_t mode);
 
-    
+    /* Feedback Functions */
     
 private:
     can_frame_odrive rx_msg;
@@ -187,8 +183,6 @@ private:
     int write_socket;
    /*'legs' member variable, contains motor data for all the 12 motors*/
     odrive_motor motors[NO_OF_MOTOR+1];
-    
-    
 };
 
 
