@@ -10,4 +10,5 @@ target_link_libraries(dynamo_test LINK_PUBLIC
   s526_lib
   innfos_can_lib
   rtthread_lib
+  rtutils_lib
   ${CMAKE_THREAD_LIBS_INIT})

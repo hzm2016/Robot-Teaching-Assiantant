@@ -78,9 +78,10 @@ bool controller::can_read()
 bool controller::can_write()
 {	
     int nbytes;
-
+        #ifndef NDEBUG
     printf("can_write %d:", write_socket);
-
+    #endif
+    
     this->tx_msg.cframe.can_id = tx_msg.node_id;
     
     nbytes = write(this->write_socket, &(tx_msg.cframe), sizeof(struct can_frame));

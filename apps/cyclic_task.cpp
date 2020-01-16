@@ -10,6 +10,7 @@ extern "C" {
 #include "model526.h"
 #include "ftconfig.h"
 #include "rtsetup.h"
+#include "rtutils.h"
 }
 #include "innfos_can_functions.hpp"
   
@@ -111,6 +112,7 @@ void *thread_func(void *data)
     while (1) {
         // Get the time
         clock_gettime(CLOCK_MONOTONIC, &tic);
+        if (loop_ctr == 0) tare_clock_time();
         /*** DO RT STUFF HERE ***/
       
         // Read pulse count
@@ -124,6 +126,20 @@ void *thread_func(void *data)
             sample_reading[tmp_ctr] = (float) adc_data[tmp_ctr];
         }
         ConvertToFT(cal, sample_reading, FT);
+
+        // Example of setting a sinusoidal velocity.
+
+        // Get the current time
+        double current_time_in_seconds = get_clock_time_seconds();
+        float m0_velocity = 2000*sin(2*PI*0.1*current_time_in_seconds);
+
+        if ( loop_ctr == loops_per_sec ) {
+            // Set the motor to velocity mode
+            M0.change_mode(5, SPEED_MODE);
+        }
+        else if ( loop_ctr >= loops_per_sec*2 ) {
+            M0.set_vel_setpoint(5, m0_velocity);
+        }
 
 
         /*** DO RT STUFF HERE ***/
@@ -165,7 +181,8 @@ void *thread_func(void *data)
             printf("Pulse Width: %.3e\n", pulse_width);
             #endif
             clock_gettime(CLOCK_MONOTONIC, &curtime);
-            printf("Loop tasks took: %d s and %f ms.\n", delta_t_s, delta_t_ms);
+            printf("Clocktime: %.7f :: Loop tasks took: %d s and %f ms.\n", 
+                   get_clock_time_seconds(), delta_t_s, delta_t_ms);
         }
         
         loop_ctr += 1;
