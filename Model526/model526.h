@@ -81,28 +81,33 @@
 //define register struct
 struct s526_reg_
 {
-	uint16_t IER;
-	uint16_t DIO;
-        uint16_t C0C;
-        uint16_t C1C;
-        uint16_t C2C;
+	uint16_t IER; 
+	uint16_t DIO; 
+        uint16_t C0C; 
+        uint16_t C1C; 
+        uint16_t C2C; 
         uint16_t C3C;
         uint16_t ACR;
 };
 
 //Function to initialize IO permissions
-int s526_init();
+int s526_init(); 
+
 //Function to read the ID and test board
-int s526_read_id();
+int s526_read_id(); 
+
 //Function to initialize ADC channels
-void s526_adc_init(int *channels, int num_channels);
+void s526_adc_init(int *channels, int num_channels); 
+
 //Function to read adc channels
 void s526_adc_read(int *channels, int num_channels, double *adc_sample_array);
 
 //FUnction to initialize Digital IO
 void s526_digitalIO_init(int port, int mode, int interrupt_condition);
+
 //Function to Digital IO input
 int s526_digitalIO_read(int port);
+
 //FUnction to Digital IO output
 void s526_digitalIO_write(int port, int set);
 
@@ -111,7 +116,7 @@ void s526_init_pulse_timer(int channel);
 int s526_counter_read(int channel);
 void s526_encoder_init(int channel_number);
 int s526_encoder_read(int channel_number);
-void s526_counter_set_control_status(int channel_number, int coun_reset, int count_load,
+void s526_counter_set_control_status(int channel_number, int count_reset, int count_load,
                                      int count_arm, int latch_select, int intettupt_enable);
 //Function to read the encoder count
 //Function to initialize the analog output channels

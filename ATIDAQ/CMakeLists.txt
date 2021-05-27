@@ -5,6 +5,7 @@ file(GLOB HEADERS
 
 # Create a library
 add_library (daq_lib
+  atidaq_funcs.c
   ftconfig.c
   ftrt.c
   dom.c

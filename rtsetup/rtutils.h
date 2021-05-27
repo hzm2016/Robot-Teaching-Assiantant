@@ -11,8 +11,10 @@
 #include <math.h>
 #include <time.h>
 
+#define NS_PER_S   1e9
+
 /* Get the clock time in seconds. */
 double get_clock_time_seconds();
-void tare_clock_time();
+void   tare_clock_time();
 
 #endif

@@ -1,22 +1,20 @@
-#include <linux/can.h>
-#include <linux/can/raw.h>
-
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-
-#include <net/if.h> 
-
-#include <pthread.h>
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <iostream>
+#include<linux/can.h>
+#include<sys/socket.h>
+ #include <unistd.h>
+#include<sys/types.h>
+#include<sys/ioctl.h>
+#include<pthread.h>
+#include<stdio.h>
+#include<stdint.h>
+#include<iostream>
 #include <math.h>
+#include <net/if.h>  // TODO
+#include <errno.h>
 
-#ifndef _INNFOS_CAN_H_
-#define _INNFOS_CAN_H_
+extern int errno;
+
+#ifndef _CF_H_
+#define _CF_H_
 
 #define RTR 1
 
@@ -39,15 +37,14 @@ using namespace std;
 #define MAX_SPEED 6000.0
 #define MAX_CURRENT 33.0
 
-
-// Define IQ value form converter required by instructions as according to 
-// Innfos wiki
-// Basically 2 to the power of (IQ_value)
+//define IQ value form converter required by instructions as according to Innfos wiki
+//basically 2 to the power of (IQ_value)
 #define IQ_24       16777216
 #define IQ_8        256
 
-
-// Define size of can message according to Innfos wiki
+//define size of can message according to Innfos wiki
+//note WRITE and READ 2 uses IQ8, while WRITE and READ 3 uses IQ24
+//note READ 4 uses a combination of IQ14 and IQ16, check notes
 #define SIZE_WRITE_1        2
 #define SIZE_WRITE_2        3
 #define SIZE_WRITE_3        5
@@ -62,7 +59,9 @@ using namespace std;
 #define SIZE_READ_RETURN_4        8
 #define SIZE_READ_RETURN_5        5
 
-// Define Modes
+
+//define modes 
+
 #define CURRENT_MODE    0x01
 #define SPEED_MODE      0x02
 #define POSITION_MODE   0x03
@@ -71,7 +70,8 @@ using namespace std;
 #define HOMING_MODE     0x08
 
 
-// Define READ IDs
+//define READ ids
+
 #define GET_HEARTBEAT        0x00
 #define GET_MODE            0x55
 #define GET_STATUS          0x2B
@@ -93,7 +93,9 @@ using namespace std;
 
 #define GET_SERIAL_ID        0x02
 
-// Define WRITE IDs
+
+//define WRITE ids
+
 #define SET_CUR_SETPOINT        0x8
 #define SET_VEL_SETPOINT        0x9
 #define SET_POS_SETPOINT        0xA
@@ -124,7 +126,7 @@ using namespace std;
 
 #define CLEAR_ALARM    0xFE
 
-// Define ALARM ids
+//define ALARM ids
 #define OVERVOLTAGEERROR           0x0001
 #define UNDERVOLTAGEERROR          0x0002
 #define ABNORMALBLOCKING           0x0004
@@ -136,26 +138,26 @@ using namespace std;
 #define MOTORTEMPERATURESENSORERROR         0x0100
 #define STEPTOOBIG                          0x0200
 #define DRVPROTECTIONERROR                  0x0400
-#define DEVICEEXCEPTION            default
+#define DEVICEEXCEPTION            default   
 
 /* struct for storing the motor data points */
 
 struct odrive_motor {
-    float vel_setpoint; // 0.01 factor
+	float vel_setpoint; //0.01 factor
 };
 
-struct can_frame_odrive {
-    can_frame cframe;
-    uint32_t node_id;
-    uint32_t cmd_id;
+struct can_frame_odrive {	
+	can_frame cframe;
+	int node_id;
+	uint32_t cmd_id;
 };
-
 
 class controller {
+
 public:
     /*constructor*/
     controller(int writesocket_fd,int readsocket_f);
-    controller(const char *can_iface_name);
+	controller(const char *can_iface_name); // TODO
 
     virtual ~controller() {};
     
@@ -164,17 +166,18 @@ public:
     /*  method to read data from the CAN BUS and populate rx_data class member*/
     bool can_read();
    
-    /* Setpoint Functions */
-    void set_pos_setpoint(uint32_t node_id, float pos_setpoint);
-    void set_vel_setpoint(uint32_t node_id, float vel_setpoint);
-    void set_cur_setpoint(uint32_t node_id, float cur_setpoint);
+    /* methods that set ODrive parameters*/
+    void set_pos_setpoint(int node_id, float vel_setpoint);
+    void set_cur_setpoint(int node_id, float cur_setpoint);
+    void set_vel_setpoint(int node_id, float vel_setpoint);
+    void enable_motor(int node_id);
+    void disable_motor(int node_id);
+    void change_mode(int node_id, uint8_t mode);
 
-    /* Motor enable/disable/mode functions */
-    void enable_motor(uint32_t node_id);
-    void disable_motor(uint32_t node_id);
-    void change_mode(uint32_t node_id, uint8_t mode);
-
-    /* Feedback Functions */
+    // methods to get ODrive parameters
+    float read_pos_setpoint(int node_id);
+    float read_vel_setpoint(int node_id);
+    float read_cur_setpoint(int node_id);
     
 private:
     can_frame_odrive rx_msg;
@@ -184,7 +187,6 @@ private:
    /*'legs' member variable, contains motor data for all the 12 motors*/
     odrive_motor motors[NO_OF_MOTOR+1];
 };
-
 
 #endif /* _CF_H_ */
 

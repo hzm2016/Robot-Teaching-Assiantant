@@ -11,6 +11,7 @@
 #include <math.h>
 #include <time.h>
 
+#include "rtutils.h"
 
 struct period_info {
     struct timespec next_period;
@@ -18,7 +19,7 @@ struct period_info {
 };
 
 void inc_period(struct period_info *pinfo);
-void periodic_task_init(struct period_info *pinfo, long period_in_ns);
+void periodic_task_init(struct period_info *pinfo, long period_ns);
 void wait_rest_of_period(struct period_info *pinfo);
 
 #endif

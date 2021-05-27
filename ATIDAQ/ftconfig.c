@@ -40,7 +40,7 @@ dec.14.2007 - Sam Skuce (ATI Industrial Automation)
 
 // from ftrt.h (these functions are defined in ftrt.c)
 extern void RTConvertToFT(RTCoefs *coefs, float voltages[],float result[],BOOL tempcomp);
-extern void RTBias(RTCoefs *coefs, float voltages[]);
+extern void RTBias(RTCoefs *coefs, float voltages[]); 
 
 // void mmult(float *array1, float *array2, float *result,unsigned short r1,unsigned short c1,unsigned short c2);
 extern void mmult(float *a, unsigned short ra, unsigned short ca, unsigned short dca,
@@ -282,6 +282,7 @@ void Bias(Calibration *cal, float voltages[]) {
 
 void ConvertToFT(Calibration *cal, float voltages[],float result[]) {
 	RTConvertToFT(&cal->rt,voltages,result,cal->cfg.TempCompEnabled);
+	// printf("TempCompEnabled = %d\n", cal->cfg.TempCompEnabled);
 } // ConvertToFT()
 
 

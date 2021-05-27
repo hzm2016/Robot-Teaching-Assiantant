@@ -9,9 +9,9 @@ static double DACb[4] = {0.0, 0.0, 0.0, 0.0};
 static int s526_init_flag = 0;
 
 int s526_init()
-{
+{ 
     //Set permissions for the range of IO addresses
-    //int ret = ioperm(S526_ADDR, S526_IOSIZE, 1);
+    // int ret = ioperm(S526_ADDR, S526_IOSIZE, 1);
     if(s526_init_flag == 0)
     {
         int ret = iopl(3);
@@ -29,7 +29,7 @@ int s526_init()
         }
         s526_init_flag = 1;
     }
-    
+
     return 2;
 }
 
@@ -63,8 +63,8 @@ uint16_t s526_read_eeprom_word(uint8_t addr)
 
 double s526_read_adc_calib()
 {
-    uint16_t doublebuf[4];
-    double calibval;
+    uint16_t doublebuf[4]; 
+    double calibval; 
     
     doublebuf[0] = s526_read_eeprom_word((uint8_t) 0x20);
     doublebuf[1] = s526_read_eeprom_word((uint8_t) 0x21);
@@ -426,13 +426,13 @@ int s526_counter_read(int channel_number) {
 }
 
 //Function to set counter control register
-void s526_counter_set_control_status(int channel_number, int coun_reset, int count_load, int count_arm, int latch_select,
+void s526_counter_set_control_status(int channel_number, int count_reset, int count_load, int count_arm, int latch_select,
                                  int intettupt_enable)
 {
     switch(channel_number)
     {
     case 0:
-        s526_reg.C0C |= (coun_reset << 15);
+        s526_reg.C0C |= (count_reset << 15);
         s526_reg.C0C |= (count_load << 14);
         s526_reg.C0C |= (count_arm << 13);
         s526_reg.C0C |= (latch_select << 10);
@@ -440,7 +440,7 @@ void s526_counter_set_control_status(int channel_number, int coun_reset, int cou
         outw(s526_reg.C0C, ADDR_REG(REG_C0C));
         break;
     case 1:
-        s526_reg.C1C |= (coun_reset << 15);
+        s526_reg.C1C |= (count_reset << 15);
         s526_reg.C1C |= (count_load << 14);
         s526_reg.C1C |= (count_arm << 13);
         s526_reg.C1C |= (latch_select << 10);
@@ -448,7 +448,7 @@ void s526_counter_set_control_status(int channel_number, int coun_reset, int cou
         outw(s526_reg.C1C, ADDR_REG(REG_C1C));
         break;
     case 2:
-        s526_reg.C2C |= (coun_reset << 15);
+        s526_reg.C2C |= (count_reset << 15);
         s526_reg.C2C |= (count_load << 14);
         s526_reg.C2C |= (count_arm << 13);
         s526_reg.C2C |= (latch_select << 10);
@@ -456,7 +456,7 @@ void s526_counter_set_control_status(int channel_number, int coun_reset, int cou
         outw(s526_reg.C2C, ADDR_REG(REG_C2C));
         break;
     case 3:
-        s526_reg.C3C |= (coun_reset << 15);
+        s526_reg.C3C |= (count_reset << 15);
         s526_reg.C3C |= (count_load << 14);
         s526_reg.C3C |= (count_arm << 13);
         s526_reg.C3C |= (latch_select << 10);

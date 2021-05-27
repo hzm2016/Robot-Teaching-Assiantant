@@ -36,12 +36,15 @@ void RTConvertToFT(RTCoefs *coefs, float voltages[],float result[],BOOL tempcomp
 	float cvoltages[MAX_GAUGES];
 	unsigned short i;
 
+	// printf("NumChannels = [%d]\n", coefs->NumChannels);
+
 	for (i=0; i<coefs->NumChannels-1; i++) {
 		if (tempcomp==TRUE) {
 			cvoltages[i]=TempComp(coefs,voltages[i],voltages[coefs->NumChannels-1],i) - coefs->TCbias_vector[i];
 		} else {
 			cvoltages[i]=voltages[i]-coefs->bias_vector[i];
 		}
+		// printf("cvoltages[%d] = [%lf], voltages[%d] = [%lf]\n", i, cvoltages[i], i, voltages[i]);  
 	}
 	// perform matrix math
 	mmult(*coefs->working_matrix,coefs->NumAxes,(unsigned short)(coefs->NumChannels-1),MAX_GAUGES,
