@@ -72,3 +72,15 @@ flycheck_*.el
 
 
 # End of https://www.gitignore.io/api/cmake,emacs
+
+# Images
+*.jpg
+*.jpeg
+*.png
+
+
+# Vscode
+/.vscode/
+
+# pycache
+/__pycache__/
