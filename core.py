@@ -14,6 +14,11 @@ def load_class(class_name):
         mod = getattr(mod, comp)
     return mod
 
+class controller(object):
+
+    def __init__(self) -> None:
+        pass
+
 
 class Learner(object):
     """ class that stores learner performance 
@@ -24,7 +29,7 @@ class Learner(object):
     
     def __init_parameters(self,):
         self.score = 0
-        self.satified = False
+        self.satisfied = False
     
     def reset(self):
 
@@ -42,6 +47,7 @@ class Executor(object):
         self.cuda = args.get('CUDA', False)
         self.feedbaock = args.get('WITH_FEEDBACK', False)
         self.learner = Learner()
+        self.controller = controller()
 
         self.__init_parameters(args)
         self.__init_network()
@@ -64,9 +70,10 @@ class Executor(object):
         if args.get('PRE_PROCESS',None):
             assert args.get('PRE_PROCESS').upper() == 'DEFAULT', '{} preprocess is not supported'.format(args.get('PRE_PROCESS'))
             self.pre_process = [ transforms.ToTensor(),
-                                                transforms.Normalize((0.5,), (0.5,)) ]
+                                 transforms.Normalize((0.5,), (0.5,)) ]
         else:
-            self.pre_process = [ transforms.ToTensor() ] 
+            self.pre_process = [ transforms.ToTensor() 
+                                ] 
 
     def __init_network(self,):
 
@@ -86,6 +93,8 @@ class Executor(object):
     def interact(self, traj, score=None):
         """TO DO: interaction part
         """
+        output_img = self.__capture_image()
+        self.learner.score = self.get_score(output_img)
         return False
 
     def get_score(self, image): 
@@ -124,7 +133,7 @@ class Executor(object):
             if stroke is ' ':
                 break
 
-            while not self.learner.satified: 
+            while not self.learner.satisfied: 
 
                 stroke_img = stroke2img(self.font_type, stroke,self.font_size)
                 stroke_img = np.array(stroke_img)
