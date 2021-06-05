@@ -7,11 +7,14 @@ OUTPUT_CHANNEL: 1
 GAN_MODEL_TYPE: gan.Generator
 DIS_MODEL_TYPE: gan.Discriminator
 
-GAN_MODEL_PATH: here
-DIS_MODEL_PATH: here 
+# GAN_MODEL_PATH: here
+# DIS_MODEL_PATH: here 
+
+FONT_SIZE: 128
+MAX_PADDING: 0
 
 NUM_REFERENCE_POINTS: 4
-TTF_FILE: 
+TTF_FILE: ./utils/ttf/font1.ttf
 
 WITH_FEEDBACK: False
 CUDA: False

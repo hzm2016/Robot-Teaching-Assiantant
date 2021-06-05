@@ -8,17 +8,17 @@ import scipy.special
 import time, math, copy
 import bezier
 import matplotlib.pyplot as plt
-from skeltonize import *
+from .skeltonize import *
 import random
 import shutil
 
-def skeletonize(img):
+def skeletonize(img, num_points=10):
 
     im = (img>128).astype(np.uint8)
     im = thinning(im)
-
+    
     rects = []
-    polys = traceSkeleton(im,0,0,im.shape[1],im.shape[0],10,999,rects)
+    polys = traceSkeleton(im,0,0,im.shape[1],im.shape[0],num_points,999,rects)
     
     img_canvas = np.full((128,128),255, np.uint8)
 
@@ -26,8 +26,9 @@ def skeletonize(img):
         c = (0,0,0)
         for i in range(0,len(l)-1):
             cv2.line(img_canvas,(l[i][0],l[i][1]),(l[i+1][0],l[i+1][1]),c,2)
-    print(l)
-    #cv2.imshow('',img_canvas);cv2.waitKey(0)
+
+    cv2.imshow('',img_canvas);cv2.waitKey(0)
+
     return polys, img_canvas
 
 def _extract_points(img):

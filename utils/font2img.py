@@ -12,13 +12,37 @@ def has_glyph(font, glyph):
             return True
     return False
 
+def stroke2img(ttf_path, stroke, font_size=128):
+    
+    fg = "#000000"  # black foreground
+    bg = "#FFFFFF"  # white background
+    FONT_SIZE = font_size
+    MAX_PADDING = 0
+    
+    font_object = ImageFont.truetype(ttf_path, FONT_SIZE) # Font has to be a .ttf file
+    font = TTFont(ttf_path)
+
+    if not has_glyph(font, stroke):
+        print('{} does not exist in this font'.format(stroke))
+        return None
+
+    text_width, text_height = font_object.getsize(stroke)
+    text_height = 128
+    image = Image.new('RGBA', (text_width + MAX_PADDING*2, text_height + MAX_PADDING*2), color=bg)
+    draw_pad = ImageDraw.Draw(image)
+
+    draw_pad.text((MAX_PADDING, MAX_PADDING-12), stroke, font=font_object, fill=fg)
+
+    image = image.convert("L") # Use this if you want to binarize image
+    return image
+
 def main(save_path='./', all_font=False):
     FONT_SIZE = 128
     MAX_PADDING = 0
 
     if all_font == False:
 #        font_paths = ["./ttf/ink_pen_kai.ttf"]
-        font_paths = ["./ttf/书体坊王学勤钢笔行书.ttf"]
+        font_paths = ["./ttf/font1.ttf"]
         font_names = [font_paths[0].split('/')[-1]]
     else:
         font_paths = glob.glob('./ttf/*.ttf')

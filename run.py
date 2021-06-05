@@ -1,21 +1,18 @@
 import argparse
-from core import executor
+from core import Executor
 import yaml
 
 
 def main(args):
-    print(args)
 
     configs = open(args.config, 'r')
 
     try:
         configs = yaml.safe_load(configs)
     except yaml.YAMLError as exc:
-        print(exc)
-
-    print(configs)
-    
-    runner = executor(configs)
+        print(exc)    
+    runner = Executor(configs)
+    runner.pipeline()
 
 
 if __name__ == '__main__':
