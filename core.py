@@ -1,10 +1,10 @@
-import argparse
 import torch
+import logging
+
 import torchvision.transforms as transforms
-import cv2
 import numpy as np
+
 from utils import skeletonize, stroke2img
-import importlib
 
 
 def load_class(class_name):
@@ -25,7 +25,10 @@ class Learner(object):
     def __init_parameters(self,):
         self.score = 0
         self.satified = False
+    
+    def reset(self):
 
+        self.__init_parameters()
 
 class Executor(object):
     """Class that carries out teaching process
@@ -35,12 +38,13 @@ class Executor(object):
     """
     def __init__(self, args) -> None:   
 
+        logging.info('Initialize Runner')
         self.cuda = args.get('CUDA', False)
         self.feedbaock = args.get('WITH_FEEDBACK', False)
-        self.learner = 
+        self.learner = Learner()
 
-        self._init_parameters(args)
-        self._init_network()
+        self.__init_parameters(args)
+        self.__init_network()
 
     def __init_parameters(self,args):
 
@@ -98,19 +102,37 @@ class Executor(object):
         """
         pass
 
+    def __reset_learner(self,):
+        """ Reset learner model
+        """
+        self.learner.reset()
+    
+    def __quit(self):
+        """ Quit all the processes
+        """
+        pass
+
     def pipeline(self,):
         """ Full pipeline
         Obtain target stroke -> generate target stroke's trajectory -> Interact with learner -> Get learner output
         """
-        stroke = input('Please provide a stroke you want to learn: ')
 
-        stroke_img = stroke2img(self.font_type, stroke,self.font_size)
-        stroke_img = np.array(stroke_img)
-        traj, traj_img = skeletonize(~stroke_img)
+        while True:
 
-        learner_performance = self.interact(traj)
-        
+            stroke = input('Please provide a stroke you want to learn: ')
 
+            if stroke is ' ':
+                break
+
+            while not self.learner.satified: 
+
+                stroke_img = stroke2img(self.font_type, stroke,self.font_size)
+                stroke_img = np.array(stroke_img)
+                traj, traj_img = skeletonize(~stroke_img)
+
+                self.interact(traj)
+
+        logging.info('Quittiing')
 
         # cv2.imshow('',stroke_img)
         # cv2.waitKey(0)

@@ -1,7 +1,9 @@
 import argparse
 from core import Executor
 import yaml
+import logging
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: Module %(module)s :: Line No %(lineno)s :: %(message)s')
 
 def main(args):
 
@@ -13,7 +15,6 @@ def main(args):
         print(exc)    
     runner = Executor(configs)
     runner.pipeline()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

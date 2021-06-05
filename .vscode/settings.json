@@ -50,5 +50,6 @@
         "typeinfo": "cpp",
         "string": "cpp",
         "random": "cpp"
-    }
+    },
+    "python.formatting.provider": "black"
 }
