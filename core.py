@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 import numpy as np
 
 from utils import skeletonize, stroke2img
+import example
 
 
 def load_class(class_name):
@@ -127,7 +128,7 @@ class Executor(object):
         """
 
         while True:
-
+            
             stroke = input('Please provide a stroke you want to learn: ')
 
             if stroke is ' ':
@@ -136,6 +137,11 @@ class Executor(object):
             while not self.learner.satisfied: 
 
                 stroke_img = stroke2img(self.font_type, stroke,self.font_size)
+
+                if stroke_img is None:
+                    logging.warning('Provided stroke cannot be found in this font')
+                    break
+
                 stroke_img = np.array(stroke_img)
                 traj, traj_img = skeletonize(~stroke_img)
 

@@ -27,7 +27,7 @@ def skeletonize(img, num_points=10):
         for i in range(0,len(l)-1):
             cv2.line(img_canvas,(l[i][0],l[i][1]),(l[i+1][0],l[i+1][1]),c,2)
 
-    cv2.imshow('',img_canvas);cv2.waitKey(0)
+    # cv2.imshow('',img_canvas);cv2.waitKey(0)
 
     return polys, img_canvas
 
