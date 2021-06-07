@@ -34,6 +34,7 @@ def stroke2img(ttf_path, stroke, font_size=128):
     draw_pad.text((MAX_PADDING, MAX_PADDING-12), stroke, font=font_object, fill=fg)
 
     image = image.convert("L") # Use this if you want to binarize image
+
     return image
 
 def main(save_path='./', all_font=False):

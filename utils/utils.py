@@ -7,6 +7,44 @@ import numpy as np
 import copy
 import sys
 
+canvas_size = 256
+
+def cropping(img, coordinates):
+
+    x1, y1, x2, y2 = coordinates
+
+    cropped_img = img[y1:y2, x1:x2]
+
+    return cropped_img
+
+def binarize(img, threshold):
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
+
+    return img
+
+def rescale(img, ratio):
+
+    MAX_SIDE = canvas_size * ratio
+
+    h, w = img.shape
+    scale_factor = MAX_SIDE / max(h, w)
+
+    n_h = int(h * scale_factor) - 1 
+    n_w = int(w * scale_factor) - 1
+
+    img_s = cv2.resize(img, (n_w,n_h))
+
+    img_canvas = np.full((canvas_size,canvas_size),255, np.uint8)
+    offset_x = (canvas_size - n_w) // 2
+    offset_y = (canvas_size - n_h) // 2
+
+    img_canvas[offset_y:offset_y+n_h, offset_x:offset_x+n_w] = img_s
+
+    return img_canvas
+
+
 def _prepare_data(out_path, img_list):
 
     index = 0

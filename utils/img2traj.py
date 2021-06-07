@@ -12,7 +12,7 @@ from .skeltonize import *
 import random
 import shutil
 
-def skeletonize(img, num_points=10):
+def skeletonize(img, num_points=10, show_image=False):
 
     im = (img>128).astype(np.uint8)
     im = thinning(im)
@@ -27,7 +27,8 @@ def skeletonize(img, num_points=10):
         for i in range(0,len(l)-1):
             cv2.line(img_canvas,(l[i][0],l[i][1]),(l[i+1][0],l[i+1][1]),c,2)
 
-    # cv2.imshow('',img_canvas);cv2.waitKey(0)
+    if show_image:
+        cv2.imshow('',img_canvas);cv2.waitKey(0)
 
     return polys, img_canvas
 
