@@ -130,5 +130,8 @@ coverage.xml
 *.log
 *.pot
 
+# Model
+*.pth
+
 # Sphinx documentation
 docs/_build/

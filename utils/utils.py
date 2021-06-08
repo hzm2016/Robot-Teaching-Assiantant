@@ -7,7 +7,7 @@ import numpy as np
 import copy
 import sys
 
-canvas_size = 256
+canvas_size = 1024
 
 def cropping(img, coordinates):
 
@@ -42,7 +42,7 @@ def rescale(img, ratio):
 
     img_canvas[offset_y:offset_y+n_h, offset_x:offset_x+n_w] = img_s
 
-    return img_canvas
+    return cv2.resize(img_canvas, (128,128))
 
 
 def _prepare_data(out_path, img_list):

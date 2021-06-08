@@ -1,4 +1,6 @@
+from types import WrapperDescriptorType
 import torch
+import torchvision
 import logging
 import os
 import cv2
@@ -16,16 +18,17 @@ def load_class(class_name):
         mod = getattr(mod, comp)
     return mod
 
+
 class Postprocessor(object):
 
-    def __init__(self,args) -> None:    
+    def __init__(self, args) -> None:
 
         self.pipeline = []
         for k, v in args.items():
             setattr(self, k.lower(), v)
             self.pipeline.append(k.upper())
 
-    def CROPPING(self,image):
+    def CROPPING(self, image):
 
         return cropping(image, self.cropping)
 
@@ -33,16 +36,17 @@ class Postprocessor(object):
 
         return binarize(image, self.binarize)
 
-    def RESCALE(self, image): 
+    def RESCALE(self, image):
 
         return rescale(image, self.rescale)
-    
+
     def process(self, image):
 
         for m in self.pipeline:
             image = getattr(self, m)(image)
 
         return image
+
 
 class Controller(object):
 
@@ -86,14 +90,15 @@ class Executor(object):
         self.__init_parameters(args)
         self.__init_network()
         self.__parse_feedback()
-    
+
     def __parse_feedback(self,):
-        
+
         if self.feedback is None:
             self.with_feedback = False
         else:
             self.with_feedback = self.feedback.get('WITH_FEEDBACK')
-            self.postprocessor = Postprocessor(self.feedback.get('POST_PRORCESS'))
+            self.postprocessor = Postprocessor(
+                self.feedback.get('POST_PRORCESS'))
 
     def __init_parameters(self, args):
 
@@ -114,30 +119,32 @@ class Executor(object):
             assert args.get('PRE_PROCESS').upper(
             ) == 'DEFAULT', '{} preprocess is not supported'.format(args.get('PRE_PROCESS'))
             pre_process = [transforms.ToTensor(),
-                                transforms.Normalize((0.5,), (0.5,))]
+                           transforms.Normalize((0.5,), (0.5,))]
         else:
             pre_process = [transforms.ToTensor()
-                                ]
+                           ]
         self.pre_process = transforms.Compose(pre_process)
 
     def __init_network(self,):
 
         self.gan = load_class(self.gan_type)(
-            self.input_channel, self.output_channel)
-        self.dis = load_class(self.dis_type)(self.output_channel)
+            self.input_channel, self.output_channel,True)
+        self.dis = load_class(self.dis_type)(self.output_channel, 5)
 
+        mapping_device = 'cpu'
         if self.cuda:
             self.gan = self.gan.cuda()
             self.dis = self.dis.cuda()
+            mapping_device = 'gpu'
 
         if self.gan_path is not None:
             self.gan.load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(self.gan_path).items()})
+                {k.replace('module.', ''): v for k, v in torch.load(self.gan_path, map_location=torch.device(mapping_device)).items()})
 
         if self.dis_path is not None:
             self.dis.load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(self.dis_path).items()})
-
+                {k.replace('module.', ''): v for k, v in torch.load(self.dis_path, map_location=torch.device(mapping_device)).items()})
+        
     def interact(self, traj, score=None):
         """TO DO: interaction part
         """
@@ -147,7 +154,7 @@ class Executor(object):
             # cv2.imshow('',np.array(output_img))
             # cv2.waitKey(0)
             # self.learner.score = self.get_score(output_img)
-        return None
+        return output_img
 
     def get_score(self, image):
 
@@ -165,7 +172,8 @@ class Executor(object):
         if written_stroke is None:
             return stroke2img(self.font_type, stroke, self.font_size)
         else:
-            return self.gan(skeletonize(~written_stroke))
+            source_image = np.array(stroke2img(self.font_type, stroke, self.font_size))
+            return self.__generate_written_traj(written_stroke,source_image)
 
     def __reset_learner(self,):
         """ Reset learner model
@@ -178,12 +186,29 @@ class Executor(object):
         pass
 
     def __save_stroke_traj(self, stroke, traj, savepath='./'):
-        
+
         font_name = self.font_type.split('/')[-1].split('.')[0]
-        filename = os.path.join(savepath,str(stroke)+'_'+font_name) + '.txt'
+        filename = os.path.join(savepath, str(stroke)+'_'+font_name) + '.txt'
         with open(filename, 'w+') as file_stream:
             return np.savetxt(file_stream,  traj[0])
 
+    def __generate_written_traj(self, written_image, source_image):
+        
+        source_image = self.pre_process(source_image).unsqueeze(0)
+        written_image = self.pre_process(written_image).unsqueeze(0)
+
+        styled_written_image = self.gan(written_image, source_image)
+
+        styled_written_image = 0.5*(styled_written_image.data + 1.0)
+        grid = torchvision.utils.make_grid(styled_written_image)
+        # Add 0.5 after unnormalizing to [0, 255] to round to nearest integer
+
+        styled_written_image = grid.mul(255).add_(0.5).clamp_(
+            0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
+
+        styled_written_image = cv2.cvtColor(styled_written_image, cv2.COLOR_BGR2GRAY)
+
+        return styled_written_image
 
     def pipeline(self,):
         """ Full pipeline
@@ -197,9 +222,9 @@ class Executor(object):
 
             if stroke is ' ':
                 break
-            
+
             while not self.learner.satisfied:
-                
+
                 stroke_img = self.sample_stroke(stroke, written_image)
 
                 if stroke_img is None:
@@ -209,6 +234,14 @@ class Executor(object):
 
                 stroke_img = np.array(stroke_img)
                 traj, traj_img = skeletonize(~stroke_img)
+                if written_image is not None:
+                    cv2.imshow('',stroke_img)
+                    cv2.waitKey(0)
+                    cv2.imwrite('./new.png', stroke_img)
+                    cv2.imshow('',traj_img)
+                    cv2.waitKey(0)
+                    cv2.imwrite('./new_traj.png', stroke_img)
+
                 if self.save_traj:
                     save_traj = self.__save_stroke_traj(stroke, traj)
                 written_image = self.interact(traj)

@@ -7,8 +7,8 @@ OUTPUT_CHANNEL: 1
 GAN_MODEL_TYPE: gan.Generator
 DIS_MODEL_TYPE: gan.Discriminator
 
-# GAN_MODEL_PATH: here
-# DIS_MODEL_PATH: here
+GAN_MODEL_PATH: ./saved_model/199_netG_S2P.pth
+DIS_MODEL_PATH: ./saved_model/199_netD_P.pth
 
 FONT_SIZE: 128
 MAX_PADDING: 0
