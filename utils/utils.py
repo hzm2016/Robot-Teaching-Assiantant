@@ -42,7 +42,10 @@ def rescale(img, ratio):
 
     img_canvas[offset_y:offset_y+n_h, offset_x:offset_x+n_w] = img_s
 
-    return cv2.resize(img_canvas, (128,128))
+    image = cv2.rotate(cv2.resize(img_canvas, (128,128)), cv2.ROTATE_180)
+    # cv2.imwrite('./after_postprocess.png', image)
+
+    return image
 
 
 def _prepare_data(out_path, img_list):

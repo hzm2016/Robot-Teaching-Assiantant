@@ -1,8 +1,7 @@
-from types import WrapperDescriptorType
-import torch
-import torchvision
 import logging
 import os
+import torch
+import torchvision
 import cv2
 
 import torchvision.transforms as transforms
@@ -234,16 +233,18 @@ class Executor(object):
 
                 stroke_img = np.array(stroke_img)
                 traj, traj_img = skeletonize(~stroke_img)
-                if written_image is not None:
-                    cv2.imshow('',stroke_img)
-                    cv2.waitKey(0)
-                    cv2.imwrite('./new.png', stroke_img)
-                    cv2.imshow('',traj_img)
-                    cv2.waitKey(0)
-                    cv2.imwrite('./new_traj.png', stroke_img)
+
+                # if written_image is not None:
+                #     cv2.imshow('',stroke_img)
+                #     cv2.waitKey(0)
+                #     cv2.imwrite('./new.png', stroke_img)
+                #     cv2.imshow('',traj_img)
+                #     cv2.waitKey(0)
+                #     cv2.imwrite('./new_traj.png', traj_img)
 
                 if self.save_traj:
                     save_traj = self.__save_stroke_traj(stroke, traj)
+
                 written_image = self.interact(traj)
 
         logging.info('Quittiing')
