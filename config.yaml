@@ -14,10 +14,11 @@ FONT_SIZE: 128
 MAX_PADDING: 0
 
 NUM_REFERENCE_POINTS: 4
-TTF_FILE: ./utils/ttf/font1.ttf
+TTF_FILE: ./utils/ttf/font2.ttf
 
 CUDA: False
-SAVE_TRAJ: False
+SAVE_TRAJ: True
+GENERATIION_ONLY: True
 
 FEEDBACK:
   WITH_FEEDBACK: True

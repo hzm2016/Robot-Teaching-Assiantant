@@ -17,10 +17,10 @@ def cropping(img, coordinates):
 
     return cropped_img
 
-def binarize(img, threshold):
+def binarize(img, threshold=128):
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
+    _, img = cv2.threshold(img, threshold, 255, cv2.THRESH_BINARY)
 
     return img
 

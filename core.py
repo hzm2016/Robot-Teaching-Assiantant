@@ -101,6 +101,8 @@ class Executor(object):
 
     def __init_parameters(self, args):
 
+        self.generation_only = args.get('GENERATIION_ONLY', False)
+
         self.gan_path = args.get('GAN_MODEL_PATH')
         self.dis_path = args.get('DIS_MODEL_PATH')
 
@@ -189,7 +191,9 @@ class Executor(object):
         font_name = self.font_type.split('/')[-1].split('.')[0]
         filename = os.path.join(savepath, str(stroke)+'_'+font_name) + '.txt'
         with open(filename, 'w+') as file_stream:
-            return np.savetxt(file_stream,  traj[0])
+            np.savetxt(file_stream,  traj[0])
+
+        return filename
 
     def __generate_written_traj(self, written_image, source_image):
         
@@ -243,7 +247,13 @@ class Executor(object):
                 #     cv2.imwrite('./new_traj.png', traj_img)
 
                 if self.save_traj:
-                    save_traj = self.__save_stroke_traj(stroke, traj)
+                    save_traj_name = self.__save_stroke_traj(stroke, traj)
+                    cv2.imwrite(save_traj_name.replace('txt','png'), traj_img)
+                    logging.info('{} traj stored'.format(stroke))
+
+                if self.generation_only:
+
+                    break
 
                 written_image = self.interact(traj)
 
