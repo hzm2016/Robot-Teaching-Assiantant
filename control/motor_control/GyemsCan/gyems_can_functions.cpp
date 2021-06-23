@@ -20,13 +20,14 @@ int Gcan::readcan()
             return -1;
         }
     }
+
     //printf( "CAN messages are available to read.\n");
-    channel_name.read(rframe);
+    channel_name.read(rframe); 
 
     //Note: IF satements are used to filter out the request from the reply. 
     switch(rframe.data[0]){
         case  0x9A:
-            status_1_reply(&rframe,&temp,&voltage,&error_state);
+            status_1_reply(&rframe,&temp,&voltage,&error_state); 
             break;
         case 0xA1:
         case 0xA2:
@@ -58,7 +59,7 @@ int Gcan::readcan()
             break;
         case 0x90:
             // if(!(rframe.data[2]==0 && rframe.data[3]==0))
-            unpack_read_encoder(&rframe,&position,&raw_position,&encoderoffset);
+            unpack_read_encoder(&rframe,&position,&raw_position,&encoderoffset); 
             break;
         case 0x30:
         case 0x33:
@@ -294,7 +295,7 @@ void Gcan::pack_multi_torque_cmd(int nodeID, int16_t iqControl, int16_t iqContro
      msg.data[6] = iqControl4&0xff;                                              
      msg.data[7] = (iqControl4>>8)&0xff;                
     
-    channel_name.write(msg);
+    channel_name.write(msg); 
     }
 
 void Gcan::pack_position_1_cmd(int nodeID, int32_t angle){
@@ -416,7 +417,7 @@ void Gcan::read_single_turn_angle(int nodeID){
      msg.data[4] = 0;            
      msg.data[5] = 0;               
      msg.data[6] = 0;  
-     msg.data[7] = 0;    
+     msg.data[7] = 0;   
      
     channel_name.write(msg);
 }
@@ -455,7 +456,7 @@ void Gcan::unpack_multi_turn_angle(struct can_frame* msg, int64_t* mangle){
     // double inner_actual_multi_turn_angle = double(*mangle) / 9216000.0 * 360.0;
     printf("data_0 : %d \n, %d \n, %d \n, %d \n, %d \n, %d \n, %d \n", msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]);
     printf("Original data : %d \n", (int)*mangle); 
-    // printf("Original data : %d \n", double(*mangle));
+    // printf("Original data : %d \n", double(*mangle)); 
     #ifdef DEBUG 
     // printf("Multi turn pos: %f \n", inner_actual_multi_turn_angle);
     #endif
