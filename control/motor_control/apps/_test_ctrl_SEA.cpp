@@ -217,10 +217,10 @@ test_ctrl_SEA(void* dt_ns_ref) {
 
 	//Torque trajectory
 	double torque_ref	 = 0;
-	double dt_torque_ref = 0, dt_torque_ref_prev = 0;
- 	double ddt_torque_ref = 0, ddt_torque_ref_pre = 0;
+	double dt_torque_ref = 0, dt_torque_ref_prev = 0; 
+ 	double ddt_torque_ref = 0, ddt_torque_ref_pre = 0; 
 
-	double theta_sea_m    = 0, theta_sea_m_prev = 0;
+	double theta_sea_m    = 0, theta_sea_m_prev = 0; 
 	double dt_theta_sea_m = 0, dt_theta_sea_m_prev = 0;
 	double deflection_sea_ref  = 0, deflection_sea_ref_prev = 0;
    	double ddt_deflection_sea_ref   = 0;
@@ -726,8 +726,8 @@ test_ctrl_SEA(void* dt_ns_ref) {
      double alpha_FL     = 0;
 	 double beta_FL      = 0;
 	 double lambda_FLSMC = 10;
-	 double xi_FLSMC     = 10000000;
-	 double mu_FLSMC     = 0;
+	 double xi_FLSMC     = 10000000; 
+	 double mu_FLSMC     = 0; 
 	 double s_FLSMC      = 0;
 	 double sat_FLSMC    = 0;
      double epsilon_FLSMC = 10; 
@@ -1046,7 +1046,7 @@ test_ctrl_SEA(void* dt_ns_ref) {
 		// Initial time:
 		///////////////////////////////////////////////////////////////////////////
 
-        clock_gettime(CLOCK_MONOTONIC, &tic);
+        clock_gettime(CLOCK_MONOTONIC, &tic); 
 
 		///////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////
@@ -1058,14 +1058,14 @@ test_ctrl_SEA(void* dt_ns_ref) {
 		// Innfos feedback or encoder feedback:
 		///////////////////////////////////////////////////////////////////////////
 
-		theta_sea_m		= 1.0/PULLEY_SEA_RATIO*read_pos_innfos(&motor, NODE_MOTOR) - theta_sea_m_o;
-		dt_theta_sea_m	= 1.0/PULLEY_SEA_RATIO*read_vel_innfos(&motor, NODE_MOTOR); 
+		theta_sea_m		= 1.0/PULLEY_SEA_RATIO*read_pos_innfos(&motor, NODE_MOTOR) - theta_sea_m_o; 
+		dt_theta_sea_m	= 1.0/PULLEY_SEA_RATIO*read_vel_innfos(&motor, NODE_MOTOR);  
 		// tf_discr_io_ord1(&dt_theta_sea_m, B_TDEMFC_diff, A_TDEMFC_diff, theta_sea_m, &theta_sea_m_prev, &dt_theta_sea_m_prev); 
-               l        = sqrt(r1*r1 + r2*r2 - 2*r1*r2*(cos(theta_sea_m)));
+               l        = sqrt(r1*r1 + r2*r2 - 2*r1*r2*(cos(theta_sea_m)));  
 		// torque_sea      = 12*k_spring*r1*r2*(1-(double)l0/l)*sin(theta_sea_m); 
         torque_sea      =  tau_est_SEA_model(PRE_EXTENSION_LEGENTH, OFFSET_ANGLE, theta_sea_m);  // little different from mine result above
 
-		curr_m		= motor.read_cur_setpoint(NODE_MOTOR);  
+		curr_m		= motor.read_cur_setpoint(NODE_MOTOR);   
 
 		///////////////////////////////////////////////////////////////////////////
 		// Safety conditions:
@@ -1288,7 +1288,7 @@ test_ctrl_SEA(void* dt_ns_ref) {
 				curr_ref = tau_total_in / trq_coeff_actual;
 			}
 		
-		if (run_on > 0) 
+		if (run_on > 0)  
 			motor.set_cur_setpoint(NODE_MOTOR, curr_ref); 
 		else 
 			motor.set_cur_setpoint(NODE_MOTOR, 0); 

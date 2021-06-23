@@ -24,23 +24,76 @@ int main()
     // motor_1.unpack_multi_turn_angle(struct can_frame motor_1.rframe, &multi_turn_position); 
     // motor_1.readcan();  
     // motor_1.read_sensor(*position); 
-    double pos_1 = motor_1.read_sensor(1); 
-    printf(" Motor position: %f\n", pos_1); 
- 
-    // motor_2.read_multi_turn_angle(2);   
-    // motor_2.readcan(); 
+    
+    ////////////////////////////////////////////////////////
+    // Load path from txt file
+    ////////////////////////////////////////////////////////
+    int Num_waypoints; 
+    double d_t = 0.001; 
 
-    // can_test.pack_torque_cmd(1, 0); 
-    // can_test.pack_position_2_cmd(1, -36000, 360); 
-    // can_test.read_PID(1); 
+    double theta_1_list[Num_waypoints]; 
+    double theta_2_list[Num_waypoints]; 
 
-    // can_test.read_status_2_data(1); 
-    // can_test.readcan(); 
+    ////////////////////////////////////////////////////////
+    // Impedance Parameters
+    ////////////////////////////////////////////////////////
+	double K_p = 20; 
+	double K_d = 0.1; 
+	double K_i = 100; 
 
-    // can_test.write_acceleration2ram(1, 10);  
-    // can_test.read_acceleration(1); 
-    // std::cout<< "after !!!"<<std::endl;  
+    double theta_1_initial = motor_1.read_sensor(1); 
+    printf(" Motor position 1: %f\n", theta_1_initial); 
 
-    // // can_test.read_single_turn_angle(1);  
-    // can_test.readcan();
+    double theta_2_initial = motor_2.read_sensor(2); 
+    printf(" Motor position 2: %f\n", theta_2_initial); 
+    
+    double theta_1_t = 0.0; 
+    double theta_2_t = 0.0; 
+
+    double d_theta_1_t = 0.0; 
+    double d_theta_2_t = 0.0; 
+
+    double d_theta_1_e = 0.0; 
+    double d_theta_2_e = 0.0; 
+
+    double torque_1 = 0.0; 
+    double torque_2 = 0.0; 
+
+    double torque_1_t = 0.0; 
+    double torque_2_t = 0.0; 
+
+    for(int index=0;index<Num_waypoints;index=index+1)
+    {
+        double theta_1_e = theta_1_list[index]; 
+        double theta_2_e = theta_2_list[index]; 
+
+        if(index==0) 
+        {
+            d_theta_1_e = 0.0; 
+            d_theta_2_e = 0.0; 
+        }
+        else
+        {
+            d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t; 
+            d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t; 
+        }
+        
+        theta_1_t = motor_1.read_sensor(1) - theta_1_initial; 
+        theta_2_t = motor_2.read_sensor(2) - theta_2_initial; 
+
+        double d_theta_1_t = motor_1.read_sensor(1) - theta_1_initial; 
+        double d_theta_2_t = motor_2.read_sensor(2) - theta_2_initial; 
+
+        torque_1 = -1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t); 
+        torque_2 = -1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t); 
+
+        double pos_1 = motor_1.set_torque(1, torque_1, &d_theta_1_t, &torque_1_t); 
+        double pos_1 = motor_2.set_torque(2, torque_2, &d_theta_2_t, &torque_2_t); 
+
+        ////////////////////////////////////////////////////////
+        // Save Data
+        ////////////////////////////////////////////////////////
+        
+    }
+
 }

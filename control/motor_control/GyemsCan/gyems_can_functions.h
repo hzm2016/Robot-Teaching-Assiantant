@@ -35,7 +35,7 @@ public:
     int readcan(); 
 
     double read_sensor(int nodeID); 
-    double set_torque(int nodeID, int16_t iqControl, double* speed, double* torque);  
+    double set_torque(int nodeID, int16_t iqControl, double* speed, double* torque); 
 
     void pack_torque_cmd(int nodeID, int16_t iqControl); 
     void pack_speed_cmd(int nodeID, int32_t speed); 
