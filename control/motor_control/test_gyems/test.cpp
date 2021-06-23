@@ -15,11 +15,15 @@ int main()
 
     std::cout << "Enable motor!!!" << std::endl; 
 
-    motor_1.read_multi_turn_angle(1);   
-    motor_1.readcan();  
+    // motor_1.read_multi_turn_angle(1);  
+    // motor_1.unpack_multi_turn_angle(struct can_frame motor_1.rframe, &multi_turn_position); 
+    // motor_1.readcan();  
+    // motor_1.read_sensor(*position);
+    double pos_1 = motor_1.read_sensor(1); 
+    printf(" Motor position: %f\n", pos_1); 
  
-    motor_2.read_multi_turn_angle(2);   
-    motor_2.readcan(); 
+    // motor_2.read_multi_turn_angle(2);   
+    // motor_2.readcan(); 
 
     // can_test.pack_torque_cmd(1, 0); 
     // can_test.pack_position_2_cmd(1, -36000, 360); 

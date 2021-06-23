@@ -47,7 +47,7 @@ int Gcan::readcan()
 
         case 0x9D:
             if(!(rframe.data[6]==0 && rframe.data[7]==0))
-                status_3_reply(&rframe,&phase_ai,&phase_bi,&phase_ci);
+                status_3_reply(&rframe,&phase_ai,&phase_bi,&phase_ci); 
                 break;
         case 0x94:
             // if(!(rframe.data[6]==0 && rframe.data[7]==0))
@@ -56,6 +56,7 @@ int Gcan::readcan()
         case 0x92:
             // if(!(rframe.data[1]==0 && rframe.data[2]==0))
             unpack_multi_turn_angle(&rframe,&multi_turn_position); 
+            printf(" Motor position: %f\n", double(multi_turn_position * 3.14/180/600)); 
             break;
         case 0x90:
             // if(!(rframe.data[2]==0 && rframe.data[3]==0))
@@ -71,6 +72,26 @@ int Gcan::readcan()
     }
     return 0;
 }
+
+
+double Gcan::read_sensor(int nodeID)
+{   
+    read_multi_turn_angle(nodeID); 
+
+    int i=0;
+    while (!channel_name.available()){
+        if (i++>10000000){
+            printf( "No CAN messages.\n");
+        }
+    }
+
+    //printf( "CAN messages are available to read.\n");
+    channel_name.read(rframe); 
+    
+    unpack_multi_turn_angle(&rframe, &multi_turn_position); 
+    return double(multi_turn_position * 3.14/180/600); 
+}
+
 
 void Gcan::pack_torque_cmd(int nodeID, int16_t iqControl){
      //range :-2000~2000, corresponding to the actual torque current range -32A~32A
@@ -211,7 +232,7 @@ void Gcan::read_status_1_error(int nodeID){
     channel_name.write(msg);
 }
 
-void Gcan::status_1_reply(struct can_frame* msg, uint8_t* temp, int16_t* pvoltage,uint8_t* perror_state){
+void Gcan::status_1_reply(struct can_frame* msg, uint8_t* temp, int16_t* pvoltage, uint8_t* perror_state){
     //NOTE: error flag cannot be cleared when the motor status does not return to normal
     *temp = msg->data[1];
     *pvoltage = (msg->data[4]<<8)|msg->data[3];
@@ -435,9 +456,9 @@ void Gcan::unpack_single_turn_angle(struct can_frame* msg, uint16_t* pangle){
 void Gcan::read_multi_turn_angle(int nodeID){
      
     /// pack ints into the can buffer ///
-     msg.can_id  = 0x140+nodeID;
-	 msg.can_dlc = 8;
-	 msg.data[0] = 0x92;                                            
+     msg.can_id  = 0x140+nodeID; 
+	 msg.can_dlc = 8; 
+	 msg.data[0] = 0x92;                                             
      msg.data[1] = 0;                
      msg.data[2] = 0;                  
      msg.data[3] = 0;  
@@ -446,16 +467,16 @@ void Gcan::read_multi_turn_angle(int nodeID){
      msg.data[6] = 0;  
      msg.data[7] = 0;    
      
-    channel_name.write(msg);
+    channel_name.write(msg); 
 }
 
 // return the inner angle value with reduction ratio
 void Gcan::unpack_multi_turn_angle(struct can_frame* msg, int64_t* mangle){
-    
+
     *mangle = (msg->data[7]<<48)|(msg->data[6]<<40)|(msg->data[5]<<32)|(msg->data[4]<<24)|(msg->data[3]<<16)|(msg->data[2]<<8)|(msg->data[1]);
     // double inner_actual_multi_turn_angle = double(*mangle) / 9216000.0 * 360.0;
-    printf("data_0 : %d \n, %d \n, %d \n, %d \n, %d \n, %d \n, %d \n", msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]);
-    printf("Original data : %d \n", (int)*mangle); 
+    // printf("data_0 : %d \n, %d \n, %d \n, %d \n, %d \n, %d \n, %d \n", msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]);
+    // printf("Original data : %d \n", (int)*mangle); 
     // printf("Original data : %d \n", double(*mangle)); 
     #ifdef DEBUG 
     // printf("Multi turn pos: %f \n", inner_actual_multi_turn_angle);
@@ -481,7 +502,7 @@ void Gcan::set_pos2zero(int nodeID){
 }
 
 
-void Gcan::write_encoder_offset(int nodeID,uint16_t offset){
+void Gcan::write_encoder_offset(int nodeID, uint16_t offset){
      
     /// pack ints into the can buffer ///
      msg.can_id  = 0x140+nodeID;

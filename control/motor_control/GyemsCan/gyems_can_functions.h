@@ -34,6 +34,8 @@ public:
     int begin();
     int readcan();
 
+    double read_sensor(int nodeID); 
+
     void pack_torque_cmd(int nodeID, int16_t iqControl); 
     void pack_speed_cmd(int nodeID, int32_t speed);
     void unpack_speed_torque_reply(struct can_frame* msg, uint8_t* temp, int16_t* ptorque,int16_t* pspeed,uint16_t* pposition);
