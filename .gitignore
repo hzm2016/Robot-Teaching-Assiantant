@@ -135,3 +135,11 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+#
+control/vision_capture/.idea
+control/vision_capture/camera streaming
+control/vision_capture/camera control
+control/vision_capture/spatial mapping
+control/vision_capture/plane detection
+control/vision_capture/tutorials
