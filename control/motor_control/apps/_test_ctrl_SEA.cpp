@@ -26,15 +26,15 @@ test_ctrl_SEA(void* dt_ns_ref) {
 	struct period_info pinfo;
 	long* dt_ns = (long*)dt_ns_ref;
 
-	////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////// 
+	//////////////////////////////////////////////////////////////////////// 
 	// FILE HANDLING FUNCTIONS:
-	////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////// 
+	//////////////////////////////////////////////////////////////////////// 
 
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////// 
 	// Create data files ID string:
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////// 
 
 	char		data_fname_basic[LEN_NAME_MAX];
 	char		time_str[LEN_NAME_MAX];	 
@@ -113,7 +113,7 @@ test_ctrl_SEA(void* dt_ns_ref) {
 	// Create asynchronous DATA logger:
 	///////////////////////////////////////////////////////////////////////////
 
-	char data_file_path[2*LEN_NAME_MAX];
+	char data_file_path[2*LEN_NAME_MAX]; 
 	  
 	file_path_create(data_file_path, data_file_dir, data_fname_basic, EXT_DAT); 
 	// printf("\ndata_file_path = [%s]\n\n", data_file_path);
@@ -160,20 +160,20 @@ test_ctrl_SEA(void* dt_ns_ref) {
 	const double DELAY_SEC = 1.0;
 
 	printf("\n");
-	printf("[%s] Enabling motor... \n\n", __FILE__);
+	printf("[%s] Enabling motor... \n\n", __FILE__); 
 
-    motor.enable_motor(NODE_MOTOR);
+    motor.enable_motor(NODE_MOTOR); 
 	sleep(DELAY_SEC); 
 	
-	printf("[%s] changing motor mode... \n\n", __FILE__);
+	printf("[%s] changing motor mode... \n\n", __FILE__); 
 
 	// Initialize INNFOS mode (CRITICAL):
 	// motor.change_mode(NODE_MOTOR, SPEED_MODE); // see SPEED_MODE in innfos_can_functions.hpp
-	motor.change_mode(NODE_MOTOR, CURRENT_MODE);
+	motor.change_mode(NODE_MOTOR, CURRENT_MODE); 
 
-	sleep(DELAY_SEC); 
+	sleep(DELAY_SEC);  
 	
-	printf("[%s] MOTOR READY... \n\n", __FILE__);
+	printf("[%s] MOTOR READY... \n\n", __FILE__); 
 
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
@@ -187,20 +187,20 @@ test_ctrl_SEA(void* dt_ns_ref) {
 	// Time variables:  
 	///////////////////////////////////////////////////////////////////////////
 
-	double t_s          = 0.0;
+	double t_s          = 0.0; 
 
-	double dt_ms        = 1.0 * (*dt_ns)/NS_PER_MS;
-	double dt_actual_ms = 0.0;
+	double dt_ms        = 1.0 * (*dt_ns)/NS_PER_MS; 
+	double dt_actual_ms = 0.0; 
 
-	double dt_s         = dt_ms/MS_PER_S;
+	double dt_s         = dt_ms/MS_PER_S; 
 
-	static struct timespec tic, toc;
+	static struct timespec tic, toc; 
 
 	///////////////////////////////////////////////////////////////////////////
 	// Safety limits:
 	///////////////////////////////////////////////////////////////////////////
 
-	const double THETA_RAD_MAX = 1.0;
+	const double THETA_RAD_MAX = 1.0; 
 
 	int FAULT_ON = 0;
 

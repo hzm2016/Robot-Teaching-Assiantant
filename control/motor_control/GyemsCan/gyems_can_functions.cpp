@@ -45,8 +45,8 @@ int Gcan::readcan()
                 unpack_speed_torque_reply(&rframe,&temp,&torque,&speed,&position);
             break;
 
-        case 0x9D:
-            if(!(rframe.data[6]==0 && rframe.data[7]==0))
+        case 0x9D: 
+            if(!(rframe.data[6]==0 && rframe.data[7]==0)) 
                 status_3_reply(&rframe,&phase_ai,&phase_bi,&phase_ci); 
                 break;
         case 0x94:
@@ -70,7 +70,7 @@ int Gcan::readcan()
             printf(" Motor %x: unknown ID: %x\n",rframe.can_id,rframe.data[0]);
 
     }
-    return 0;
+    return 0; 
 }
 
 
@@ -90,6 +90,28 @@ double Gcan::read_sensor(int nodeID)
     
     unpack_multi_turn_angle(&rframe, &multi_turn_position); 
     return double(multi_turn_position * 3.14/180/600); 
+}
+
+double Gcan::set_torque(int nodeID, int16_t iqControl, double* speed_back, double* torque_back)
+{   
+    pack_torque_cmd(nodeID, iqControl);  
+
+    int i=0; 
+    while (!channel_name.available()){
+        if (i++>10000000){
+            printf( "No CAN messages.\n");  
+        }
+    }
+
+    //printf( "CAN messages are available to read.\n"); 
+    channel_name.read(rframe); 
+    
+    unpack_speed_torque_reply(&rframe,&temp,&torque,&speed,&position); 
+
+    *speed_back = speed * 3.14/180/6; 
+    *torque_back = torque * 17.5/800; 
+
+    return 0.0; 
 }
 
 
@@ -133,10 +155,10 @@ void Gcan::pack_speed_cmd(int nodeID, int32_t speed){
     }
 
 void Gcan::unpack_speed_torque_reply(struct can_frame* msg, uint8_t* temp, int16_t* ptorque,int16_t* pspeed,uint16_t* pposition){
-//1. Motor temperature（ 1℃/LSB）
-//2. Motor torque current(Iq)（Range:-2048~2048,real torque current range:-33A~33A）
-//3. Motor speed（1dps/LSB）
-//4. Encoder position value（14bit encoder value range 0~16383）
+    //1. Motor temperature（ 1℃/LSB）
+    //2. Motor torque current(Iq)（Range:-2048~2048,real torque current range:-33A~33A）
+    //3. Motor speed（1dps/LSB）
+    //4. Encoder position value（14bit encoder value range 0~16383）
     *temp = msg->data[1];
 
     *ptorque = (msg->data[3]<<8)|msg->data[2];

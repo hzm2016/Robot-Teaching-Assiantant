@@ -11,11 +11,10 @@
 //		
 //
 ///////////////////////////////////////////////////////////////////////////
-
 #include "_test_scripts.hpp" 
 #include "_macros_innfos.h" 
 
-extern int run_on;
+extern int run_on; 
 
 void*
 test_ctrl_imped(void* dt_ns_ref) {
@@ -43,8 +42,8 @@ test_ctrl_imped(void* dt_ns_ref) {
 	strftime(time_str, LEN_NAME_MAX, "%y%m%d_%H%M%S", localtime(&curr_time));	
 
 	// File name:
-	strcpy(data_fname_basic, DATA_FNAME_HEAD);
-	strcat(data_fname_basic, time_str);
+	strcpy(data_fname_basic, DATA_FNAME_HEAD); 
+	strcat(data_fname_basic, time_str); 
 
 	///////////////////////////////////////////////////////////////////////////
 	// Create data file folder:
@@ -170,7 +169,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 
 	sleep(DELAY_SEC); 
 	
-	printf("[%s] MOTOR READY... \n\n", __FILE__);
+	printf("[%s] MOTOR READY... \n\n", __FILE__); 
 
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
@@ -223,7 +222,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 	if (TEST_TRAJ_TRACK_ON)
 		while (ampl_theta_rad_ref_fl < 0) {
 			printf("\n");
-			printf("Enter angle amplitude (rad): "); 
+			printf("Enter angle amplitude (rad): ");  
 			scanf("%f", &ampl_theta_rad_ref_fl);  
 		}
 	else
@@ -232,9 +231,9 @@ test_ctrl_imped(void* dt_ns_ref) {
 	AMPL_THETA_RAD_REF = (double)ampl_theta_rad_ref_fl; 
 
 	// Display section:
-	printf("\n");
-	printf("AMPL_THETA_RAD_REF = [%3.3lf]\n", AMPL_THETA_RAD_REF); 
-	printf("\n");
+	printf("\n");  
+	printf("AMPL_THETA_RAD_REF = [%3.3lf]\n", AMPL_THETA_RAD_REF);  
+	printf("\n");  
 
 	///////////////////////////////////////////////////////////////////////////
 	// Motor model:
@@ -424,9 +423,9 @@ test_ctrl_imped(void* dt_ns_ref) {
 	coeffs_tf_cont_inv_intadmitt(&K_inv_dob, &z_inv_dob_1, &z_inv_dob_2, &p_inv_dob_1, &p_inv_dob_2, 
 		K_io, p_io, w_real_inv_dob);
 
-	// DOB transfer function coefficients (discrete time):
-	double B_inv_dob[ORD_DOB + 1] = {0, 0, 0};
-	double A_inv_dob[ORD_DOB + 1] = {0, 0, 0};
+	// DOB transfer function coefficients (discrete time): 
+	double B_inv_dob[ORD_DOB + 1] = {0, 0, 0}; 
+	double A_inv_dob[ORD_DOB + 1] = {0, 0, 0}; 
 
 	coeffs_tf_discr_2pole_2zero_tustin(B_inv_dob, A_inv_dob, K_inv_dob, z_inv_dob_1, z_inv_dob_2, p_inv_dob_1, p_inv_dob_2, dt_s);
 
@@ -473,10 +472,10 @@ test_ctrl_imped(void* dt_ns_ref) {
 	float  frac_fb_fl = -1.0;
 
 	while (frac_fb_fl < 0) {
-		printf("Enter feedback fraction (0..1): "); 
-		scanf("%f", &frac_fb_fl);  
+		printf("Enter feedback fraction (0..1): ");   
+		scanf("%f", &frac_fb_fl);   
 	}
-	frac_fb = (double)frac_fb_fl;
+	frac_fb = (double)frac_fb_fl;  
 
 	printf("\n");
 	printf("frac_fb = [%3.3lf]\n",   frac_fb);
@@ -541,7 +540,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 	double theta_m_o = read_pos_innfos(&motor, NODE_MOTOR);
 	
 	// Launch task:
-	periodic_task_init(&pinfo, *dt_ns); 
+	periodic_task_init(&pinfo, *dt_ns);  
 
     while (run_on) {
 
@@ -593,7 +592,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 
 		inv_dob_tf_discr_io(&tau_dist_in, tau_total_in_cmd, theta_m, B_inv_dob, A_inv_dob, ORD_DOB);
 
-		tau_dist_out = GEAR_RATIO*tau_dist_in;
+		tau_dist_out = GEAR_RATIO*tau_dist_in;  
 
 		/*
 		printf("tau_dist_in = [%3.6lf]\n", tau_dist_in);
@@ -615,12 +614,12 @@ test_ctrl_imped(void* dt_ns_ref) {
 			tf_discr_io_help(&theta_ref, B_intY_des, A_intY_des, tau_dist_out, tau_dist_out_arr, theta_ref_arr, ORD_INTY_DES);
 		}
 		else {
-			if (t_s >= t_step_s) {
+			if (t_s >= t_step_s) { 
 				// theta_ref = AMPL_THETA_RAD_REF;	
-				theta_ref = AMPL_THETA_RAD_REF*(1.0 - exp( -N_T*(t_s - t_step_s)/T_EXP_R) ) * sin(omega_ref*(t_s - t_step_s));
+				theta_ref = AMPL_THETA_RAD_REF*(1.0 - exp( -N_T*(t_s - t_step_s)/T_EXP_R) ) * sin(omega_ref*(t_s - t_step_s)); 
 			}
 			else
-				theta_ref = 0;
+				theta_ref = 0; 
 		}
 
 		///////////////////////////////////////////////////////////////////////////

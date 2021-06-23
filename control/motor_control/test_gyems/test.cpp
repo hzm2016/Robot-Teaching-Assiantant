@@ -1,5 +1,10 @@
 #include "gyems_can_functions.h" 
 using namespace std; 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
 int main()
 {
     std::cout << "Initial Can0 and Can1 !!!" << std::endl;  
@@ -18,7 +23,7 @@ int main()
     // motor_1.read_multi_turn_angle(1);  
     // motor_1.unpack_multi_turn_angle(struct can_frame motor_1.rframe, &multi_turn_position); 
     // motor_1.readcan();  
-    // motor_1.read_sensor(*position);
+    // motor_1.read_sensor(*position); 
     double pos_1 = motor_1.read_sensor(1); 
     printf(" Motor position: %f\n", pos_1); 
  
