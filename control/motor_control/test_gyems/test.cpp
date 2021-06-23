@@ -2,7 +2,7 @@
 using namespace std; 
 int main()
 {
-    std::cout << "Initial can new" << std::endl;  
+    std::cout << "Initial Can0 and Can1 !!!" << std::endl;  
     CANDevice can0((char *) "can0");  
     can0.begin(); 
     CANDevice can1((char *) "can1");   
@@ -13,8 +13,7 @@ int main()
     motor_1.begin(); 
     motor_2.begin(); 
 
-    std::cout << "enable motor!" << std::endl; 
-    std::cout << "begin finished new:::" << std::endl;  
+    std::cout << "Enable motor!!!" << std::endl; 
 
     motor_1.read_multi_turn_angle(1);   
     motor_1.readcan();  
