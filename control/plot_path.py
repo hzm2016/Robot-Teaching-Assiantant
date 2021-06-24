@@ -16,10 +16,10 @@ linewidth = 5
 plt.rcParams['font.family'] = 'Times New Roman'
 plt.rcParams['font.size'] = FONT_SIZE
 
-root_path = './motor_control/data/'
+root_path = './motor_control/bin/'
 
-angle_list_1 = np.loadtxt(root_path + 'angle_list_1.txt')
-angle_list_2 = np.loadtxt(root_path + 'angle_list_2.txt')
+angle_list_1 = np.loadtxt(root_path + 'angle_1_list.txt')
+angle_list_2 = np.loadtxt(root_path + 'angle_2_list.txt')
 
 torque_list_1 = np.loadtxt(root_path + 'torque_list_1.txt')
 torque_list_2 = np.loadtxt(root_path + 'torque_list_2.txt')

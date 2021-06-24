@@ -88,16 +88,16 @@ int main()
     // Define file to store data
     ////////////////////////////////////////////////////////
 
-    string output_torque_1 = "torque_list_1.txt"; 
+    string output_torque_1 = "../data/torque_list_1.txt"; 
     ofstream OutFileTorque1(output_torque_1); 
 
-    string output_torque_2 = "torque_list_2.txt"; 
+    string output_torque_2 = "../data/torque_list_2.txt"; 
     ofstream OutFileTorque2(output_torque_2); 
 
-    string output_angle_1 = "angle_1_list.txt"; 
+    string output_angle_1 = "../data/angle_list_1.txt"; 
     ofstream OutFileAngle1(output_angle_1); 
 
-    string output_angle_2 = "angle_2_list.txt"; 
+    string output_angle_2 = "../data/angle_list_2.txt"; 
     ofstream OutFileAngle2(output_angle_2); 
 
     ////////////////////////////////////////////////////////
@@ -153,14 +153,17 @@ int main()
         printf(" theta_1_t: %f\n", theta_1_t); 
         printf(" theta_2_t: %f\n", theta_2_t); 
 
-        OutFileAngle1 << theta_1_t << "\n"; 
-        OutFileAngle2 << theta_2_t << "\n"; 
+        OutFileAngle1 << theta_1_t << "\n";  
+        OutFileAngle2 << theta_2_t << "\n";  
 
         // torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound); 
         // torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound); 
 
-        pos_1 = motor_1.set_torque(1, 0, &d_theta_1_t, &torque_1_t); 
-        pos_2 = motor_2.set_torque(2, 0, &d_theta_2_t, &torque_2_t); 
+        pos_1 = motor_1.set_torque(1, 0, &d_theta_1_t, &torque_1_t);  
+        pos_2 = motor_2.set_torque(2, 0, &d_theta_2_t, &torque_2_t);  
+
+        OutFileTorque1 << torque_1_t << "\n";  
+        OutFileTorque2 << torque_2_t << "\n";  
 
         printf("d_theta_1_t: %f\n", d_theta_1_t); 
         printf("d_theta_2_t: %f\n", d_theta_2_t); 
