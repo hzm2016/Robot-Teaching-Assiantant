@@ -88,8 +88,11 @@ int main()
     // Define file to store data
     ////////////////////////////////////////////////////////
 
-    string output_torque = "torque_list.txt"; 
-    ofstream OutFileTorque(output_torque); 
+    string output_torque_1 = "torque_list_1.txt"; 
+    ofstream OutFileTorque1(output_torque_1); 
+
+    string output_torque_2 = "torque_list_2.txt"; 
+    ofstream OutFileTorque2(output_torque_2); 
 
     string output_angle_1 = "angle_1_list.txt"; 
     ofstream OutFileAngle1(output_angle_1); 
@@ -159,19 +162,25 @@ int main()
         // d_theta_1_t = motor_1.read_sensor(1) - theta_1_initial; 
         // d_theta_2_t = motor_2.read_sensor(2) - theta_2_initial; 
 
+        // set torque control command 
         torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound); 
         torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound); 
 
-        // pos_1 = motor_1.set_torque(1, torque_1, &d_theta_1_t, &torque_1_t); 
-        // pos_2 = motor_2.set_torque(2, torque_2, &d_theta_2_t, &torque_2_t); 
+        pos_1 = motor_1.set_torque(1, torque_1, &d_theta_1_t, &torque_1_t); 
+        pos_2 = motor_2.set_torque(2, torque_2, &d_theta_2_t, &torque_2_t); 
 
         ////////////////////////////////////////////////////////
         // Save Data
         ////////////////////////////////////////////////////////
+        OutFileTorque1 << torque_1_t << "\n"; 
+        OutFileTorque2 << torque_2_t << "\n"; 
 
+        OutFileAngle1 << theta_1_t << "\n"; 
+        OutFileAngle2 << theta_2_t << "\n"; 
     }
 
-    OutFileTorque.close(); 
+    OutFileTorque1.close(); 
+    OutFileTorque2.close(); 
     OutFileAngle1.close(); 
     OutFileAngle2.close(); 
 }
