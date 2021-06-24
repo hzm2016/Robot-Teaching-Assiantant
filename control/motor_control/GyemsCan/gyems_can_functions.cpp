@@ -94,7 +94,7 @@ double Gcan::read_sensor(int nodeID)
 
 double Gcan::set_torque(int nodeID, int16_t iqControl, double* speed_back, double* torque_back)
 {   
-    pack_torque_cmd(nodeID, iqControl);  
+    pack_torque_cmd(nodeID, iqControl); 
 
     int i=0; 
     while (!channel_name.available()){
