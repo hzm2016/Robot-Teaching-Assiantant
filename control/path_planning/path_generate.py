@@ -81,7 +81,7 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
         else:
             angle_1 = gamma - math.acos(cos_belta)
 
-        angle_1_list_e.append(angle_1)
+        angle_1_list_e.append(np.round(angle_1, 4))
 
         cos_alpha = (L1**2 - L + L2**2) / (2 * L1 * L2)
 
@@ -92,7 +92,7 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
         else:
             angle_2 = np.pi - math.acos(cos_alpha)
 
-        angle_2_list_e.append(angle_2)
+        angle_2_list_e.append(np.round(angle_2, 4))
 
     max_angle_1 = np.max(angle_1_list_e)
     max_angle_2 = np.max(angle_2_list_e)
@@ -134,7 +134,14 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
     plt.legend()
 
     plt.show()
-
+    
+    # np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) +'_angle_1.txt', np.round(np.array(angle_1_list_e), 4))
+    # np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) + '_angle_2.txt', np.round(np.array(angle_2_list_e), 4))
+    
+    np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) + '_angle_list.txt',
+               np.hstack([np.array(angle_1_list_e).reshape(-1, 1), np.array(angle_2_list_e).reshape(-1, 1)]), delimiter=",")
+    print("angle 1 list :::", angle_1_list_e)
+    print("angle 2 list :::", angle_2_list_e)
     return angle_1_list_e, angle_2_list_e
 
 
