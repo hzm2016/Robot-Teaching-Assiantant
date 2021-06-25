@@ -12,7 +12,7 @@ COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple'
 """ ================================================================================= """
 
 FONT_SIZE = 14
-linewidth = 5
+linewidth = 4
 plt.rcParams['font.family'] = 'Times New Roman'
 plt.rcParams['font.size'] = FONT_SIZE
 
@@ -20,6 +20,7 @@ root_path = './motor_control/bin/data/'
 angle_list = np.loadtxt(root_path + 'angle_list.txt', skiprows=1)
 torque_list = np.loadtxt(root_path + 'torque_list.txt', skiprows=1)
 angle_vel_list = np.loadtxt(root_path + 'angle_vel_list.txt', skiprows=1)
+angle_list_e = np.loadtxt('./motor_control/bin/2_font_3_angle_list.txt', delimiter=',', skiprows=1)
 
 angle_list_1 = angle_list[:, 0]
 angle_list_2 = angle_list[:, 1]
@@ -29,6 +30,9 @@ torque_list_2 = torque_list[:, 1]
 
 angle_vel_list_1 = angle_vel_list[:, 0]
 angle_vel_list_2 = angle_vel_list[:, 1]
+
+angle_list_1_e = angle_list_e[:, 0]
+angle_list_2_e = angle_list_e[:, 1]
 
 fig = plt.figure(figsize=(20, 8))
 plt.subplot(2, 4, 1)
@@ -75,6 +79,20 @@ plt.legend()
 
 plt.subplot(2, 4, 6)
 plt.plot(angle_vel_list_2, linewidth=linewidth)
+
+plt.xlabel('time($t$)')
+plt.ylabel('$\tau_2$(Nm)')
+plt.legend()
+
+plt.subplot(2, 4, 7)
+plt.plot(angle_list_1_e, linewidth=linewidth)
+
+plt.xlabel('time($t$)')
+plt.ylabel('$\tau_1$(Nm)')
+plt.legend()
+
+plt.subplot(2, 4, 8)
+plt.plot(angle_list_2_e, linewidth=linewidth)
 
 plt.xlabel('time($t$)')
 plt.ylabel('$\tau_2$(Nm)')

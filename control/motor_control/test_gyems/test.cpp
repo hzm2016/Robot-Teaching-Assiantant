@@ -48,18 +48,18 @@ int main()
     // Initial hardware ::: can device
     ////////////////////////////////////////////////////////
 
-    // std::cout << "Initial Can0 and Can1 !!!" << std::endl;  
-    // CANDevice can0((char *) "can0");  
-    // can0.begin(); 
-    // CANDevice can1((char *) "can1");  
-    // can1.begin(); 
+    std::cout << "Initial Can0 and Can1 !!!" << std::endl;  
+    CANDevice can0((char *) "can0");  
+    can0.begin(); 
+    CANDevice can1((char *) "can1");  
+    can1.begin(); 
 
-    // Gcan motor_1(can1); 
-    // Gcan motor_2(can0);   
-    // motor_1.begin(); 
-    // motor_2.begin(); 
+    Gcan motor_1(can1); 
+    Gcan motor_2(can0);   
+    motor_1.begin(); 
+    motor_2.begin(); 
 
-    // std::cout << "Enable motors !!!" << std::endl; 
+    std::cout << "Enable Motors Done!!!" << std::endl; 
     
     ////////////////////////////////////////////////////////
     // Load path from txt file
@@ -82,9 +82,9 @@ int main()
         // cout << s << endl; 
         split(s, angle_list, ","); 
         theta_1_list[index_point] = atof(angle_list[0].c_str()); 
-        printf("theta 1: %f\n", theta_1_list[index_point]); 
+        // printf("theta 1: %f\n", theta_1_list[index_point]); 
         theta_2_list[index_point] = atof(angle_list[1].c_str()); 
-        printf("theta 2: %f\n", theta_2_list[index_point]); 
+        // printf("theta 2: %f\n", theta_2_list[index_point]); 
 
         index_point += 1; 
     }
@@ -129,22 +129,24 @@ int main()
     // double theta_2_initial = motor_2.read_sensor(1); 
     // printf(" Motor 2 initial position: %f\n", theta_2_initial); 
 
-    double theta_1_initial = -0.315948; 
-    double theta_2_initial = 0.405205; 
+    double theta_1_initial = -0.294288; 
+    double theta_2_initial = 0.402938; 
 
     ////////////////////////////////////////////////////////
     // Impedance Parameters
     ////////////////////////////////////////////////////////
-	double K_p = 8; 
-	double K_d = 0.1; 
+	double K_p_1 = 16;  
+	double K_d_1 = 0.8; 
+    double K_p_2 = 14;  
+	double K_d_2 = 0.8; 
 	double K_i = 0.0; 
 
-    double torque_lower_bound = -1.0;  
-    double torque_upper_bound = 1.0;  
+    double torque_lower_bound = -2.5;  
+    double torque_upper_bound = 2.5;  
     
     // depends on the relation of torque and current
-    double ctl_ratio_1 = 2000.0/32;  
-    double ctl_ratio_2 = - 2000.0/32;  
+    double ctl_ratio_1 = - 2000.0/32;  
+    double ctl_ratio_2 = 2000.0/32;  
 
     double theta_1_t = 0.0; 
     double theta_2_t = 0.0; 
@@ -171,7 +173,7 @@ int main()
     // One loop control
     ////////////////////////////////////////////////////////
 
-    // while (true) 
+    // while(true) 
     // {
     //     theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
     //     theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
@@ -179,7 +181,7 @@ int main()
     //     printf(" theta_1_t: %f\n", theta_1_t);  
     //     printf(" theta_2_t: %f\n", theta_2_t);  
 
-    //     OutFileAngle << theta_1_t << " " << theta_2_t << "\n";  
+    //     OutFileAngle << theta_1_t << " " << theta_2_t << "\n"; 
 
     //     // torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound);  
     //     // torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound); 
@@ -196,59 +198,71 @@ int main()
     // }
     
 
-    for(int index=0; index<Num_waypoints; index=index+1) 
-    {
-        theta_1_e = theta_1_list[index]; 
-        theta_2_e = theta_2_list[index]; 
-
-        cout << "index" << index << "\n";
-        cout << "theta_1_e" << theta_1_e << "\n";
-        cout << "theta_2_e" << theta_2_e << "\n";
-    }
-
     // for(int index=0; index<Num_waypoints; index=index+1) 
     // {
     //     theta_1_e = theta_1_list[index]; 
     //     theta_2_e = theta_2_list[index]; 
 
-    //     if(index==0) 
-    //     {
-    //         d_theta_1_e = 0.0; 
-    //         d_theta_2_e = 0.0; 
-    //     }
-    //     else 
-    //     {
-    //         d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t; 
-    //         d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t; 
-    //     }
-        
-    //     theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
-    //     theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
-
-    //     // set torque control command 
-    //     torque_1 = clip(- K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-    //     torque_2 = clip(- K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
-
-    //     printf("input_torque_1_t: %f\n", torque_1); 
-    //     printf("input_torque_2_t: %f\n", torque_1); 
-
-    //     pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t); 
-    //     pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t); 
-
-    //     ////////////////////////////////////////////////////////
-    //     // Save Data
-    //     ////////////////////////////////////////////////////////
-
-    //     OutFileAngle << theta_1_t << " " << theta_2_t << "\n";  
-
-    //     OutFileTorque << torque_1_t << " " << torque_2_t << "\n"; 
-
-    //     OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n"; 
+    //     cout << "index" << index << "\n";
+    //     cout << "theta_1_e" << theta_1_e << "\n";
+    //     cout << "theta_2_e" << theta_2_e << "\n";
     // }
+    for(int index=0; index<5; index=index+1) 
+    {
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t); 
+        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t); 
+    }
+
+    for(int index=0; index<Num_waypoints; index=index+1) 
+    {
+        theta_1_e = theta_1_list[index]; 
+        theta_2_e = theta_2_list[index]; 
+
+        if(index==0) 
+        {
+            d_theta_1_e = 0.0; 
+            d_theta_2_e = 0.0; 
+        }
+        else 
+        {
+            d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t; 
+            d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t; 
+        }
+        
+        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
+        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+
+        // set torque control command 
+        torque_1 = clip(- K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(- K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+
+        double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t); 
+        double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t); 
+
+        // printf("input_torque_1_t: %f\n", torque_1); 
+        // printf("input_torque_2_t: %f\n", torque_1); 
+
+        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t); 
+        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t); 
+        // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t); 
+
+        ////////////////////////////////////////////////////////
+        // Save Data
+        ////////////////////////////////////////////////////////
+
+        OutFileAngle << theta_1_t << " " << theta_2_t << "\n";  
+
+        OutFileTorque << torque_1_o << " " << torque_2_o << "\n"; 
+
+        OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n"; 
+    }
 
     OutFileTorque.close(); 
     OutFileAngle.close(); 
     OutFileVel.close(); 
+
+    motor_1.pack_stop_cmd(2); 
+    motor_2.pack_stop_cmd(1);  
 
     return 0; 
 }

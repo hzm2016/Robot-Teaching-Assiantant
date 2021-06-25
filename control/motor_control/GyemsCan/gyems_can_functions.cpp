@@ -165,7 +165,7 @@ void Gcan::unpack_speed_torque_reply(struct can_frame* msg, uint8_t* temp, int16
     *pspeed = (msg->data[5]<<8)|(msg->data[4]);
     *pposition = (msg->data[7]<<8)|msg->data[6];       
     #ifdef DEBUG
-    printf("Temp: %hu toruqe: %d speed: %d pos: %u \n", *temp, *ptorque, *pspeed, *pposition);
+    // printf("Temp: %hu toruqe: %d speed: %d pos: %u \n", *temp, *ptorque, *pspeed, *pposition);
     #endif    
 }
  
