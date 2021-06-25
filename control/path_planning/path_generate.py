@@ -157,5 +157,3 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
     print("angle 2 list :::", len(angle_2_list_e))
     return angle_1_list_e, angle_2_list_e
 
-
-check_path(root_path='data', font_name='third', type=3)
