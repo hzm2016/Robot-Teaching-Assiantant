@@ -14,6 +14,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DFDEBUG -DNDEBUG")
 
 # Link to required libraries:
 find_package(Threads REQUIRED) 
+# find_package(GyemsCan REQUIRED)
 # find_package(spdlog REQUIRED) 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE) # Matrix library
 
@@ -37,5 +38,7 @@ add_subdirectory(test_gyems)
 # add_subdirectory(motor_control)
 add_subdirectory(pybind11)
 
-pybind11_add_module(motor_control src/main.cpp) 
+link_libraries(gyems_can_lib)
+
+pybind11_add_module(motor_control main.cpp) 
 # target_compile_definitions(motor_control PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})

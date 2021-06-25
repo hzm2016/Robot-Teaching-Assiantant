@@ -5,7 +5,7 @@ using namespace std;
 #include <vector>
 #include <stdlib.h>
 #include <pybind11/pybind11.h>
-#include <GyemsCan/gyems_can_functions.h>
+#include "gyems_can_functions.h"
 
 void split(const string& s, vector<string>& tokens, const string& delim=",") 
 {
