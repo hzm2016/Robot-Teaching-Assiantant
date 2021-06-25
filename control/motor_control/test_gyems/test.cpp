@@ -48,16 +48,16 @@ int main()
     // Initial hardware ::: can device
     ////////////////////////////////////////////////////////
 
-    // std::cout << "Initial Can0 and Can1 !!!" << std::endl;  
-    // CANDevice can0((char *) "can0");  
-    // can0.begin(); 
-    // CANDevice can1((char *) "can1");  
-    // can1.begin(); 
+    std::cout << "Initial Can0 and Can1 !!!" << std::endl;  
+    CANDevice can0((char *) "can0");  
+    can0.begin(); 
+    CANDevice can1((char *) "can1");  
+    can1.begin(); 
 
-    // Gcan motor_1(can0); 
-    // Gcan motor_2(can1);   
-    // motor_1.begin(); 
-    // motor_2.begin(); 
+    Gcan motor_1(can1); 
+    Gcan motor_2(can0);   
+    motor_1.begin(); 
+    motor_2.begin(); 
 
     std::cout << "Enable motors !!!" << std::endl; 
     
@@ -83,7 +83,7 @@ int main()
         theta_1_list[Num_waypoints] = atof(angle_list[0].c_str()); 
         printf("theta 1: %f\n", theta_1_list[Num_waypoints]); 
         theta_2_list[Num_waypoints] = atof(angle_list[1].c_str()); 
-        printf("theta 1: %f\n", theta_2_list[Num_waypoints]); 
+        printf("theta 2: %f\n", theta_2_list[Num_waypoints]); 
 
         Num_waypoints += 1; 
     }
@@ -122,21 +122,24 @@ int main()
     ////////////////////////////////////////////////////////
     // Initial Calibration
     ////////////////////////////////////////////////////////
-    // double theta_1_initial = motor_1.read_sensor(1); 
+    // double theta_1_initial = motor_1.read_sensor(2); 
     // printf(" Motor 1 initial position: %f\n", theta_1_initial); 
 
-    // double theta_2_initial = motor_2.read_sensor(2); 
+    // double theta_2_initial = motor_2.read_sensor(1); 
     // printf(" Motor 2 initial position: %f\n", theta_2_initial); 
+
+    double theta_1_initial = -0.315948; 
+    double theta_2_initial = 0.405205; 
 
     ////////////////////////////////////////////////////////
     // Impedance Parameters
     ////////////////////////////////////////////////////////
-	double K_p = 2; 
+	double K_p = 8; 
 	double K_d = 0.1; 
 	double K_i = 0.0; 
 
-    double torque_lower_bound = -1;  
-    double torque_upper_bound = 1;  
+    double torque_lower_bound = -1.0;  
+    double torque_upper_bound = 1.0;  
     
     // depends on the relation of torque and current
     double ctl_ratio_1 = 2000.0/32;  
@@ -167,30 +170,31 @@ int main()
     // One loop control
     ////////////////////////////////////////////////////////
 
-    while (true) 
-    {
-        // theta_1_t = motor_1.read_sensor(1) - theta_1_initial;  
-        // theta_2_t = motor_2.read_sensor(2) - theta_2_initial;  
+    // while (true) 
+    // {
+    //     theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
+    //     theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
 
-        printf(" theta_1_t: %f\n", theta_1_t);  
-        printf(" theta_2_t: %f\n", theta_2_t);  
+    //     printf(" theta_1_t: %f\n", theta_1_t);  
+    //     printf(" theta_2_t: %f\n", theta_2_t);  
 
-        OutFileAngle << theta_1_t << " " << theta_2_t << "\n";  
+    //     OutFileAngle << theta_1_t << " " << theta_2_t << "\n";  
 
-        // torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound);  
-        // torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound); 
+    //     // torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound);  
+    //     // torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound); 
 
-        // pos_1 = motor_1.set_torque(1, 0, &d_theta_1_t, &torque_1_t);  
-        // pos_2 = motor_2.set_torque(2, 0, &d_theta_2_t, &torque_2_t);  
+    //     pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);  
+    //     pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);  
 
-        OutFileTorque << torque_1_t << " " << torque_2_t << "\n"; 
+    //     OutFileTorque << torque_1_t << " " << torque_2_t << "\n"; 
 
-        OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n"; 
+    //     OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n"; 
 
-        printf("d_theta_1_t: %f\n", d_theta_1_t); 
-        printf("d_theta_2_t: %f\n", d_theta_2_t); 
-    }
+    //     printf("d_theta_1_t: %f\n", d_theta_1_t); 
+    //     printf("d_theta_2_t: %f\n", d_theta_2_t); 
+    // }
     
+
     for(int index=0; index<Num_waypoints; index=index+1) 
     {
         theta_1_e = theta_1_list[index]; 
@@ -207,18 +211,18 @@ int main()
             d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t; 
         }
         
-        theta_1_t = motor_1.read_sensor(1) - theta_1_initial; 
-        theta_2_t = motor_2.read_sensor(2) * (-1) + theta_1_t - theta_2_initial; 
-
-        // d_theta_1_t = motor_1.read_sensor(1) - theta_1_initial; 
-        // d_theta_2_t = motor_2.read_sensor(2) - theta_2_initial; 
+        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
+        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
 
         // set torque control command 
-        torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound); 
-        torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound); 
+        torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
-        // pos_1 = motor_1.set_torque(1, torque_1, &d_theta_1_t, &torque_1_t); 
-        // pos_2 = motor_2.set_torque(2, torque_2, &d_theta_2_t, &torque_2_t); 
+        printf("input_torque_1_t: %f\n", torque_1); 
+        printf("input_torque_2_t: %f\n", torque_1); 
+
+        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t); 
+        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t); 
 
         ////////////////////////////////////////////////////////
         // Save Data
