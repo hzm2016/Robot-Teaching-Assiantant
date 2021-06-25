@@ -1,4 +1,5 @@
 #include "gyems_can_functions.h" 
+// #include <pybind11/pybind11.h>
 using namespace std; 
 #include <iostream>
 #include <fstream>
@@ -37,9 +38,8 @@ double clip(double angle, double lower_bound, double upper_bound)
     return clip_angle; 
 }
 
-void record_data()
-{
-    //
+int add(int i, int j) {
+    return i + j;
 }
 
 int main()

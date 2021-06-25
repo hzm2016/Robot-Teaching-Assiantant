@@ -106,9 +106,9 @@ tf_discr_io_help(double* y, double *b, double *a, double x, double *x_arr, doubl
 void
 coeffs_tf_discr_lopass_tustin(double *b, double *a, double K_o, double p_1, double dt) {
 	// K_o: TF gain
-	// p_1: TF pole 
+	// p_1: TF pole
 
-    b[0] = (K_o*dt)/(dt*p_1 + 2.0); 
+    b[0] = (K_o*dt)/(dt*p_1 + 2.0);
     b[1] = (K_o*dt)/(dt*p_1 + 2.0);      // x z^(-1)
  
     a[0] = 1.0;
@@ -177,9 +177,9 @@ coeffs_tf_discr_2pole_1zero_tustin(double *b, double *a, double K_o, double ze_1
 
 void
 coeffs_tf_discr_numord2_denord2_tustin(double *b, double *a, double K_o, double b_1, double b_2, double a_1, double a_2, double dt) {
-	// K_o: gain 
-	// b_1 b_2: numerator coeffs 
-	// a_1 a_2: denominator coeffs 
+	// K_o: gain
+	// b_1 b_2: numerator coeffs
+	// a_1 a_2: denominator coeffs
 
     b[0] = (K_o*(2.0*b_1*dt + b_2*pow(dt,2) + 4.0))/(2.0*a_1*dt + a_2*pow(dt,2) + 4.0);
     b[1] = (K_o*(2.0*b_2*pow(dt,2) - 8.0))/(2.0*a_1*dt + a_2*pow(dt,2) + 4.0);      // x z^(-1)

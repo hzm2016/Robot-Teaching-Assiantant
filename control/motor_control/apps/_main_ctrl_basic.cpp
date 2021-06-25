@@ -129,7 +129,7 @@ main(int argc, char* argv[]) {
 	///////////////////////////////////////////////////////////////////////////
 
 	printf("Calling start_periodic_task()... \n\n");
-  	printf("ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd");
+  printf("ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd");
 
 	start_periodic_thread(fun_h, (void*)(&dt_ns), PRIORITY);
 

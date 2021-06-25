@@ -2,7 +2,7 @@
 // _test_ctrl_imped.cpp
 //
 // Author: Gabriel Aguirre-Ollinger 
-// Documentation start: 06.03.2020 
+// Documentation start: 06.03.2020
 // 
 // Description:		 
 //					 
@@ -11,10 +11,11 @@
 //		
 //
 ///////////////////////////////////////////////////////////////////////////
-#include "_test_scripts.hpp" 
-#include "_macros_innfos.h" 
 
-extern int run_on; 
+#include "_test_scripts.hpp" 
+#include "_macros_innfos.h"
+
+extern int run_on;
 
 void*
 test_ctrl_imped(void* dt_ns_ref) {
@@ -36,14 +37,14 @@ test_ctrl_imped(void* dt_ns_ref) {
 	char		time_str[LEN_NAME_MAX];	 
 		
 	// Time stamp variables:
-	time_t       curr_time; 
+	time_t       curr_time;
 
 	curr_time = time(NULL);
 	strftime(time_str, LEN_NAME_MAX, "%y%m%d_%H%M%S", localtime(&curr_time));	
 
 	// File name:
-	strcpy(data_fname_basic, DATA_FNAME_HEAD); 
-	strcat(data_fname_basic, time_str); 
+	strcpy(data_fname_basic, DATA_FNAME_HEAD);
+	strcat(data_fname_basic, time_str);
 
 	///////////////////////////////////////////////////////////////////////////
 	// Create data file folder:
@@ -59,22 +60,22 @@ test_ctrl_imped(void* dt_ns_ref) {
 	} 
 
 	////////////////////////////////////////////////////////////////////////
-	// Create copy of key master file: 
+	// Create copy of key master file:
 	////////////////////////////////////////////////////////////////////////
 
-	static char	key_file_path_master[2*LEN_NAME_MAX]; 
-	static char	key_file_path_copy[2*LEN_NAME_MAX]; 
+	static char	key_file_path_master[2*LEN_NAME_MAX];
+	static char	key_file_path_copy[2*LEN_NAME_MAX];
 
-	FILE*		key_file_id_master; 
-	FILE*		key_file_id_copy; 
+	FILE*		key_file_id_master;
+	FILE*		key_file_id_copy;
 
 	// Open existing master key file:
 	file_path_create(key_file_path_master, BASE_DIR, KEY_FNAME, EXT_TXT);
-	key_file_id_master = fopen(key_file_path_master, "r"); 
+	key_file_id_master = fopen(key_file_path_master, "r");
 
 	// Create key file copy:
-	file_path_create(key_file_path_copy, data_file_dir, data_fname_basic, EXT_KEY); 
-	key_file_id_copy = fopen(key_file_path_copy, "wb"); 
+	file_path_create(key_file_path_copy, data_file_dir, data_fname_basic, EXT_KEY);
+	key_file_id_copy = fopen(key_file_path_copy, "wb");
 
 	if (key_file_id_master == NULL) {
 		printf("Failed to open [%s]", key_file_path_master);
@@ -82,7 +83,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 	}
 	if (key_file_id_copy == NULL) {
 		printf("Failed to open [%s]", key_file_path_copy);
-		exit(0); 
+		exit(0);
 	}
 
 	// printf("\nkey_file_path_master = [%s]\n\n", key_file_path_master);
@@ -91,11 +92,11 @@ test_ctrl_imped(void* dt_ns_ref) {
 	// Copy text:
 	copy_text_file(key_file_id_master, key_file_id_copy);
 
-	fclose(key_file_id_master);  
-	fclose(key_file_id_copy);   
+	fclose(key_file_id_master);   
+	fclose(key_file_id_copy); 
 
 	///////////////////////////////////////////////////////////////////////////
-	// Create PARAMETER file: 
+	// Create PARAMETER file:
 	///////////////////////////////////////////////////////////////////////////	
 	
 	char param_file_path[2*LEN_NAME_MAX];
@@ -103,13 +104,13 @@ test_ctrl_imped(void* dt_ns_ref) {
 	file_path_create(param_file_path, data_file_dir, data_fname_basic, EXT_PAR); 
 	// printf("\nparam_file_path = [%s]\n\n", param_file_path);
 	
-	FILE* param_file_id = fopen(param_file_path, "wb"); 
+	FILE* param_file_id = fopen(param_file_path, "wb");
 
 	///////////////////////////////////////////////////////////////////////////
-	// Create asynchronous DATA logger: 
+	// Create asynchronous DATA logger:
 	///////////////////////////////////////////////////////////////////////////
 
-	char data_file_path[2*LEN_NAME_MAX]; 
+	char data_file_path[2*LEN_NAME_MAX];
 	  
 	file_path_create(data_file_path, data_file_dir, data_fname_basic, EXT_DAT); 
 	// printf("\ndata_file_path = [%s]\n\n", data_file_path);
@@ -127,26 +128,26 @@ test_ctrl_imped(void* dt_ns_ref) {
 	///////////////////////////////////////////////////////////////////////////
 
 	// ADC channels:
-    const int NUM_ADC_CHAN			= 6; 
-    int32_t ADC_CHAN[NUM_ADC_CHAN]	= {2, 3, 4, 5, 6, 7}; 
+    const int NUM_ADC_CHAN			= 6;
+    int32_t ADC_CHAN[NUM_ADC_CHAN]	= {2, 3, 4, 5, 6, 7};
 
-    double adc_data[NUM_ADC_CHAN]	= {0, 0, 0, 0, 0, 0}; 
+    double adc_data[NUM_ADC_CHAN]	= {0, 0, 0, 0, 0, 0};
 
-	// Initialize hardware: 
+	// Initialize hardware:
 	s526_init();
-    s526_adc_init(ADC_CHAN, NUM_ADC_CHAN); 
+    s526_adc_init(ADC_CHAN, NUM_ADC_CHAN);
 
 	///////////////////////////////////////////////////////////////////////////
 	// Initialize ATI FT_data sensor:
 	///////////////////////////////////////////////////////////////////////////
-
+ 
 	const int N_FT_OUT		= 6; 
-	const int FT_INPUT_ON	= 1;
+	const int FT_INPUT_ON	= 1; 
 
 	float adc_data_fl[N_FT_OUT + 1] = {0, 0, 0, 0, 0, 0, 0};
-	float FT_data[N_FT_OUT]         = {0, 0, 0, 0, 0, 0};
+	float FT_data[N_FT_OUT]         = {0, 0, 0, 0, 0, 0}; 
 
-	init_ft_sensor_ati(CAL_FILE, ADC_CHAN, NUM_ADC_CHAN);
+	init_ft_sensor_ati(CAL_FILE, ADC_CHAN, NUM_ADC_CHAN); 
 
 	///////////////////////////////////////////////////////////////////////////
 	// Initialize motor:
@@ -169,7 +170,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 
 	sleep(DELAY_SEC); 
 	
-	printf("[%s] MOTOR READY... \n\n", __FILE__); 
+	printf("[%s] MOTOR READY... \n\n", __FILE__);
 
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
@@ -188,9 +189,9 @@ test_ctrl_imped(void* dt_ns_ref) {
 	double dt_ms        = 1.0*(*dt_ns)/NS_PER_MS;
 	double dt_actual_ms = 0.0;
 
-	double dt_s         = dt_ms/MS_PER_S; 
+	double dt_s         = dt_ms/MS_PER_S;
 
-	static struct timespec tic, toc; 
+	static struct timespec tic, toc;
 
 	///////////////////////////////////////////////////////////////////////////
 	// Trajectory variables:
@@ -222,18 +223,18 @@ test_ctrl_imped(void* dt_ns_ref) {
 	if (TEST_TRAJ_TRACK_ON)
 		while (ampl_theta_rad_ref_fl < 0) {
 			printf("\n");
-			printf("Enter angle amplitude (rad): ");  
+			printf("Enter angle amplitude (rad): "); 
 			scanf("%f", &ampl_theta_rad_ref_fl);  
 		}
 	else
 		ampl_theta_rad_ref_fl = 0.5;
 
-	AMPL_THETA_RAD_REF = (double)ampl_theta_rad_ref_fl; 
+	AMPL_THETA_RAD_REF = (double)ampl_theta_rad_ref_fl;
 
 	// Display section:
-	printf("\n");  
-	printf("AMPL_THETA_RAD_REF = [%3.3lf]\n", AMPL_THETA_RAD_REF);  
-	printf("\n");  
+	printf("\n");
+	printf("AMPL_THETA_RAD_REF = [%3.3lf]\n", AMPL_THETA_RAD_REF);
+	printf("\n");
 
 	///////////////////////////////////////////////////////////////////////////
 	// Motor model:
@@ -423,9 +424,9 @@ test_ctrl_imped(void* dt_ns_ref) {
 	coeffs_tf_cont_inv_intadmitt(&K_inv_dob, &z_inv_dob_1, &z_inv_dob_2, &p_inv_dob_1, &p_inv_dob_2, 
 		K_io, p_io, w_real_inv_dob);
 
-	// DOB transfer function coefficients (discrete time): 
-	double B_inv_dob[ORD_DOB + 1] = {0, 0, 0}; 
-	double A_inv_dob[ORD_DOB + 1] = {0, 0, 0}; 
+	// DOB transfer function coefficients (discrete time):
+	double B_inv_dob[ORD_DOB + 1] = {0, 0, 0};
+	double A_inv_dob[ORD_DOB + 1] = {0, 0, 0};
 
 	coeffs_tf_discr_2pole_2zero_tustin(B_inv_dob, A_inv_dob, K_inv_dob, z_inv_dob_1, z_inv_dob_2, p_inv_dob_1, p_inv_dob_2, dt_s);
 
@@ -472,10 +473,10 @@ test_ctrl_imped(void* dt_ns_ref) {
 	float  frac_fb_fl = -1.0;
 
 	while (frac_fb_fl < 0) {
-		printf("Enter feedback fraction (0..1): ");   
-		scanf("%f", &frac_fb_fl);   
+		printf("Enter feedback fraction (0..1): "); 
+		scanf("%f", &frac_fb_fl);  
 	}
-	frac_fb = (double)frac_fb_fl;  
+	frac_fb = (double)frac_fb_fl;
 
 	printf("\n");
 	printf("frac_fb = [%3.3lf]\n",   frac_fb);
@@ -540,7 +541,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 	double theta_m_o = read_pos_innfos(&motor, NODE_MOTOR);
 	
 	// Launch task:
-	periodic_task_init(&pinfo, *dt_ns);  
+	periodic_task_init(&pinfo, *dt_ns); 
 
     while (run_on) {
 
@@ -592,7 +593,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 
 		inv_dob_tf_discr_io(&tau_dist_in, tau_total_in_cmd, theta_m, B_inv_dob, A_inv_dob, ORD_DOB);
 
-		tau_dist_out = GEAR_RATIO*tau_dist_in;  
+		tau_dist_out = GEAR_RATIO*tau_dist_in;
 
 		/*
 		printf("tau_dist_in = [%3.6lf]\n", tau_dist_in);
@@ -614,12 +615,12 @@ test_ctrl_imped(void* dt_ns_ref) {
 			tf_discr_io_help(&theta_ref, B_intY_des, A_intY_des, tau_dist_out, tau_dist_out_arr, theta_ref_arr, ORD_INTY_DES);
 		}
 		else {
-			if (t_s >= t_step_s) { 
+			if (t_s >= t_step_s) {
 				// theta_ref = AMPL_THETA_RAD_REF;	
-				theta_ref = AMPL_THETA_RAD_REF*(1.0 - exp( -N_T*(t_s - t_step_s)/T_EXP_R) ) * sin(omega_ref*(t_s - t_step_s)); 
+				theta_ref = AMPL_THETA_RAD_REF*(1.0 - exp( -N_T*(t_s - t_step_s)/T_EXP_R) ) * sin(omega_ref*(t_s - t_step_s));
 			}
 			else
-				theta_ref = 0; 
+				theta_ref = 0;
 		}
 
 		///////////////////////////////////////////////////////////////////////////
@@ -660,27 +661,27 @@ test_ctrl_imped(void* dt_ns_ref) {
 		///////////////////////////////////////////////////////////////////////////
 
 		cycle_count++;
-		t_s  += 1.0*dt_ms/MS_PER_S; 
+		t_s  += 1.0*dt_ms/MS_PER_S;
 
 		///////////////////////////////////////////////////////////////////////////
 		// Compute time elapsed:
 		///////////////////////////////////////////////////////////////////////////
 
 		// Get the time again
-		clock_gettime(CLOCK_MONOTONIC, &toc); 
-		dt_actual_ms = (double)(toc.tv_nsec - tic.tv_nsec)/NS_PER_MS; 
+		clock_gettime(CLOCK_MONOTONIC, &toc);
+		dt_actual_ms = (double)(toc.tv_nsec - tic.tv_nsec)/NS_PER_MS;  
 
 		///////////////////////////////////////////////////////////////////////////
 		// Log data:		
 		///////////////////////////////////////////////////////////////////////////
 
-		WRITE_DAT_SYS(async_log_dat) 
+		WRITE_DAT_SYS(async_log_dat)
 
 		///////////////////////////////////////////////////////////////////////////
-		// Wait out rest of period: 
+		// Wait out rest of period:
 		///////////////////////////////////////////////////////////////////////////
 
-        wait_rest_of_period(&pinfo); 
+        wait_rest_of_period(&pinfo);
     }
 
 	///////////////////////////////////////////////////////////////////////////

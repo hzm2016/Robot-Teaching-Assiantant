@@ -9,10 +9,13 @@
 #define WRITE_DAT_SYS(async_log) { \
    async_log->trace("{:.7f} ", t_s); \
    async_log->trace("{:.7f} ", dt_actual_ms); \
-   for (int i = 0; i < N_FT_OUT; i++)  async_log->trace("{:.7f} ", FT_data[i]); \
    async_log->trace("{:.7f} ", theta_ref); \
    async_log->trace("{:.7f} ", theta_sea_m); \
+   async_log->trace("{:.7f} ", theta_sea); \
+   async_log->trace("{:.7f} ", theta_sea_in); \
+   async_log->trace("{:.7f} ", theta_sea_out); \
    async_log->trace("{:.7f} ", dt_theta_sea_m); \
+   async_log->trace("{:.7f} ", dt_theta_sea); \
    async_log->trace("{:.7f} ", curr_ref); \
    async_log->trace("{:.7f} ", curr_m); \
    async_log->trace("{:.7f} ", torque_sea); \
@@ -20,18 +23,10 @@
    async_log->trace("{:.7f} ", torque_ref); \
    async_log->trace("{:.7f} ", dt_torque_ref); \
    async_log->trace("{:.7f} ", ddt_torque_ref); \
+   async_log->trace("{:.7f} ", q_ref); \
+   async_log->trace("{:.7f} ", dt_q_ref); \
    async_log->trace("{:.7f} ", tau_cmd_in); \
-   async_log->trace("{:.7f} ", tau_fric); \
-   async_log->trace("{:.7f} ", dis_TDE); \
-   async_log->trace("{:.7f} ", tau_TDEMFC_PI); \
-   async_log->trace("{:.7f} ", alpha_FL); \
-   async_log->trace("{:.7f} ", beta_FL); \
-   async_log->trace("{:.7f} ", sat_FLSMC); \
    async_log->trace("{:.7f} ", deflection_sea_ref); \
-   async_log->trace("{:.7f} ", dis_NDOB); \
-   async_log->trace("{:.7f} ", tau_NDOBC_PID); \
-   async_log->trace("{:.7f} ", sigma_adap_fric); \
-   async_log->trace("{:.7f} ", k_adap_fric); \
 }
 
 #define WRITE_PAR_SYS(par_file_id) { \
@@ -52,6 +47,8 @@
    fwrite((double*)&frac_fric, sizeof(double), 1, par_file_id);\
    fwrite((double*)&frac_dist, sizeof(double), 1, par_file_id);\
    fwrite((double*)&frac_TDEMFC, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&frac_pos_Cascade_PI, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&frac_pos_Direct_PID, sizeof(double), 1, par_file_id);\
    fwrite((double*)&alpha_TDEMFC, sizeof(double), 1, par_file_id);\
    fwrite((double*)&K_TDEMFC_p, sizeof(double), 1, par_file_id);\
    fwrite((double*)&K_TDEMFC_i, sizeof(double), 1, par_file_id);\
@@ -65,6 +62,13 @@
    fwrite((double*)&K_NDOBC_P, sizeof(double), 1, par_file_id);\
    fwrite((double*)&K_NDOBC_I, sizeof(double), 1, par_file_id);\
    fwrite((double*)&K_NDOBC_D, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&K_pi_inner_POS, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&z_pi_inner_POS, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&K_pi_outer_POS, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&z_pi_outer_POS, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&K_dir_P_POS, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&K_dir_D_POS, sizeof(double), 1, par_file_id);\
+   fwrite((double*)&K_dir_I_POS, sizeof(double), 1, par_file_id);\
 }
 
 #endif

@@ -15,23 +15,24 @@
 
 #include "atidaq_help.h"
 
-static Calibration* cal;
+static Calibration* cal; 
 
 int
 init_ft_sensor_ati(char* cal_file, int32_t* adc_chan_arr, int num_adc_chan) {
 
-	const int N_FT_OUT  = 6;
+	const int N_FT_OUT  = 6;	
 
-	double adc_data[N_FT_OUT];
-	float  adc_data_fl[N_FT_OUT + 1];
+	double adc_data[N_FT_OUT];	
+	float  adc_data_fl[N_FT_OUT + 1];	
 
     unsigned short index = 1; // index of calibration in file (second parameter; default  =  1)
     short sts;              // return value from functions
 
-    // create Calibration struct:
+    // create Calibration struct: 
 	printf("\ncal_file = [%s]\n\n", cal_file);
 
 	cal = createCalibration(cal_file, index);
+	
 	if (cal == NULL) {
 		printf("\nSpecified calibration could not be loaded.\n");
 		return -1;
@@ -72,7 +73,6 @@ init_ft_sensor_ati(char* cal_file, int32_t* adc_chan_arr, int num_adc_chan) {
 	printCalInfo(cal);
 
 	// Verification (delete at a later date):
-	/*
 	double FT_data[6];
 	float* bias_vector = cal->rt.bias_vector;
 
@@ -83,7 +83,6 @@ init_ft_sensor_ati(char* cal_file, int32_t* adc_chan_arr, int num_adc_chan) {
 	for (int i = 0; i < N_FT_OUT; i++) {
 		printf("%f\n", bias_vector[i]);
 	}
-	*/
 
 	return 0;
 }

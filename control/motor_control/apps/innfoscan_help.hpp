@@ -23,10 +23,10 @@
 
 #define TRQ_COEFF_NM_PER_AMP_SPEC 0.6    // Torque coefficient(Nm/A) QDD-NU80-6 motor property
 
-// Current-to-velocity transfer function parameters: 
-// Source data: _data_p_ctrl_step_pos_v1, _data_p_ctrl_step_pos_v2, _data_p_ctrl_step_pos_v3 
+// Current-to-velocity transfer function parameters:
+// Source data: _data_p_ctrl_step_pos_v1, _data_p_ctrl_step_pos_v2, _data_p_ctrl_step_pos_v3
 
-// System ID results from MATLAB script test_sys_id_innfos_motor.m: 
+// System ID results from MATLAB script test_sys_id_innfos_motor.m:
 /*
 #define I_MOMT_IO_SCALED 0.0054984  // "scaled" moment of inertia
 #define B_DAMP_IO_SCALED 0.0099418  // "scaled" damping coefficient
@@ -74,7 +74,7 @@
 // Safety limits:
 ///////////////////////////////////////////////////////////////////////////
 
-#define CURR_AMP_MAX  6.0
+#define CURR_AMP_MAX  7
 
 ///////////////////////////////////////////////////////////////////////////
 // MOTOR kinematics:
@@ -101,10 +101,10 @@
 ///////////////////////////////////////////////////////////////////////////
 
 double 
-read_pos_innfos(controller* motor, int node_motor); 
+read_pos_innfos(controller* motor, int node_motor);
 
 double 
-read_vel_innfos(controller* motor, int node_motor); 
+read_vel_innfos(controller* motor, int node_motor);
 
 void
 set_vel_innfos(double vel_radsec_ref, controller* motor, int node_motor);

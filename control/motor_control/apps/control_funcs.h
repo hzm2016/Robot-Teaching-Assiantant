@@ -15,10 +15,10 @@
 #ifndef CONTROL_FUNCS_H
 #define CONTROL_FUNCS_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <ctype.h> 
+#include <math.h> 
 
 void
 coeffs_tf_cont_inv_intadmitt(double* K_inv, double* z_inv_1, double* z_inv_2, double* p_inv_1, double* p_inv_2, 

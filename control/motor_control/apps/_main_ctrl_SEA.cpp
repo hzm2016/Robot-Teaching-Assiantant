@@ -9,26 +9,26 @@
 //					 
 // Modifications record:
 //		
-// 
+//
 ///////////////////////////////////////////////////////////////////////////
 
-#include "_test_scripts.hpp" 
+#include "_test_scripts.hpp"
 
 ///////////////////////////////////////////////////////////////////////////
 // Control modes variables:
 ///////////////////////////////////////////////////////////////////////////
 
-#define MODE_VEL_STR	"MODE_VEL" 
-#define MODE_CURR_STR	"MODE_CURR" 
-#define MODE_P_CTRL_STR	"MODE_P_CTRL" 
+#define MODE_VEL_STR	"MODE_VEL"
+#define MODE_CURR_STR	"MODE_CURR"
+#define MODE_P_CTRL_STR	"MODE_P_CTRL"
 
-int ctrl_mode; 
+int ctrl_mode;
 
 ///////////////////////////////////////////////////////////////////////////
 // UI functions:
 ///////////////////////////////////////////////////////////////////////////
 
-int run_on; 
+int run_on;
 
 void 
 sigint_1_step(int dummy) {
@@ -74,26 +74,26 @@ main(int argc, char* argv[]) {
 	// Real-time parameters:
 	///////////////////////////////////////////////////////////////////////////
 
-    const int PRIORITY = 80; 
-    long dt_ns = (long)(dt_ms*NS_PER_MS);  
+    const int PRIORITY = 80;
+    long dt_ns = (long)(dt_ms*NS_PER_MS);
 
-	printf("\ndt_ns = [%ld]\n\n", dt_ns);  
+	printf("\ndt_ns = [%ld]\n\n", dt_ns);
 
 	///////////////////////////////////////////////////////////////////////////
-	// Initialization:  
+	// Initialization:
 	///////////////////////////////////////////////////////////////////////////
 
-	// Catch a Ctrl-C event: 
-    signal(SIGINT, sig_h);  
+	// Catch a Ctrl-C event:
+    signal(SIGINT, sig_h);
     
-    // Lock memory:  
+    // Lock memory:
     if(mlockall(MCL_CURRENT|MCL_FUTURE) == -1) { 
         printf("\nmlockall failed: %m\n\n");
-        exit(-2);  
+        exit(-2);
     }
 
 	///////////////////////////////////////////////////////////////////////////
-	// Start periodic thread: 
+	// Start periodic thread:
 	///////////////////////////////////////////////////////////////////////////
 
 	printf("\nCalling start_periodic_task()... \n\n");

@@ -304,7 +304,7 @@ copy_text_file(FILE* from_file_id, FILE* to_file_id) {
 	// Read text file:
 	while ((c = fgetc(from_file_id)) != EOF) {
 		// printf("%c\n", c);
-		text[i] = c; 
+		text[i] = c;
 		i++;
 	}
 	text[i] = CH_EOS;

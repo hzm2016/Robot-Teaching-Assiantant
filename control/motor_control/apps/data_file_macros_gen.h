@@ -15,10 +15,10 @@
 #ifndef DATA_FILE_MACROS_GEN_H
 #define DATA_FILE_MACROS_GEN_H
 
-#include <stdio.h>  
-#include <stdlib.h>  
-#include <string.h>  
-#include <errno.h>  
+#include <stdio.h> 
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 extern int errno;
 
@@ -110,7 +110,7 @@ void write_data_string_logger(FILE* file_id, char* var_name_str, char* var_lengt
 void write_data_string_fwrite(FILE* file_id, char* var_name_str, char* var_length_str, int num_digits, char* file_idstr);
 
 // Ancillary functions:
-void file_path_create(char* file_path, char* f_dir, char* file_name, char* file_ext); 
+void file_path_create(char* file_path, char* f_dir, char* file_name, char* file_ext);
 void copy_text_file(FILE* from_file_id, FILE* to_file_id);
 int is_alphanum(char ch);
 

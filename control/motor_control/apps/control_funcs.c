@@ -27,24 +27,24 @@ coeffs_tf_cont_inv_intadmitt(double* K_inv, double* z_inv_1, double* z_inv_2, do
 	// 
 	// Coefficients of the DOB transfer function with form K_inv*s*(s + z_inv_2)/(s + p_inv_1)/((s + p_inv_2)
 
-	*K_inv   = w_real*w_real/K_pl; 
+	*K_inv   = w_real*w_real/K_pl;  
 
-	*z_inv_1 = 0;
-	*z_inv_2 = p_pl;
+	*z_inv_1 = 0; 
+	*z_inv_2 = p_pl; 
 
-	*p_inv_1 = w_real;
-	*p_inv_2 = w_real;
+	*p_inv_1 = w_real; 
+	*p_inv_2 = w_real; 
 }
 
-// Disturbance observer (SIMPLE INVERSE) input/output function:
-/*
-void
+// Disturbance observer (SIMPLE INVERSE) input/output function: 
+/* 
+void 
 inv_dob_tf_discr_io(double* dist_in, double pl_in, double pl_out, double* B_inv, double* A_inv, int ORD) {
 	// pl_in: plant input
 	// pl_out: plant output
 	// inv_out: DOB "inverse" block output
 
-	static int init = 1; 
+	static int init = 1;
 	static double *pl_out_arr; 
 	static double *inv_out_arr; 
 	double inv_out;

@@ -90,6 +90,7 @@ if(TRUE) # fake a block comment
     thread_service_lib
     daq_lib
     innfos_can_lib
+    renishaw_can_lib
     ${CMAKE_THREAD_LIBS_INIT}
     spdlog::spdlog)
   

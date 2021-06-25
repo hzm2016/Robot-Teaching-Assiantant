@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Project name
-project (ATIDAQ LANGUAGES CXX C)
+project (motor_control)
 
 # Other build flags
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -march=atom -mtune=atom")
@@ -32,5 +32,10 @@ add_subdirectory(ATIDAQ)
 # add_subdirectory(calibration)
 # add_subdirectory(apps)
 # add_subdirectory(main)
-add_subdirectory(GyemsCan)
-add_subdirectory(test_gyems)
+add_subdirectory(GyemsCan) 
+add_subdirectory(test_gyems) 
+# add_subdirectory(motor_control)
+add_subdirectory(pybind11)
+
+pybind11_add_module(motor_control src/main.cpp) 
+# target_compile_definitions(motor_control PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})

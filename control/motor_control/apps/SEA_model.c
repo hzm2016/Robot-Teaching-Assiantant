@@ -14,7 +14,7 @@
 
 #include "SEA_model.h"
 
-double stiff_spring      =  11.9e3; //N/m
+double stiff_spring      =  26.5e3; //N/m
 double orginal_length    =  28.5e-3;  // meter
 double redius_inner      =  24.5e-3; 
 double redius_outer      =  0;
