@@ -1,28 +1,3 @@
-########################################################################
-#
-# Copyright (c) 2021, STEREOLABS.
-#
-# All rights reserved.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-########################################################################
-
-"""
-    Live camera sample showing the camera information and video in real time and allows to control the different
-    settings.
-"""
-
 import cv2
 import pyzed.sl as sl
 
@@ -67,7 +42,7 @@ def main():
 	print("\nFINISH")
 
 
-def capture_image(font_name='font_1'):
+def capture_image(root_path='', font_name='font_1'):
 	print("Capture image ...")
 	init = sl.InitParameters()
 	cam = sl.Camera()
@@ -93,7 +68,7 @@ def capture_image(font_name='font_1'):
 	if err == sl.ERROR_CODE.SUCCESS:
 		cam.retrieve_image(mat, sl.VIEW.LEFT)
 		cv2.imshow("ZED", mat.get_data())
-		cv2.imwrite(font_name + '.png', mat.get_data())
+		cv2.imwrite(root_path + font_name + '.png', mat.get_data())
 		key = cv2.waitKey(5)
 		settings(key, cam, runtime, mat)
 	else:
