@@ -84,6 +84,7 @@ flycheck_*.el
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*.pyc
 *.py[cod]
 
 # C extensions
@@ -129,6 +130,9 @@ coverage.xml
 # Django stuff:
 *.log
 *.pot
+
+# pycharm
+.idea
 
 # Model
 *.pth
