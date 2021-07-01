@@ -63,6 +63,7 @@ flycheck_*.el
 
 # projectiles files
 .projectile
+.DS_Store
 
 # directory configuration
 .dir-locals.el
@@ -89,6 +90,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.zip 
 
 # Distribution / packaging
 bin/

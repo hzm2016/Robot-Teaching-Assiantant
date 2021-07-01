@@ -3,71 +3,14 @@ import os
 import torch
 import torchvision
 import cv2
-
 import torchvision.transforms as transforms
 import numpy as np
 
-from utils import skeletonize, stroke2img, cropping, binarize, rescale
-
-
-def load_class(class_name):
-    components = class_name.split('.')
-    mod = __import__(components[0])
-    for comp in components[1:]:
-        mod = getattr(mod, comp)
-    return mod
-
-
-class Postprocessor(object):
-
-    def __init__(self, args) -> None:
-
-        self.pipeline = []
-        for k, v in args.items():
-            setattr(self, k.lower(), v)
-            self.pipeline.append(k.upper())
-
-    def CROPPING(self, image):
-
-        return cropping(image, self.cropping)
-
-    def BINARIZE(self, image):
-
-        return binarize(image, self.binarize)
-
-    def RESCALE(self, image):
-
-        return rescale(image, self.rescale)
-
-    def process(self, image):
-
-        for m in self.pipeline:
-            image = getattr(self, m)(image)
-
-        return image
-
-
-class Controller(object):
-
-    def __init__(self) -> None:
-        pass
-
-
-class Learner(object):
-    """ class that stores learner performance 
-    """
-
-    def __init__(self) -> None:
-
-        self.__init_parameters()
-
-    def __init_parameters(self,):
-        self.score = 0
-        self.satisfied = False
-
-    def reset(self):
-
-        self.__init_parameters()
+from utils import skeletonize, stroke2img
+from .learner import Learner
+from .controller import Controller
+from .utils import load_class
+from .imgprocessor import Postprocessor
 
 
 class Executor(object):
@@ -129,7 +72,7 @@ class Executor(object):
     def __init_network(self,):
 
         self.gan = load_class(self.gan_type)(
-            self.input_channel, self.output_channel,True)
+            self.input_channel, self.output_channel, True)
         self.dis = load_class(self.dis_type)(self.output_channel, 5)
 
         mapping_device = 'cpu'
@@ -145,7 +88,7 @@ class Executor(object):
         if self.dis_path is not None:
             self.dis.load_state_dict(
                 {k.replace('module.', ''): v for k, v in torch.load(self.dis_path, map_location=torch.device(mapping_device)).items()})
-        
+
     def interact(self, traj, score=None):
         """TO DO: interaction part
         """
@@ -173,8 +116,9 @@ class Executor(object):
         if written_stroke is None:
             return stroke2img(self.font_type, stroke, self.font_size)
         else:
-            source_image = np.array(stroke2img(self.font_type, stroke, self.font_size))
-            return self.__generate_written_traj(written_stroke,source_image)
+            source_image = np.array(stroke2img(
+                self.font_type, stroke, self.font_size))
+            return self.__generate_written_traj(written_stroke, source_image)
 
     def __reset_learner(self,):
         """ Reset learner model
@@ -186,7 +130,7 @@ class Executor(object):
         """
         pass
 
-    def __save_stroke_traj(self, stroke, traj, savepath='./'):
+    def __save_stroke_traj(self, stroke, traj, sava         epath='./'):
 
         font_name = self.font_type.split('/')[-1].split('.')[0]
         filename = os.path.join(savepath, str(stroke)+'_'+font_name) + '.txt'
@@ -196,7 +140,7 @@ class Executor(object):
         return filename
 
     def __generate_written_traj(self, written_image, source_image):
-        
+
         source_image = self.pre_process(source_image).unsqueeze(0)
         written_image = self.pre_process(written_image).unsqueeze(0)
 
@@ -209,7 +153,8 @@ class Executor(object):
         styled_written_image = grid.mul(255).add_(0.5).clamp_(
             0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
 
-        styled_written_image = cv2.cvtColor(styled_written_image, cv2.COLOR_BGR2GRAY)
+        styled_written_image = cv2.cvtColor(
+            styled_written_image, cv2.COLOR_BGR2GRAY)
 
         return styled_written_image
 
@@ -248,7 +193,7 @@ class Executor(object):
 
                 if self.save_traj:
                     save_traj_name = self.__save_stroke_traj(stroke, traj)
-                    cv2.imwrite(save_traj_name.replace('txt','png'), traj_img)
+                    cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
                     logging.info('{} traj stored'.format(stroke))
 
                 if self.generation_only:
