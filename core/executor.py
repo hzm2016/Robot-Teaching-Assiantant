@@ -3,6 +3,7 @@ import os
 import torch
 import torchvision
 import cv2
+
 import torchvision.transforms as transforms
 import numpy as np
 
@@ -26,8 +27,6 @@ class Executor(object):
         self.cuda = args.get('CUDA', False)
         self.feedback = args.get('FEEDBACK')
         self.save_traj = args.get('SAVE_TRAJ', False)
-        self.learner = Learner()
-        self.controller = Controller()
 
         self.__init_parameters(args)
         self.__init_network()
@@ -39,8 +38,12 @@ class Executor(object):
             self.with_feedback = False
         else:
             self.with_feedback = self.feedback.get('WITH_FEEDBACK')
-            self.postprocessor = Postprocessor(
-                self.feedback.get('POST_PRORCESS'))
+
+        self.postprocessor = Postprocessor(
+            self.feedback.get('POST_PRORCESS'))
+        self.learner = Learner()
+        self.controller = Controller(Postprocessor(
+            self.feedback.get('POST_PRORCESS')))
 
     def __init_parameters(self, args):
 
@@ -128,9 +131,9 @@ class Executor(object):
     def __quit(self):
         """ Quit all the processes
         """
-        pass
+        logging.info('Quittiing')
 
-    def __save_stroke_traj(self, stroke, traj, sava         epath='./'):
+    def __save_stroke_traj(self, stroke, traj, savepath='./'):
 
         font_name = self.font_type.split('/')[-1].split('.')[0]
         filename = os.path.join(savepath, str(stroke)+'_'+font_name) + '.txt'
@@ -202,7 +205,7 @@ class Executor(object):
 
                 written_image = self.interact(traj)
 
-        logging.info('Quittiing')
+        self.__quit()
 
         # cv2.imshow('',stroke_img)
         # cv2.waitKey(0)

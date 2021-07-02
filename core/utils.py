@@ -1,4 +1,6 @@
-from utils import skeletonize
+import numpy as np
+from scipy.spatial.distance import cdist
+import munkres
 
 
 def load_class(class_name):
@@ -16,24 +18,32 @@ def load_class(class_name):
         mod = getattr(mod, comp)
     return mod
 
+def squarify(M,val=10000):
+    (a,b)=M.shape
 
-def get_traj_discrepancy(input, target):
-    """[summary]
+    if a == b:
+        return M
 
-    Args:
-        input ([image]): written image
-        target ([image]): target image to be learnt
-    """
+    if a>b:
+        padding=((0,0),(0,a-b))
+    else:
+        padding=((0,b-a),(0,0))
 
+    return np.pad(M,padding,mode='constant',constant_values=val)
+
+def hungarian_matching(a, b):
     
+    m = munkres.Munkres()
+    dist = cdist(a,b)
+    dist = squarify(dist)
+    indices = m.compute(dist)
+    
+    return indices
 
+if __name__ == "__main__":
 
+    a = np.array([(1, 2),(3,4),(5,6)])
+    b = np.array([(3, 4),(7,8)])
 
-
-
-
-
-
-
-
-
+    indices = hungarian_matching(a, b)
+    print(indices)
