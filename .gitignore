@@ -78,6 +78,7 @@ flycheck_*.el
 *.jpg
 *.jpeg
 *.png
+*.svg
 
 
 # Vscode

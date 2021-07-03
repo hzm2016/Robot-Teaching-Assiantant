@@ -7,7 +7,7 @@ import cv2
 import torchvision.transforms as transforms
 import numpy as np
 
-from utils import skeletonize, stroke2img
+from tools import skeletonize, stroke2img
 from .learner import Learner
 from .controller import Controller
 from .utils import load_class
@@ -86,11 +86,13 @@ class Executor(object):
 
         if self.gan_path is not None:
             self.gan.load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(self.gan_path, map_location=torch.device(mapping_device)).items()})
+                {k.replace('module.', ''): v for k, v in torch.load(self.gan_path,
+                                                                    map_location=torch.device(mapping_device)).items()})
 
         if self.dis_path is not None:
             self.dis.load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(self.dis_path, map_location=torch.device(mapping_device)).items()})
+                {k.replace('module.', ''): v for k, v in torch.load(self.dis_path,
+                                                                    map_location=torch.device(mapping_device)).items()})
 
     def interact(self, traj, score=None):
         """TO DO: interaction part
