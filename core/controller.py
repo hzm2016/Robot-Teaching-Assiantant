@@ -1,5 +1,5 @@
 from tools import skeletonize
-from utils import hungarian_matching
+from .utils import hungarian_matching
 import numpy as np
 
 
@@ -18,7 +18,7 @@ class Controller(object):
         """
         raise NotImplementedError
 
-    def update_impedance(self, input, target):
+    def update_impedance(self, target, input):
         """[summary]
 
         Args:
@@ -27,17 +27,21 @@ class Controller(object):
         """
         if self.img_processor is not None:
             input = self.img_processor.process(input)
-        tgt_pts = skeletonize(target)
-        in_pts = skeletonize(input)
+        tgt_pts, _ = skeletonize(~target)
+        in_pts, _ = skeletonize(~input)
+
+        tgt_pts = np.squeeze(tgt_pts, axis=0)
+        in_pts = np.squeeze(in_pts, axis=0)
 
         matching = self.key_point_matching(tgt_pts, in_pts)
-        tgt_index = matching[:,0]
-        in_index = matching[:,1]
+        tgt_index = matching[:, 0]
+        in_index = matching[:, 1]
 
-        x_dis = sum(abs(tgt_pts[tgt_index][:,0] - in_pts[in_index][:,0]))
-        y_dis = sum(abs(tgt_pts[tgt_index][:,1] - in_pts[in_index][:,1]))
+        x_dis = sum(abs(tgt_pts[tgt_index][:, 0] - in_pts[in_index][:, 0]))
+        y_dis = sum(abs(tgt_pts[tgt_index][:, 1] - in_pts[in_index][:, 1]))
 
-        self.impedance_update_policy(x_dis,y_dis)
+        return x_dis, y_dis
+        self.impedance_update_policy(x_dis, y_dis)
 
     def impedance_update_policy(self, x_dis, y_dis):
 
@@ -63,8 +67,16 @@ if __name__ == "__main__":
 
     a = np.array([(3, 4), (7, 8)])
     b = np.array([(1, 2), (3, 4), (5, 6)])
+    from imgprocessor import Postprocessor
+    c = Controller(Postprocessor(
+        {'CROPPING': [478, 418, 1586, 672], 'BINARIZE': 128, 'RESCALE': 0.8}))
+    import cv2
+    written_stroke = cv2.imread('./example/example_feedback.png')
+    sample_stroke = cv2.imread(
+        './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
+    # cv2.imshow('',sample_stroke)
+    # cv2.waitKey(0)
 
-
-    c = Controller()
-
+    x_dis, y_dis = c.update_impedance(sample_stroke, written_stroke)
+    print(x_dis, y_dis)
     matching = c.key_point_matching(a, b)

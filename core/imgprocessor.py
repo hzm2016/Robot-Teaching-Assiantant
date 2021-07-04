@@ -1,4 +1,4 @@
-from utils import cropping, binarize, rescale
+from tools import cropping, binarize, rescale
 
 class Postprocessor(object):
 

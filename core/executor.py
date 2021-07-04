@@ -41,6 +41,7 @@ class Executor(object):
 
         self.postprocessor = Postprocessor(
             self.feedback.get('POST_PRORCESS'))
+        print(self.feedback.get('POST_PRORCESS'))
         self.learner = Learner()
         self.controller = Controller(Postprocessor(
             self.feedback.get('POST_PRORCESS')))
