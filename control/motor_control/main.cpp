@@ -1,4 +1,5 @@
 using namespace std; 
+namespace py = pybind11;
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -8,7 +9,11 @@ using namespace std;
 #include "gyems_can_functions.h"
 #include "renishaw_can_functions.hpp"
 
+
 #define PI 3.1415926
+
+#define torque_lower_bound -2.5  
+#define torque_upper_bound 2.5  
 
 void split(const string& s, vector<string>& tokens, const string& delim=",") 
 {
@@ -54,6 +59,12 @@ int main()
 	encoder.read_ang_encoder(encoder_arr); 
   	double theta_1 = (double) encoder_arr[1]*PI/180.0; 
   	double theta_2 = (double) encoder_arr[0]*PI/180.0; 
+}
+
+
+int run_one_loop_dummy(py::array key_points, float x_dis_ratio, float y_dis_ratio, float user_score = 0 )
+{
+    throw "This is a dummy function for interface showcase.";
 }
 
 // int run_one_loop()
