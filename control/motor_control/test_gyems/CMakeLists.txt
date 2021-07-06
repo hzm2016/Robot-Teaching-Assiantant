@@ -20,4 +20,5 @@ thread_service_lib
 daq_lib
 socketcan_lib
 gyems_can_lib
+renishaw_can_lib
 ${CMAKE_THREAD_LIBS_INIT})

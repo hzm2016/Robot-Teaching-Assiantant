@@ -38,7 +38,7 @@ add_subdirectory(test_gyems)
 # add_subdirectory(motor_control)
 add_subdirectory(pybind11)
 
-link_libraries(gyems_can_lib)
+# link_libraries(gyems_can_lib)
 
-pybind11_add_module(motor_control main.cpp) 
+# pybind11_add_module(motor_control main.cpp) 
 # target_compile_definitions(motor_control PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})
