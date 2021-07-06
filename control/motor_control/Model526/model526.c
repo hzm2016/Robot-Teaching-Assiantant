@@ -8,10 +8,10 @@ static double DACa[4] = {1.0, 1.0, 1.0, 1.0};
 static double DACb[4] = {0.0, 0.0, 0.0, 0.0};
 static int s526_init_flag = 0;
 
-int s526_init()
+int s526_init() 
 { 
-    //Set permissions for the range of IO addresses
-    // int ret = ioperm(S526_ADDR, S526_IOSIZE, 1);
+    //Set permissions for the range of IO addresses 
+    // int ret = ioperm(S526_ADDR, S526_IOSIZE, 1); 
     if(s526_init_flag == 0)
     {
         int ret = iopl(3);

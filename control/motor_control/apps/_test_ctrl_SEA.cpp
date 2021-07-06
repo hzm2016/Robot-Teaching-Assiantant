@@ -615,12 +615,12 @@ test_ctrl_SEA(void* dt_ns_ref) {
 	coeffs_tf_discr_pole_zero_tustin(B_TDEMFC_diff, A_TDEMFC_diff, K_diff_TDEMFC, p_diff_TDEMFC, z_diff_TDEMFC, dt_s);
 
   // Auxiliary variables:
-	double tau_TDEMFC_in          = 0;
-	double tau_TDEMFC_PI          = 0;
+	double tau_TDEMFC_in          = 0; 
+	double tau_TDEMFC_PI          = 0; 
 	double tau_TDEMFC_PI_prev     = 0; 
 	double dis_TDE                = 0;  // TDE estimation result  
-	double dis_TDE_prev           = 0; 
-	double err_torque_sea_prev    = 0;
+	double dis_TDE_prev           = 0;  
+	double err_torque_sea_prev    = 0;  
 	double torque_sea_TDEMFC_prev = 0; 
 	double torque_ref_TDEMFC_prev = 0;
 	double tau_cmd_in_prev        = 0;
@@ -1078,9 +1078,9 @@ test_ctrl_SEA(void* dt_ns_ref) {
 		////////////////////////////////////////////////////////////////////////////////////////
 		// Output (load-side) encoder position
 		///////////////////////////////////////////////////////////////////////////////////////
-		encoder.read_ang_encoder(encoder_arr);
-  		theta_sea_in  = (double) -(encoder_arr[1]*PI/180.0 - theta_sea_in_o);
-  		theta_sea_out = (double) (encoder_arr[0]*PI/180.0 - theta_sea_out_o);
+		encoder.read_ang_encoder(encoder_arr); 
+  		theta_sea_in  = (double) -(encoder_arr[1]*PI/180.0 - theta_sea_in_o); 
+  		theta_sea_out = (double) (encoder_arr[0]*PI/180.0 - theta_sea_out_o); 
 
 		theta_sea   = theta_sea_in - theta_sea_out; 
 		tf_discr_io_ord1(&dt_theta_sea, B_TDEMFC_diff, A_TDEMFC_diff, theta_sea, &theta_sea_prev, &dt_theta_sea_prev); 

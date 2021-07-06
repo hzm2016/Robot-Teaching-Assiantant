@@ -6,6 +6,9 @@ using namespace std;
 #include <stdlib.h>
 #include <pybind11/pybind11.h>
 #include "gyems_can_functions.h"
+#include "renishaw_can_functions.hpp"
+
+#define PI 3.1415926
 
 void split(const string& s, vector<string>& tokens, const string& delim=",") 
 {
@@ -38,8 +41,19 @@ double clip(double angle, double lower_bound, double upper_bound)
     return clip_angle; 
 }
 
-int add(int i, int j) {
-    return i + 2 * j;
+// int add(int i, int j) {
+//     return i + 2 * j; 
+// } 
+
+int main()
+{
+    controller_renishaw encoder("can2"); 
+
+    float encoder_arr[2];  
+
+	encoder.read_ang_encoder(encoder_arr); 
+  	double theta_1 = (double) encoder_arr[1]*PI/180.0; 
+  	double theta_2 = (double) encoder_arr[0]*PI/180.0; 
 }
 
 // int run_one_loop()
@@ -54,7 +68,7 @@ int add(int i, int j) {
 //     CANDevice can1((char *) "can1");  
 //     can1.begin(); 
 
-//     Gcan motor_1(can1); 
+//     Gcan motor_1(can1);  
 //     Gcan motor_2(can0);   
 //     motor_1.begin(); 
 //     motor_2.begin(); 
@@ -287,7 +301,7 @@ PYBIND11_MODULE(motor_control, m) {
         Add two numbers
 
         Some other explanation about the add function.
-    )pbdoc");
+    )pbdoc"); 
 
     m.def("subtract", [](int i, int j) { return i - j; }, R"pbdoc(
         Subtract two numbers

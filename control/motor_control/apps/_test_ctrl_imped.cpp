@@ -93,7 +93,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 	copy_text_file(key_file_id_master, key_file_id_copy);
 
 	fclose(key_file_id_master);   
-	fclose(key_file_id_copy); 
+	fclose(key_file_id_copy);  
 
 	///////////////////////////////////////////////////////////////////////////
 	// Create PARAMETER file:
@@ -159,14 +159,14 @@ test_ctrl_imped(void* dt_ns_ref) {
 	printf("\n");
 	printf("[%s] Enabling motor... \n\n", __FILE__);
 
-    motor.enable_motor(NODE_MOTOR);
-	sleep(DELAY_SEC); 
+    motor.enable_motor(NODE_MOTOR);  
+	sleep(DELAY_SEC);  
 	
-	printf("[%s] changing motor mode... \n\n", __FILE__);
+	printf("[%s] changing motor mode... \n\n", __FILE__);  
 
 	// Initialize INNFOS mode (CRITICAL):
 	// motor.change_mode(NODE_MOTOR, SPEED_MODE); // see SPEED_MODE in innfos_can_functions.hpp
-	motor.change_mode(NODE_MOTOR, CURRENT_MODE);
+	motor.change_mode(NODE_MOTOR, CURRENT_MODE);  
 
 	sleep(DELAY_SEC); 
 	
@@ -316,10 +316,10 @@ test_ctrl_imped(void* dt_ns_ref) {
 	printf("w_real_DZ  = [%3.6lf]\n", w_real_DZ);
 	printf("\n");
 	printf("K_DZ    = [%3.6lf]\n", K_DZ);
-	printf("z_DZ_1  = [%3.6lf]\n", z_DZ_1);
-	printf("z_DZ_2  = [%3.6lf]\n", z_DZ_2);
-	printf("p_DZ_1  = [%3.6lf]\n", p_DZ_1);
-	printf("p_DZ_2  = [%3.6lf]\n", p_DZ_2);
+	printf("z_DZ_1  = [%3.6lf]\n", z_DZ_1); 
+	printf("z_DZ_2  = [%3.6lf]\n", z_DZ_2); 
+	printf("p_DZ_1  = [%3.6lf]\n", p_DZ_1); 
+	printf("p_DZ_2  = [%3.6lf]\n", p_DZ_2); 
 	printf("\n");
 
 	for (i = 0; i <= ORD_DZ; i++)
@@ -335,8 +335,8 @@ test_ctrl_imped(void* dt_ns_ref) {
 	///////////////////////////////////////////////////////////////////////////
 
 	// Desired output admittance parameters: DESIRED
-	double I_out_des;
-	double b_out_des;
+	double I_out_des; 
+	double b_out_des; 
 
 	// Compute desired inertia:
 	double fact_I_des; // inertia factor
@@ -435,13 +435,13 @@ test_ctrl_imped(void* dt_ns_ref) {
 	double tau_dist_in; // disturbance torque estimate (reflected at motor input)
 
 	// Display section:
-	printf("I_MOMT_IO = [%3.6lf]\n", I_MOMT_IO);
-	printf("B_DAMP_IO = [%3.6lf]\n", B_DAMP_IO);
+	printf("I_MOMT_IO = [%3.6lf]\n", I_MOMT_IO); 
+	printf("B_DAMP_IO = [%3.6lf]\n", B_DAMP_IO); 
 	printf("\n");
-	printf("K_io  = [%3.6lf]\n", K_io);
-	printf("p_io  = [%3.6lf]\n", p_io);
+	printf("K_io  = [%3.6lf]\n", K_io); 
+	printf("p_io  = [%3.6lf]\n", p_io); 
 	printf("\n");
-	printf("w_real_inv_dob  = [%3.6lf]\n", w_real_inv_dob);
+	printf("w_real_inv_dob  = [%3.6lf]\n", w_real_inv_dob); 
 	printf("\n");
 	printf("K_inv_dob    = [%3.6lf]\n", K_inv_dob);
 	printf("z_inv_dob_1  = [%3.6lf]\n", z_inv_dob_1);
@@ -454,15 +454,15 @@ test_ctrl_imped(void* dt_ns_ref) {
 		printf("B_inv_dob[%d] = [%3.6lf]\n", i, B_inv_dob[i]);
 	printf("\n");
 	
-	for (i = 0; i <= ORD_DOB; i++)
+	for (i = 0; i <= ORD_DOB; i++) 
 		printf("A_inv_dob[%d] = [%3.6lf]\n", i, A_inv_dob[i]); 
-	printf("\n");
+	printf("\n"); 
 
 	///////////////////////////////////////////////////////////////////////////
 	// Net control commands:
 	///////////////////////////////////////////////////////////////////////////
 
-	double tau_total_in_cmd = 0;
+	double tau_total_in_cmd = 0; 
 
 	///////////////////////////////////////////////////////////////////////////
 	// Adjustable control factors:
