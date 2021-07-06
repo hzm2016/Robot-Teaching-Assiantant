@@ -96,8 +96,23 @@ def capture_image(root_path='', font_name='font_1'):
 	if err == sl.ERROR_CODE.SUCCESS:
 		cam.retrieve_image(mat, sl.VIEW.LEFT)
 		cv2.imshow("ZED", mat.get_data())
-		image = mat.get_data()
-		cv2.imwrite(root_path + font_name + '.png', mat.get_data())
+		img = mat.get_data()
+		height, weight = img.shape[:2]
+		# print("height :::", height)
+		# print("weight :::", weight)
+		
+		# need to define according to robot position
+		crop_img = img[130:height - 100, 455:945]
+		resize_img = cv2.resize(crop_img, (128, 128), cv2.INTER_AREA)
+		cv2.imshow("Processed Image", resize_img)
+		
+		cols, rows = resize_img.shape[:2]
+		
+		# rotate image :::
+		M = cv2.getRotationMatrix2D((cols / 2, rows / 2), -90, 1)
+		dst_img = cv2.warpAffine(resize_img, M, (cols, rows))
+		
+		cv2.imwrite(root_path + font_name + '.png', dst_img)
 		key = cv2.waitKey(5)
 		settings(key, cam, runtime, mat)
 	else:
@@ -107,6 +122,8 @@ def capture_image(root_path='', font_name='font_1'):
 	
 	cam.close()
 	print("\nFINISH ...")
+	
+	return dst_img
 	
 
 def print_camera_information(cam):

@@ -2,9 +2,59 @@ import cv2
 from control.vision_capture.main_functions import *
 from control.path_planning.path_generate import *
 import socket
+import time
 
+
+class Connector(object):
+	def __init__(self):
+		# ===================== socket connection ========================
+		self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		address = ('169.254.0.99', 5005)
+		self.tcp_socket.connect(address)
+		
+		print("connect to server :::", address)
+		
+	def system_calib(self):
+		send_data = "Calibration"
+		self.tcp_socket.send(send_data.encode())
+		
+	def set_params(self):
+		print("Second params ::::")
+		
+		# send way_points to the lower-level controller
+		# ====================== second data =========================
+		# send impedance parameters ::::
+		# lower-level controller set impedance and motion command
+		stiffness = [100, 100]
+		damping = [50, 50]
+		command_move = "Move_start"
+		swrite_stiffness = '#Stiff ' + '[' + str('%0.3f' % stiffness[0]) + ',' + str('%0.3f' % stiffness[1]) + ']' + '@'
+		swrite_damping = '#Damping' + '[' + str('%0.3f' % damping[0]) + ',' + str('%0.3f' % damping[1]) + ']' + '@'
+		
+		self.tcp_socket.send(swrite_stiffness.encode())
+		
+		self.tcp_socket.send(swrite_damping.encode())
+		
+		self.tcp_socket.send(command_move.encode())
+	
+	def set_way_points(self):
+		# terminate with symbol @
+		way_points = np.array((100, 2))
+		length = way_points.shape[0]
+		for i in range(length//5+1):
+			swrite_way_points = '#Points '
+			for j in range(5):
+				swrite_way_points += '[' + str('%0.3f' % way_points[i+j, 0]) + ',' + str('%0.3f' % way_points[i+j, 1]) + '],'
+			self.tcp_socket.send(swrite_way_points.encode())
+		
+		self.tcp_socket.send('@'.encode())
+		
+	def run_one_loop(self):
+		# run_one_loop tasks ::: and capture the results :::
+		
 
 def run_main():
+	done = False
 	
 	# offline check the generated path
 	# _, _ = check_path(root_path='path_planning/data', font_name='third', type=3)
@@ -13,7 +63,7 @@ def run_main():
 	# show_video()
 	
 	# capture_image(root_path='capture_images/', font_name='test')
-	image_precessing(img_path='capture_images/', img_name='test')
+	# image_precessing(img_path='capture_images/', img_name='test')
 	
 	# address = ('192.168.1.182', 5005)  # 服务端地址和端口
 	# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,8 +84,32 @@ def run_main():
 	# # conn.sendall(send.encode())
 	# conn.close()
 	# s.close()
+
 	
+	recvbuf = ''
+	time_out = 0
+	while recvbuf.find('done') == -1:
+		recvbuf = tcp_socket.recv(2048).decode()
+		time_out += 1
 	
+	done = True
+	if done == 'done':
+		print('-----------------Move Finish!!!!-------------------')
+		capture_image(root_path='capture_images/', font_name='test')
+	
+	# ====================== receive data =========================
+	recvbuf = ''
+	time_out = 0
+	while len(recvbuf) == 0 and time_out < 20:
+		recvbuf = tcp_socket.recv(2048).decode()
+		time_out += 1
+		time.sleep(0.01)
+		
+	# print(recv_data.decode("utf-8"))
+	# 4. 关闭套接字
+	tcp_socket.close()
+	
+
 if __name__ == "__main__":
 	
 	run_main()
