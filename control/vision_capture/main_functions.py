@@ -6,7 +6,7 @@ str_camera_settings = "BRIGHTNESS"
 step_camera_settings = 1
 
 
-def main():
+def show_video():
 	print("Running...")
 	init = sl.InitParameters()
 	cam = sl.Camera()
@@ -47,6 +47,29 @@ def calibration_camera():
 	pass
 
 
+def image_precessing(img_path, img_name):
+	img = cv2.imread(img_path + img_name + '.png')
+	height, weight = img.shape[:2]
+	print("height :::", height)
+	print("weight :::", weight)
+	
+	# need to define according to robot position
+	crop_img = img[130:height-100, 455:945]
+	cv2.imshow("Processed Image", crop_img)
+	resize_img = cv2.resize(crop_img, (128, 128), cv2.INTER_AREA)
+	cv2.imshow("Processed Image", resize_img)
+	
+	cols, rows = resize_img.shape[:2]
+	
+	# rotate image :::
+	M = cv2.getRotationMatrix2D((cols / 2, rows / 2), -90, 1)
+	dst_img = cv2.warpAffine(resize_img, M, (cols, rows))
+	cv2.imwrite(img_path + img_name + '_final.png', dst_img)
+	cv2.imshow("Processed Image", dst_img)
+	cv2.waitKey()
+	return img
+
+
 def capture_image(root_path='', font_name='font_1'):
 	print("Capture image ...")
 	init = sl.InitParameters()
@@ -73,16 +96,18 @@ def capture_image(root_path='', font_name='font_1'):
 	if err == sl.ERROR_CODE.SUCCESS:
 		cam.retrieve_image(mat, sl.VIEW.LEFT)
 		cv2.imshow("ZED", mat.get_data())
+		image = mat.get_data()
 		cv2.imwrite(root_path + font_name + '.png', mat.get_data())
 		key = cv2.waitKey(5)
 		settings(key, cam, runtime, mat)
 	else:
 		key = cv2.waitKey(5)
+		
 	cv2.destroyAllWindows()
 	
 	cam.close()
-	print("\nFINISH")
-
+	print("\nFINISH ...")
+	
 
 def print_camera_information(cam):
 	print("Resolution: {0}, {1}.".format(round(cam.get_camera_information().camera_resolution.width, 2),
@@ -219,6 +244,6 @@ if __name__ == "__main__":
 	# cam.close()
 	# print("\nFINISH")
 	
-	main()
+	show_video()
 	
 	# capture_image(font_name='capture_data/font_1')
