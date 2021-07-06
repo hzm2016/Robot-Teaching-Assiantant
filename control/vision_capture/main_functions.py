@@ -22,7 +22,7 @@ def main():
 
 	runtime = sl.RuntimeParameters()
 	mat = sl.Mat()
- 
+
 	print_camera_information(cam)
 	print_help()
 
@@ -40,6 +40,11 @@ def main():
 
 	cam.close()
 	print("\nFINISH")
+
+
+def calibration_camera():
+	
+	pass
 
 
 def capture_image(root_path='', font_name='font_1'):
