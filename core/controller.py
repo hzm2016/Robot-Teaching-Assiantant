@@ -3,8 +3,6 @@ from utils import hungarian_matching
 # from control.vision_capture import capture_image
 import numpy as np
 
-MAX_IMPEDANCE = 100
-
 class Controller(object):
 
     def __init__(self, img_processor=None, impedance_level=0) -> None:
@@ -53,8 +51,8 @@ class Controller(object):
             x_dis ([type]): [description]
             y_dis ([type]): [description]
         """
-        self.x_impedance_level = MAX_IMPEDANCE * x_dis / 128
-        self.y_impedance_level = MAX_IMPEDANCE * y_dis / 128
+        self.x_impedance_level = x_dis / 128
+        self.y_impedance_level = y_dis / 128
 
 
     def key_point_matching(self, tgt_pts, in_pts):

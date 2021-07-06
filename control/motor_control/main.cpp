@@ -1,5 +1,4 @@
 using namespace std; 
-namespace py = pybind11;
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -8,7 +7,7 @@ namespace py = pybind11;
 #include <pybind11/pybind11.h>
 #include "gyems_can_functions.h"
 #include "renishaw_can_functions.hpp"
-
+namespace py = pybind11;
 
 #define PI 3.1415926
 
@@ -46,9 +45,9 @@ double clip(double angle, double lower_bound, double upper_bound)
     return clip_angle; 
 }
 
-// int add(int i, int j) {
-//     return i + 2 * j; 
-// } 
+int add(int i, int j) {
+    return i + 2 * j; 
+} 
 
 int main()
 {
@@ -62,7 +61,7 @@ int main()
 }
 
 
-int run_one_loop_dummy(py::array key_points, float x_dis_ratio, float y_dis_ratio, float user_score = 0 )
+int run_one_loop_dummy(py::array<int8_t>  key_points, float x_dis_ratio, float y_dis_ratio, float user_score = 0 )
 {
     throw "This is a dummy function for interface showcase.";
 }
@@ -318,6 +317,10 @@ PYBIND11_MODULE(motor_control, m) {
         Subtract two numbers
 
         Some other explanation about the subtract function.
+    )pbdoc");
+
+    m.def("run_one_loop_dummy", &run_one_loop_dummy, R"pbdoc(
+        interface template for running one loop
     )pbdoc");
 
 #ifdef VERSION_INFO
