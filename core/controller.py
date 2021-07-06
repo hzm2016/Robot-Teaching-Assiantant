@@ -1,13 +1,16 @@
 from tools import skeletonize
-from .utils import hungarian_matching
+from utils import hungarian_matching
+# from control.vision_capture import capture_image
 import numpy as np
 
+MAX_IMPEDANCE = 100
 
 class Controller(object):
 
-    def __init__(self, img_processor=None, impedance_level=10) -> None:
+    def __init__(self, img_processor=None, impedance_level=0) -> None:
         self.img_processor = img_processor
-        self.impedance_level = impedance_level
+        self.x_impedance_level = impedance_level
+        self.y_impedance_level = impedance_level
         pass
 
     def guide(self,):
@@ -37,15 +40,22 @@ class Controller(object):
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
 
-        x_dis = sum(abs(tgt_pts[tgt_index][:, 0] - in_pts[in_index][:, 0]))
-        y_dis = sum(abs(tgt_pts[tgt_index][:, 1] - in_pts[in_index][:, 1]))
-
-        return x_dis, y_dis
+        x_dis = sum(abs(tgt_pts[tgt_index][:, 0] - in_pts[in_index][:, 0])) / matching.shape[0]
+        y_dis = sum(abs(tgt_pts[tgt_index][:, 1] - in_pts[in_index][:, 1])) / matching.shape[0]
         self.impedance_update_policy(x_dis, y_dis)
 
-    def impedance_update_policy(self, x_dis, y_dis):
+        return x_dis, y_dis
 
-        raise NotImplementedError
+    def impedance_update_policy(self, x_dis, y_dis):
+        """ Linear update based on the displacement
+
+        Args:
+            x_dis ([type]): [description]
+            y_dis ([type]): [description]
+        """
+        self.x_impedance_level = MAX_IMPEDANCE * x_dis / 128
+        self.y_impedance_level = MAX_IMPEDANCE * y_dis / 128
+
 
     def key_point_matching(self, tgt_pts, in_pts):
 
@@ -69,7 +79,7 @@ if __name__ == "__main__":
     b = np.array([(1, 2), (3, 4), (5, 6)])
     from imgprocessor import Postprocessor
     c = Controller(Postprocessor(
-        {'CROPPING': [478, 418, 1586, 672], 'BINARIZE': 128, 'RESCALE': 0.8}))
+        {'CROPPING': [478, 418, 1586, 672],'ROTATE': 0, 'BINARIZE': 128, 'RESCALE': 0.8}))
     import cv2
     written_stroke = cv2.imread('./example/example_feedback.png')
     sample_stroke = cv2.imread(

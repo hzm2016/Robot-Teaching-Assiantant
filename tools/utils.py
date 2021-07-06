@@ -1,13 +1,13 @@
 import glob
 import os
-from tqdm import tqdm
 import cv2
-from PIL import Image
 import numpy as np
 import copy
 import sys
+from scipy import ndimage
 
 canvas_size = 1024
+
 
 def cropping(img, coordinates):
 
@@ -17,12 +17,21 @@ def cropping(img, coordinates):
 
     return cropped_img
 
+
+def rotate(image, angle):
+
+    # rotation angle in degree
+    rotated = ndimage.rotate(image, angle)
+    return rotated
+
+
 def binarize(img, threshold=128):
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img = cv2.threshold(img, threshold, 255, cv2.THRESH_BINARY)
 
     return img
+
 
 def rescale(img, ratio):
 
@@ -31,18 +40,18 @@ def rescale(img, ratio):
     h, w = img.shape
     scale_factor = MAX_SIDE / max(h, w)
 
-    n_h = int(h * scale_factor) - 1 
+    n_h = int(h * scale_factor) - 1
     n_w = int(w * scale_factor) - 1
 
-    img_s = cv2.resize(img, (n_w,n_h))
+    img_s = cv2.resize(img, (n_w, n_h))
 
-    img_canvas = np.full((canvas_size,canvas_size),255, np.uint8)
+    img_canvas = np.full((canvas_size, canvas_size), 255, np.uint8)
     offset_x = (canvas_size - n_w) // 2
     offset_y = (canvas_size - n_h) // 2
 
     img_canvas[offset_y:offset_y+n_h, offset_x:offset_x+n_w] = img_s
 
-    image = cv2.rotate(cv2.resize(img_canvas, (128,128)), cv2.ROTATE_180)
+    image = cv2.rotate(cv2.resize(img_canvas, (128, 128)), cv2.ROTATE_180)
     # cv2.imwrite('./after_postprocess.png', image)
 
     return image
@@ -61,7 +70,8 @@ def _prepare_data(out_path, img_list):
         # cv2.imwrite(out_img, img)
         index += 1
 
-    return 
+    return
+
 
 def _add_image(img_to_add):
 
@@ -72,9 +82,10 @@ def _add_image(img_to_add):
         image = cv2.imread(img_name)
         image = ~image
         kk_list.append(image)
-    
+
     kk_list = np.array(kk_list).max(0)
     return ~kk_list
+
 
 def _add_image_step(img_to_add):
 
@@ -98,7 +109,7 @@ def combine_part_to_full(length_of_img, img_list):
     length_arr = np.insert(length_arr, 0, 0)
 
     print(length_arr)
-    img_list = sorted(glob.glob('./B/*.png'))   
+    img_list = sorted(glob.glob('./B/*.png'))
 
     output_images = []
     for index, i in enumerate(length_arr[:-1]):
@@ -108,7 +119,7 @@ def combine_part_to_full(length_of_img, img_list):
         else:
             image = _add_image(img_to_add)
         output_images.append(image)
-    
+
     # for index, sg_img in enumerate(output_images):
     #     cv2.imwrite('{}.jpg'.format(index), sg_img)
 
@@ -118,8 +129,8 @@ def main(method):
     img_path = './imgs/imgs_part'
     out_path = './A'
 
-    os.makedirs(out_path, exist_ok = True)
-    
+    os.makedirs(out_path, exist_ok=True)
+
     img_num = 324
 
     img_list = []
@@ -130,9 +141,10 @@ def main(method):
             img_list.append(img)
 
     if method == 'comb':
-        combine_part_to_full(length_of_img,img_list)
+        combine_part_to_full(length_of_img, img_list)
     else:
         _prepare_data(out_path, img_list)
+
 
 if __name__ == '__main__':
 

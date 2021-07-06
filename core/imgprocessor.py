@@ -1,4 +1,4 @@
-from tools import cropping, binarize, rescale
+from tools import cropping, binarize, rescale, rotate
 
 class Postprocessor(object):
 
@@ -20,6 +20,10 @@ class Postprocessor(object):
     def RESCALE(self, image):
 
         return rescale(image, self.rescale)
+
+    def ROTATE(self, image):
+
+        return rotate(image, self.rotate)
 
     def process(self, image):
 

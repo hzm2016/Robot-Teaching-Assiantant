@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-import copy
 
 
 def initial_parameter_estimate(num_demons_each_style=30):
