@@ -51,68 +51,72 @@ class Connector(object):
 		
 	def run_one_loop(self):
 		# run_one_loop tasks ::: and capture the results :::
+
+		pass
 		
 
-def run_main():
-	done = False
-	
-	# offline check the generated path
-	# _, _ = check_path(root_path='path_planning/data', font_name='third', type=3)
-	
-	# for video record
-	# show_video()
-	
-	# capture_image(root_path='capture_images/', font_name='test')
-	# image_precessing(img_path='capture_images/', img_name='test')
-	
-	# address = ('192.168.1.182', 5005)  # 服务端地址和端口
-	# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	# s.bind(address)  # 绑定服务端地址和端口
-	# s.listen(5)
-	# conn, addr = s.accept()  # 返回客户端地址和一个新的 socket 连接
-	# print('[+] Connected with', addr)
-	# while True:
-	# 	conn, addr = s.accept()  # 返回客户端地址和一个新的 socket 连接
-	# 	print('[+] Connected with', addr)
-	# 	data = conn.recv(1024)  # buffersize 等于 1024
-	# 	data = data.decode()
-	# 	if not data:
-	# 		break
-	# 	print('[Received]', data)
-	#
-	# # send = input('Input: ')
-	# # conn.sendall(send.encode())
-	# conn.close()
-	# s.close()
-
-	
-	recvbuf = ''
-	time_out = 0
-	while recvbuf.find('done') == -1:
-		recvbuf = tcp_socket.recv(2048).decode()
-		time_out += 1
-	
-	done = True
-	if done == 'done':
-		print('-----------------Move Finish!!!!-------------------')
-		capture_image(root_path='capture_images/', font_name='test')
-	
-	# ====================== receive data =========================
-	recvbuf = ''
-	time_out = 0
-	while len(recvbuf) == 0 and time_out < 20:
-		recvbuf = tcp_socket.recv(2048).decode()
-		time_out += 1
-		time.sleep(0.01)
-		
-	# print(recv_data.decode("utf-8"))
-	# 4. 关闭套接字
-	tcp_socket.close()
+# def run_main():
+# 	done = False
+#
+# 	# offline check the generated path
+# 	# _, _ = check_path(root_path='path_planning/data', font_name='third', type=3)
+#
+# 	# for video record
+# 	# show_video()
+#
+# 	# capture_image(root_path='capture_images/', font_name='test')
+# 	# image_precessing(img_path='capture_images/', img_name='test')
+#
+# 	# address = ('192.168.1.182', 5005)  # 服务端地址和端口
+# 	# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 	# s.bind(address)  # 绑定服务端地址和端口
+# 	# s.listen(5)
+# 	# conn, addr = s.accept()  # 返回客户端地址和一个新的 socket 连接
+# 	# print('[+] Connected with', addr)
+# 	# while True:
+# 	# 	conn, addr = s.accept()  # 返回客户端地址和一个新的 socket 连接
+# 	# 	print('[+] Connected with', addr)
+# 	# 	data = conn.recv(1024)  # buffersize 等于 1024
+# 	# 	data = data.decode()
+# 	# 	if not data:
+# 	# 		break
+# 	# 	print('[Received]', data)
+# 	#
+# 	# # send = input('Input: ')
+# 	# # conn.sendall(send.encode())
+# 	# conn.close()
+# 	# s.close()
+#
+#
+# 	recvbuf = ''
+# 	time_out = 0
+# 	while recvbuf.find('done') == -1:
+# 		recvbuf = tcp_socket.recv(2048).decode()
+# 		time_out += 1
+#
+# 	done = True
+# 	if done == 'done':
+# 		print('-----------------Move Finish!!!!-------------------')
+# 		capture_image(root_path='capture_images/', font_name='test')
+#
+# 	# ====================== receive data =========================
+# 	recvbuf = ''
+# 	time_out = 0
+# 	while len(recvbuf) == 0 and time_out < 20:
+# 		recvbuf = tcp_socket.recv(2048).decode()
+# 		time_out += 1
+# 		time.sleep(0.01)
+#
+# 	# print(recv_data.decode("utf-8"))
+# 	# 4. 关闭套接字
+# 	tcp_socket.close()
 	
 
 if __name__ == "__main__":
+	# check_path(root_path='path_planning/data', font_name='third', type=3, period=10, Ts=0.001)
+	image_precessing(img_path='capture_images/', img_name='test')
 	
-	run_main()
+	# run_main()
 	
 	# import socket
 	# import sys

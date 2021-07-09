@@ -1,17 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import seaborn as sns
 
 
 def initial_parameter_estimate(num_demons_each_style=30):
     """ demonstration for each styles with zero impedance """
     num_demonstrations = 30
-
+    
     writting_vel = 0.0
-    impedance_params = np.array([])
-
+    impedance_params = np.ones(2)
+    
+    # captured images
     images_list = []
+    distance_list = []
     for i in range(num_demonstrations):
+        distance_list.appen
         images_list.append(i.copy())
 
     return writting_vel, impedance_params
@@ -28,6 +32,9 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
     angle_2_range = np.array([-np.pi * 3/4, np.pi * 3/4])
 
     plt.rcParams['font.size'] = 16
+    
+    sns.set_theme()
+    
     linewidth = 3
     N = np.array(period/Ts).astype(int)
     path_data = np.loadtxt(root_path + '/' + font_name + '/2_font_' + str(type) +'.txt')
