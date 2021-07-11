@@ -63,8 +63,6 @@ def run_main():
 	# check encoders and motors :::
 	task = TCPTask('169.254.0.99', 5005)
 	
-	task.send_params_request()
-	
 	# task.get_encoder_check()
 	
 	# # offline check the generated path :::
@@ -84,6 +82,14 @@ def run_main():
 	params = stiffness + damping
 	task.send_params(params)
 	
+	task.send_params_request()
+	
+	task.send_way_points_request()
+	way_points = [[0., 0.], [1., 1.0]]
+	for i in range(len(way_points)):
+		task.send_way_points(way_points[i])
+	
+	task.send_way_points_done()
 	# # send way_points :::
 	# command_move = "Move_start"
 	#

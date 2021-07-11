@@ -124,18 +124,19 @@ class Server(HyperSocket):
         print("Please send parameters !!!!")
         # self._send_value("Please send parameters !!!!")
     
+    def wait_way_points_request(self):
+        self._wait_cmd("SEND WAY POINTS")
+        print("Please send way_points !!!!")
+        
     def read_params(self):
         # self._send_cmd("IMPEDANCE PARAMS")
         return self._read_value()
     
     def read_way_points(self):
-        self._send_cmd("WAY POINT")
+        # self._send_cmd("WAY POINT")
         return self._read_value()
     
-    def wait_way_points_request(self):
-        self._wait_cmd("WAY POINTS")
-    
-    def wait_send_done(self):
+    def wait_send_way_points_done(self):
         return self._wait_cmd("SEND DONE")
 
 
@@ -160,16 +161,19 @@ class Client(HyperSocket):
     
     def send_params(self, params):
         # self._wait_cmd("IMPEDANCE PARAMS")
-        
         # impedance parameters in two dimensions :::
         self._send_value(params)
         
     def send_params_request(self):
         self._send_cmd("SEND IMPEDANCE PARAMS")
         # return self._read_value()
+        
+    def send_way_points_request(self):
+        self._send_cmd("SEND WAY POINTS")
+        # return self._read_value()
 
     def send_way_points(self, way_point):
-        self._send_cmd("SEND WAY POINT")
+        # self._send_cmd("SEND WAY POINT")
         self._send_value(way_point)
 
     def send_movement(self, duration, weigths):
@@ -186,7 +190,7 @@ class Client(HyperSocket):
     
     def send_way_points_done(self):
         self._send_cmd("SEND_DONE")
-        return self._read_value()
+        # return self._read_value()
 
     def wait_demonstration(self):
         self._send_cmd("DEMO")

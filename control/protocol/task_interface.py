@@ -82,6 +82,12 @@ class TCPTask():
             self._conn.send_way_points(way_points[i, :])
         
         self._conn.send_way_points_done()
+        
+    def send_way_points_request(self):
+        return self._conn.send_way_points_request()
+    
+    def send_way_points_done(self):
+        return self._conn.send_way_points_done()
 
     def reset(self):
         # position reset :::
