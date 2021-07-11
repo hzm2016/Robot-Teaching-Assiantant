@@ -85,10 +85,10 @@ def run_main():
 	
 	task.send_way_points_request()
 	way_points = [[0., 0.], [1., 1.0]]
-	for i in range(len(way_points)):
-		task.send_way_points(way_points[i])
+	# for i in range(len(way_points)):
+	task.send_way_points(way_points)
 	
-	task.send_way_points_done()
+	# task.send_way_points_done()
 	# # send way_points :::
 	# command_move = "Move_start"
 	#

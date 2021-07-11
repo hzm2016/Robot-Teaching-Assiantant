@@ -22,8 +22,9 @@ if __name__ == "__main__":
 	way_points = []
 	send_done = _server.wait_send_way_points_done()
 	print("send_done :::", send_done)
-	while not send_done:
+	way_point = None
+	while way_point is not "SEND DONE":
 		way_point = _server.read_way_points()
 		print("way_points ::::", way_points)
 		way_points.append(way_point)
-		send_done = _server.wait_send_way_points_done()
+		# send_done = _server.wait_send_way_points_done()

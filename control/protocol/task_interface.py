@@ -76,10 +76,10 @@ class TCPTask():
         return self._conn.send_params_request()
     
     def send_way_points(self, way_points):
-        self._conn.wait_way_points()
-        print("Length of Way Points :::", way_points.shape[0])
-        for i in range(way_points.shape[0]):
-            self._conn.send_way_points(way_points[i, :])
+        # self._conn.wait_way_points()
+        print("Length of Way Points :::", len(way_points))
+        for i in range(len(way_points)):
+            self._conn.send_way_points(way_points[i])
         
         self._conn.send_way_points_done()
         
