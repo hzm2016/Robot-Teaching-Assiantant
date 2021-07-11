@@ -45,6 +45,7 @@ class HyperSocket:
 
     def _wait_cmd(self, cmd):
         cmd_rcv = self.receive_all()
+        print(cmd_rcv)
         if cmd_rcv == cmd:
             return True
         else:
@@ -124,7 +125,7 @@ class Server(HyperSocket):
         # self._send_value("Please send parameters !!!!")
     
     def read_params(self):
-        self._send_cmd("IMPEDANCE PARAMS")
+        # self._send_cmd("IMPEDANCE PARAMS")
         return self._read_value()
     
     def read_way_points(self):
@@ -158,7 +159,7 @@ class Client(HyperSocket):
         return self._read_value()
     
     def send_params(self, params):
-        self._wait_cmd("IMPEDANCE PARAMS")
+        # self._wait_cmd("IMPEDANCE PARAMS")
         
         # impedance parameters in two dimensions :::
         self._send_value(params)
