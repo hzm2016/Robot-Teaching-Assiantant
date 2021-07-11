@@ -158,7 +158,7 @@ class Client(HyperSocket):
         return self._read_value()
     
     def send_params(self, params):
-        self._send_cmd("SEND PARAMS")
+        self._wait_cmd("IMPEDANCE PARAMS")
         
         # impedance parameters in two dimensions :::
         self._send_value(params)

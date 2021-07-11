@@ -73,7 +73,7 @@ class TCPTask():
         return self._conn.send_params(params)
     
     def send_params_request(self):
-        return self._conn.send_params(params)
+        return self._conn.send_params_request()
     
     def send_way_points(self, way_points):
         self._conn.wait_way_points()
