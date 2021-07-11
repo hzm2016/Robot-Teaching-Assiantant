@@ -1,6 +1,6 @@
 using namespace std; 
-#include <iostream>
-#include <fstream>
+#include <iostream> 
+#include <fstream> 
 #include <string>
 #include <vector>
 #include <stdlib.h> 
@@ -50,8 +50,8 @@ using namespace std;
 
 int add(double stiffness, double damping) 
 { 
-    printf("Input stiffness parameters :: %f\n", stiffness); 
-    printf("Input damping parameters :: %f\n", damping); 
+    printf("Input stiffness parameters :: %f\n", stiffness);  
+    printf("Input damping parameters :: %f\n", damping);  
 
     controller_renishaw encoder("can2");  
 
@@ -64,21 +64,43 @@ int add(double stiffness, double damping)
     printf("Encoder 2 position: %f\n", theta_2);  
 
     CANDevice can0((char *) "can0");  
-    can0.begin(); 
+    can0.begin();  
     CANDevice can1((char *) "can1");  
-    can1.begin(); 
+    can1.begin();  
+
+    Gcan motor_1(can1);   
+    Gcan motor_2(can0);   
+    motor_1.begin();  
+    motor_2.begin();  
+ 
+    // double theta_1 = 1.0; 
+    double theta_1_initial = motor_1.read_sensor(2);   
+    printf("Motor 1 initial position: %f\n", theta_1_initial);  
+
+    double theta_2_initial = motor_2.read_sensor(1);  
+    printf("Motor 2 initial position: %f\n", theta_2_initial);  
+    
+    return 1; 
+}
+
+
+int reset(double theta_1_initial, double theta_2_initial)
+{
+    CANDevice can0((char *) "can0");  
+    can0.begin();  
+    CANDevice can1((char *) "can1");  
+    can1.begin();  
 
     Gcan motor_1(can1);  
-    Gcan motor_2(can0);   
-    motor_1.begin(); 
-    motor_2.begin(); 
+    Gcan motor_2(can0);  
+    motor_1.begin();  
+    motor_2.begin();  
 
-    // double theta_1 = 1.0; 
-    double theta_1_initial = motor_1.read_sensor(2); 
-    printf(" Motor 1 initial position: %f\n", theta_1_initial); 
+    theta_1_initial = motor_1.read_sensor(2);   
+    printf("Motor 1 initial position: %f\n", theta_1_initial);  
 
-    double theta_2_initial = motor_2.read_sensor(1); 
-    printf(" Motor 2 initial position: %f\n", theta_2_initial); 
+    theta_2_initial = motor_2.read_sensor(1);  
+    printf("Motor 2 initial position: %f\n", theta_2_initial);  
     
     return 1; 
 }
@@ -335,6 +357,13 @@ PYBIND11_MODULE(motor_control, m) {
 
         Some other explanation about the subtract function.
     )pbdoc");
+
+    m.def(
+        "reset", &reset, R"pbdoc(
+        reset robot position
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

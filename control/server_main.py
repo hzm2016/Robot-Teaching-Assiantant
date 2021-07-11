@@ -4,6 +4,7 @@ import motor_control
 
 if __name__ == "__main__":
 	print(motor_control.add(1, 2))
+	
 	# _server = Server(5005)
 	#
 	# # Wait impedance parameters :::

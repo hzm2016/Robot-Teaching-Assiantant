@@ -8,9 +8,9 @@
 #include<stdint.h>
 #include<iostream>
 #include <math.h>
-#include <net/if.h>  // TODO
-#include <errno.h>
-#include<cstring>
+#include <net/if.h>  
+#include <errno.h> 
+#include<cstring> 
 
 extern int errno;
 
@@ -190,13 +190,4 @@ private:
 };
 
 #endif /* _CF_H_ */
-
-
-
-
-
-
-
-
-
 
