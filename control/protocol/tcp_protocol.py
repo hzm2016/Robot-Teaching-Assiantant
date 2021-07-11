@@ -68,47 +68,7 @@ class Server(HyperSocket):
         print("Connection accepted", conn)
 
         super().__init__(conn)
-
-    def send_context_request(self):
-        self._send_cmd("CONTEXT")
-        return self._read_value()
-
-    def read_context_dim(self):
-        self._send_cmd("CONTEXT_DIM")
-        return self._read_value()
-
-    def send_movement(self, duration, weigths):
-        data_send = {"duration": duration,
-                     "weights": weigths}
-        self._send_cmd("MOVEMENT")
-        self._send_value(data_send)
-        received = self._read_value()
-        return received["success"], received["dense_reward"]
-
-    def send_reset(self):
-        self._send_cmd("RESET")
-        return self._wait_cmd("RESET_DONE")
-
-    def wait_demonstration(self):
-        self._send_cmd("DEMO")
-        return self._read_value()
-
-    def send_n_features(self, n_features):
-        self._wait_cmd("N_FEATURES")
-        return self._send_value(n_features)
-
-
-class Client(HyperSocket):
-
-    def __init__(self, ip: str, port: int):
-        self._port = port
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print(socket)
-        self.socket.connect((ip, port))
-
-        super().__init__(self.socket)
-
+        
     def wait_context_request(self):
         return self._wait_cmd("CONTEXT")
 
@@ -130,6 +90,9 @@ class Client(HyperSocket):
 
     def reset_ack(self):
         self._send_cmd("RESET_DONE")
+        
+    def send_done(self):
+        self._send_cmd("WRIT_DONE")
 
     def wait_demonstration_request(self):
         return self._wait_cmd("DEMO")
@@ -146,3 +109,85 @@ class Client(HyperSocket):
     def read_n_features(self):
         self._send_cmd("N_FEATURES")
         return self._read_value()
+    
+    def read_n_demos(self):
+        self._send_cmd("N_DEMOS")
+        return self._read_value()
+    
+    def wait_params_request(self):
+        self._wait_cmd("IMPEDANCE PARAMS")
+    
+    def read_params(self):
+        self._send_cmd("IMPEDANCE PARAMS")
+        return self._read_value()
+    
+    def read_way_points(self):
+        self._send_cmd("WAY POINT")
+        return self._read_value()
+    
+    def wait_way_points_request(self):
+        self._wait_cmd("WAY POINTS")
+    
+    def wait_send_done(self):
+        return self._wait_cmd("SEND DONE")
+
+
+class Client(HyperSocket):
+
+    def __init__(self, ip: str, port: int):
+        self._port = port
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print(socket)
+        self.socket.connect((ip, port))
+
+        super().__init__(self.socket)
+
+    def send_context_request(self):
+        self._send_cmd("CONTEXT")
+        return self._read_value()
+
+    def read_context_dim(self):
+        self._send_cmd("CONTEXT_DIM")
+        return self._read_value()
+    
+    def send_params(self, params):
+        self._send_cmd("SEND PARAMS")
+        
+        # impedance parameters in two dimensions :::
+        self._send_value(params)
+
+    def send_way_points(self, way_point):
+        self._send_cmd("SEND WAY POINT")
+        self._send_value(way_point)
+
+    def send_movement(self, duration, weigths):
+        data_send = {"duration": duration,
+                     "weights": weigths}
+        self._send_cmd("MOVEMENT")
+        self._send_value(data_send)
+        received = self._read_value()
+        return received["success"], received["dense_reward"]
+
+    def send_reset(self):
+        self._send_cmd("RESET")
+        return self._wait_cmd("RESET_DONE")
+    
+    def send_way_points_done(self):
+        self._send_cmd("SEND_DONE")
+
+    def wait_demonstration(self):
+        self._send_cmd("DEMO")
+        return self._read_value()
+    
+    def wait_loop_run_done(self):
+        self._send_cmd("RUN_DONE")
+        return self._read_value()
+    
+    def wait_way_points(self):
+        self._send_cmd("WAY POINT")
+        return self._read_value()
+
+    def send_n_features(self, n_features):
+        self._wait_cmd("N_FEATURES")
+        return self._send_value(n_features)

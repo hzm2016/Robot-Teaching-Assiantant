@@ -3,6 +3,7 @@ from control.vision_capture.main_functions import *
 from control.path_planning.path_generate import *
 import socket
 import time
+from control.protocol.task_interface import *
 
 
 class Connector(object):
@@ -55,18 +56,22 @@ class Connector(object):
 		pass
 		
 
-# def run_main():
-# 	done = False
-#
-# 	# offline check the generated path
-# 	# _, _ = check_path(root_path='path_planning/data', font_name='third', type=3)
-#
-# 	# for video record
-# 	# show_video()
-#
-# 	# capture_image(root_path='capture_images/', font_name='test')
-# 	# image_precessing(img_path='capture_images/', img_name='test')
-#
+def run_main():
+	done = False
+	
+	# initial TCP connection :::
+	# check encoders and motors :::
+	task = TCPTask('169.254.0.99', 5005)
+	
+	# offline check the generated path :::
+	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
+
+	# video record for trail :::
+	if done:
+		show_video()
+		capture_image(root_path='capture_images/', font_name='test')
+		image_precessing(img_path='capture_images/', img_name='test')
+
 # 	# address = ('192.168.1.182', 5005)  # 服务端地址和端口
 # 	# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # 	# s.bind(address)  # 绑定服务端地址和端口
