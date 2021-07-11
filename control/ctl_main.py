@@ -62,7 +62,9 @@ def run_main():
 	# initial TCP connection :::
 	# check encoders and motors :::
 	task = TCPTask('169.254.0.99', 5005)
-	#
+	
+	task.send_params_request()
+	
 	# task.get_encoder_check()
 	
 	# # offline check the generated path :::

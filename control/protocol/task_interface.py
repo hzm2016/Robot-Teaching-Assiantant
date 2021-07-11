@@ -60,16 +60,19 @@ class TaskInterface:
         pass
     
 
-class TCPTask(TaskInterface):
+class TCPTask():
 
     def __init__(self, ip, port):
-        super.__init__()
+        # super.__init__()
         self._conn = Client(ip, port)
 
     def get_loop_run_done(self):
         return self._conn.wait_loop_run_done()
 
     def send_params(self, params):
+        return self._conn.send_params(params)
+    
+    def send_params_request(self):
         return self._conn.send_params(params)
     
     def send_way_points(self, way_points):

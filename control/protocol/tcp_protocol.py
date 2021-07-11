@@ -119,7 +119,9 @@ class Server(HyperSocket):
         return self._read_value()
     
     def wait_params_request(self):
-        self._wait_cmd("IMPEDANCE PARAMS")
+        self._wait_cmd("SEND IMPEDANCE PARAMS")
+        print("Please send parameters !!!!")
+        # self._send_value("Please send parameters !!!!")
     
     def read_params(self):
         self._send_cmd("IMPEDANCE PARAMS")
@@ -160,6 +162,10 @@ class Client(HyperSocket):
         
         # impedance parameters in two dimensions :::
         self._send_value(params)
+        
+    def send_params_request(self):
+        self._send_cmd("SEND IMPEDANCE PARAMS")
+        return self._read_value()
 
     def send_way_points(self, way_point):
         self._send_cmd("SEND WAY POINT")
