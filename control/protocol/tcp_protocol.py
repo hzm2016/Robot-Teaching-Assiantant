@@ -86,9 +86,12 @@ class Server(HyperSocket):
         data = self._read_value()
         return data["duration"], data["weights"]
     
-    def wait_encoder_check(self, data):
+    def send_encoder_check(self, data):
         self._wait_cmd("ENCODER_CHECK")
         return self._send_value(data)
+    
+    def wait_encoder_request(self):
+        self._wait_cmd("ENCODER_CHECK")
 
     def wait_reset(self):
         return self._wait_cmd("RESET")

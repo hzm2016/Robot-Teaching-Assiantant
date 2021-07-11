@@ -1,1 +1,1 @@
-# ZED SDK 
+main.cpp is the main control file 

@@ -7,8 +7,8 @@
 # Control program - basic functions:
 ###################################################################
 
-add_executable(test_gyems
-    test.cpp)  
+# add_executable(test_gyems
+#     test.cpp)  
 
 target_link_libraries(test_gyems LINK_PUBLIC
 m

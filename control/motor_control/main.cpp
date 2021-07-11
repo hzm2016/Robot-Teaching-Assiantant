@@ -3,67 +3,76 @@ using namespace std;
 #include <fstream>
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <pybind11/pybind11.h>
-#include "gyems_can_functions.h"
-#include "renishaw_can_functions.hpp"
-namespace py = pybind11;
+#include <stdlib.h> 
+#include <pybind11/pybind11.h> 
+#include "gyems_can_functions.h" 
+#include "renishaw_can_functions.hpp" 
 
 #define PI 3.1415926
 
-#define torque_lower_bound -2.5  
-#define torque_upper_bound 2.5  
+#define STRINGIFY(x) #x
+#define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-void split(const string& s, vector<string>& tokens, const string& delim=",") 
-{
-    tokens.clear();
-    size_t lastPos = s.find_first_not_of(delim, 0); 
-    size_t pos = s.find(delim, lastPos); 
-    while (lastPos != string::npos) {
-        tokens.emplace_back(s.substr(lastPos, pos - lastPos)); 
-        lastPos = s.find_first_not_of(delim, pos); 
-        pos = s.find(delim, lastPos); 
-    }
-}
+// void split(const string& s, vector<string>& tokens, const string& delim=",") 
+// {
+//     tokens.clear(); 
+//     size_t lastPos = s.find_first_not_of(delim, 0); 
+//     size_t pos = s.find(delim, lastPos); 
+//     while (lastPos != string::npos) {
+//         tokens.emplace_back(s.substr(lastPos, pos - lastPos)); 
+//         lastPos = s.find_first_not_of(delim, pos); 
+//         pos = s.find(delim, lastPos); 
+//     }  
+// }  
 
-double clip(double angle, double lower_bound, double upper_bound)
-{
-    double clip_angle;
+// double clip(double angle, double lower_bound, double upper_bound)
+// {
+//     double clip_angle;
 
-    if (angle < lower_bound)
-    {
-        clip_angle = lower_bound; 
-    } 
-    else if(angle > upper_bound)
-    {
-        clip_angle = upper_bound; 
-    }
-    else
-    {
-        clip_angle = angle; 
-    }
-    return clip_angle; 
-}
+//     if (angle < lower_bound)
+//     {
+//         clip_angle = lower_bound; 
+//     } 
+//     else if(angle > upper_bound)
+//     {
+//         clip_angle = upper_bound; 
+//     }
+//     else
+//     {
+//         clip_angle = angle; 
+//     }
+//     return clip_angle; 
+// }
 
-int add(int i, int j) {
-    return i + 2 * j; 
-} 
+// int add(int i, int j) {
+//     return i + 2 * j; 
+// } 
 
-int main()
-{
-    controller_renishaw encoder("can2"); 
+int add(double params) 
+{ 
+    printf("input impedance parameters :: %f\n", params); 
+
+    controller_renishaw encoder("can2");  
 
     float encoder_arr[2];  
 
-	encoder.read_ang_encoder(encoder_arr); 
-  	double theta_1 = (double) encoder_arr[1]*PI/180.0; 
-  	double theta_2 = (double) encoder_arr[0]*PI/180.0; 
-}
+	encoder.read_ang_encoder(encoder_arr);  
+  	double theta_1 = (double) encoder_arr[1]*PI/180.0;  
+  	double theta_2 = (double) encoder_arr[0]*PI/180.0;  
 
+    CANDevice can0((char *) "can0");  
+    can0.begin(); 
+    CANDevice can1((char *) "can1");  
+    can1.begin(); 
 
-int run_one_loop_dummy(py::array<int8_t>  key_points, float x_dis_ratio, float y_dis_ratio, float user_score = 0 )
-{
-    throw "This is a dummy function for interface showcase.";
+    Gcan motor_1(can1);  
+    Gcan motor_2(can0);   
+    motor_1.begin(); 
+    motor_2.begin(); 
+
+    // double theta_1 = 1.0; 
+    
+    return theta_1; 
 }
 
 // int run_one_loop()
@@ -317,10 +326,6 @@ PYBIND11_MODULE(motor_control, m) {
         Subtract two numbers
 
         Some other explanation about the subtract function.
-    )pbdoc");
-
-    m.def("run_one_loop_dummy", &run_one_loop_dummy, R"pbdoc(
-        interface template for running one loop
     )pbdoc");
 
 #ifdef VERSION_INFO

@@ -57,25 +57,16 @@ class Connector(object):
 		
 
 def run_main():
-	done = False
-	
 	# initial TCP connection :::
 	# check encoders and motors :::
 	task = TCPTask('169.254.0.99', 5005)
 	
-	# task.get_encoder_check()
-	
-	# # offline check the generated path :::
-	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
-	way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
-	print("way_points :::", way_points.shape)
-	
-	# # send way points
-	# task.send_way_points(way_points)
-	#
-	# # generate impedance parameters::
+	# check motor and encode well before experiments
+	task.get_encoder_check()
 	
 	task.send_params_request()
+	
+	# # generate impedance parameters::
 	
 	# # send impedance params :::
 	stiffness = [100, 100]
@@ -83,17 +74,21 @@ def run_main():
 	params = stiffness + damping
 	task.send_params(params)
 	
+	# offline check the generated path :::
+	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
+	way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
+	print("way_points :::", way_points.shape)
+	
 	task.send_way_points_request()
-	# way_points = [[0., 0.], [1., 1.0]]
-	# for i in range(len(way_points)):
 	task.send_way_points(way_points)
 	
 	# task.send_way_points_done()
 	# # send way_points :::
 	# command_move = "Move_start"
-	#
+	
 	# # video record for trail :::
-	# if done:
+	run_done = False
+	# if run_done:
 	# 	show_video()
 	# 	capture_image(root_path='capture_images/', font_name='test')
 	# 	image_precessing(img_path='capture_images/', img_name='test')
