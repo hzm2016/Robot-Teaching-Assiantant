@@ -81,9 +81,8 @@ def run_main():
 	# # send impedance params :::
 	stiffness = [100, 100]
 	damping = [50, 50]
-	params = stiffness.append(damping)
-	while True:
-		task.send_params(params)
+	params = stiffness + damping
+	task.send_params(params)
 	
 	# # send way_points :::
 	# command_move = "Move_start"
