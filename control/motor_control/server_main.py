@@ -8,3 +8,5 @@ if __name__ == "__main__":
 	
 	# read impedance parameters :::
 	impedance_params = _server.read_params()
+	
+	print("impedance parameters :::", impedance_params)
