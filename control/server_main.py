@@ -6,7 +6,9 @@ if __name__ == "__main__":
 	# Wait impedance parameters :::
 	_server.wait_params_request()
 	
-	# read impedance parameters :::
-	impedance_params = _server.read_params()
-	
+	impedance_params = None
+	while impedance_params is not None:
+		# read impedance parameters :::
+		impedance_params = _server.read_params()
+		
 	print("impedance parameters :::", impedance_params)
