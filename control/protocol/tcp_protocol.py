@@ -165,7 +165,7 @@ class Client(HyperSocket):
         
     def send_params_request(self):
         self._send_cmd("SEND IMPEDANCE PARAMS")
-        return self._read_value()
+        # return self._read_value()
 
     def send_way_points(self, way_point):
         self._send_cmd("SEND WAY POINT")
