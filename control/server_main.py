@@ -1,4 +1,5 @@
 from protocol.task_interface import *
+import numpy as np
 
 if __name__ == "__main__":
 	_server = Server(5005)
@@ -26,5 +27,9 @@ if __name__ == "__main__":
 	while way_point != "SEND_DONE":
 		way_point = _server.read_way_points()
 		print("way_points ::::", way_point)
+		if way_point == "SEND_DONE":
+			break
 		way_points.append(way_point)
 		# send_done = _server.wait_send_way_points_done()
+	way_points = np.array(way_points)
+	print("way_points :::", way_points)
