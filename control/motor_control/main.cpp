@@ -48,17 +48,20 @@ using namespace std;
 //     return i + 2 * j; 
 // } 
 
-int add(double params) 
+int add(double stiffness, double damping) 
 { 
-    printf("input impedance parameters :: %f\n", params); 
+    printf("Input stiffness parameters :: %f\n", stiffness); 
+    printf("Input damping parameters :: %f\n", damping); 
 
     controller_renishaw encoder("can2");  
 
     float encoder_arr[2];  
 
-	encoder.read_ang_encoder(encoder_arr);  
-  	double theta_1 = (double) encoder_arr[1]*PI/180.0;  
-  	double theta_2 = (double) encoder_arr[0]*PI/180.0;  
+	encoder.read_ang_encoder(encoder_arr);   
+  	double theta_1 = (double) encoder_arr[1]*PI/180.0;   
+  	double theta_2 = (double) encoder_arr[0]*PI/180.0;   
+    printf("Encoder 1 position: %f\n", theta_1);  
+    printf("Encoder 2 position: %f\n", theta_2);  
 
     CANDevice can0((char *) "can0");  
     can0.begin(); 
@@ -71,8 +74,13 @@ int add(double params)
     motor_2.begin(); 
 
     // double theta_1 = 1.0; 
+    double theta_1_initial = motor_1.read_sensor(2); 
+    printf(" Motor 1 initial position: %f\n", theta_1_initial); 
+
+    double theta_2_initial = motor_2.read_sensor(1); 
+    printf(" Motor 2 initial position: %f\n", theta_2_initial); 
     
-    return theta_1; 
+    return 1; 
 }
 
 // int run_one_loop()
@@ -89,8 +97,8 @@ int add(double params)
 
 //     Gcan motor_1(can1);  
 //     Gcan motor_2(can0);   
-//     motor_1.begin(); 
-//     motor_2.begin(); 
+//     motor_1.begin();   
+//     motor_2.begin();   
 
 //     std::cout << "Enable Motors Done!!!" << std::endl; 
     
