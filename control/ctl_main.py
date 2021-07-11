@@ -74,15 +74,14 @@ def run_main():
 	# task.send_way_points(way_points)
 	#
 	# # generate impedance parameters::
-	#
+	
+	task.send_params_request()
 	
 	# # send impedance params :::
 	stiffness = [100, 100]
 	damping = [50, 50]
 	params = stiffness + damping
 	task.send_params(params)
-	
-	task.send_params_request()
 	
 	task.send_way_points_request()
 	way_points = [[0., 0.], [1., 1.0]]

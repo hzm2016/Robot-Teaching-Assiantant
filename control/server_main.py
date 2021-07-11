@@ -15,8 +15,8 @@ if __name__ == "__main__":
 	# Wait waypoints parameters :::
 	_server.wait_way_points_request()
 
-	# read way points :::
-	_server.read_way_points()
+	# # read way points :::
+	# _server.read_way_points()
 	
 	# receive way points
 	way_points = []
