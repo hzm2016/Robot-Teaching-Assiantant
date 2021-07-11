@@ -74,9 +74,9 @@ class TCPTask(TaskInterface):
     
     def send_way_points(self, way_points):
         self._conn.wait_way_points()
-        print("Length of Way Points :::", len(way_points))
-        for i in range(len(way_points)):
-            self._conn.send_way_points(way_points[i])
+        print("Length of Way Points :::", way_points.shape[0])
+        for i in range(way_points.shape[0]):
+            self._conn.send_way_points(way_points[i, :])
         
         self._conn.send_way_points_done()
 
@@ -84,8 +84,8 @@ class TCPTask(TaskInterface):
         # position reset :::
         return self._conn.send_reset()
     
-    # def get_context_dim(self):
-    #     return self._state_dim
+    def get_encoder_check(self):
+        return self._conn.wait_encoder_check()
     
     def get_demonstrations(self):
         return self._conn.wait_demonstration()
@@ -154,7 +154,8 @@ class TCPServerExample:
 
 
 class RunWritingModel:
-    def __init__(self, task: TaskInterface, rl_model: RLModel, dense_reward=False):
+    
+    def __init__(self, task: TaskInterface, rl_model: None, dense_reward=False):
         self.task = task
         self._rl_model = rl_model
         self.dense_reward = dense_reward
@@ -201,7 +202,7 @@ class RunWritingModel:
 
 class RunInteractionModel:
     
-    def __init__(self, task: TaskInterface, rl_model: RLModel, dense_reward=False):
+    def __init__(self, task: TaskInterface, rl_model: None, dense_reward=False):
         self.task = task
         self._rl_model = rl_model
         self.dense_reward = dense_reward

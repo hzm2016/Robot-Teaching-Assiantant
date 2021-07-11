@@ -62,15 +62,34 @@ def run_main():
 	# initial TCP connection :::
 	# check encoders and motors :::
 	task = TCPTask('169.254.0.99', 5005)
+	#
+	# task.get_encoder_check()
 	
-	# offline check the generated path :::
-	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
-
-	# video record for trail :::
-	if done:
-		show_video()
-		capture_image(root_path='capture_images/', font_name='test')
-		image_precessing(img_path='capture_images/', img_name='test')
+	# # offline check the generated path :::
+	# angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
+	# way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
+	# # print("way_points :::", way_points.shape)
+	#
+	# # send way points
+	# task.send_way_points(way_points)
+	#
+	# # generate impedance parameters::
+	#
+	
+	# # send impedance params :::
+	# stiffness = [100, 100]
+	# damping = [50, 50]
+	# params = stiffness.append(damping)
+	# task.send_params(params)
+	
+	# # send way_points :::
+	# command_move = "Move_start"
+	#
+	# # video record for trail :::
+	# if done:
+	# 	show_video()
+	# 	capture_image(root_path='capture_images/', font_name='test')
+	# 	image_precessing(img_path='capture_images/', img_name='test')
 
 # 	# address = ('192.168.1.182', 5005)  # 服务端地址和端口
 # 	# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -119,9 +138,9 @@ def run_main():
 
 if __name__ == "__main__":
 	# check_path(root_path='path_planning/data', font_name='third', type=3, period=10, Ts=0.001)
-	image_precessing(img_path='capture_images/', img_name='test')
+	# image_precessing(img_path='capture_images/', img_name='test')
 	
-	# run_main()
+	run_main()
 	
 	# import socket
 	# import sys

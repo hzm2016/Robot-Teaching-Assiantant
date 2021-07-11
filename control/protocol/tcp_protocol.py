@@ -84,6 +84,10 @@ class Server(HyperSocket):
         self._wait_cmd("MOVEMENT")
         data = self._read_value()
         return data["duration"], data["weights"]
+    
+    def wait_encoder_check(self, data):
+        self._wait_cmd("ENCODER_CHECK")
+        return self._send_value(data)
 
     def wait_reset(self):
         return self._wait_cmd("RESET")
@@ -175,9 +179,14 @@ class Client(HyperSocket):
     
     def send_way_points_done(self):
         self._send_cmd("SEND_DONE")
+        return self._read_value()
 
     def wait_demonstration(self):
         self._send_cmd("DEMO")
+        return self._read_value()
+    
+    def wait_encoder_check(self):
+        self._send_cmd("ENCODER_CHECK")
         return self._read_value()
     
     def wait_loop_run_done(self):
@@ -191,3 +200,17 @@ class Client(HyperSocket):
     def send_n_features(self, n_features):
         self._wait_cmd("N_FEATURES")
         return self._send_value(n_features)
+
+
+if __name__ == "__main__":
+    import numpy as np
+    
+    d = [100, 100]
+    body = dumps(d, protocol=2)
+    header = struct.pack("<L", len(body))
+    msg = header
+    print("msg :::", msg)
+
+    length = struct.unpack("<L", msg)
+    
+    print(np.array(loads(body, encoding='latin1'))[1])
