@@ -66,10 +66,10 @@ def run_main():
 	# task.get_encoder_check()
 	
 	# # offline check the generated path :::
-	# angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
-	# way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
-	# # print("way_points :::", way_points.shape)
-	#
+	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
+	way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
+	print("way_points :::", way_points.shape)
+	
 	# # send way points
 	# task.send_way_points(way_points)
 	#
@@ -84,7 +84,7 @@ def run_main():
 	task.send_params(params)
 	
 	task.send_way_points_request()
-	way_points = [[0., 0.], [1., 1.0]]
+	# way_points = [[0., 0.], [1., 1.0]]
 	# for i in range(len(way_points)):
 	task.send_way_points(way_points)
 	

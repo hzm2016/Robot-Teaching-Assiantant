@@ -79,7 +79,7 @@ class TCPTask():
         # self._conn.wait_way_points()
         print("Length of Way Points :::", len(way_points))
         for i in range(len(way_points)):
-            self._conn.send_way_points(way_points[i])
+            self._conn.send_way_points(way_points[i, :])
         
         self._conn.send_way_points_done()
         
