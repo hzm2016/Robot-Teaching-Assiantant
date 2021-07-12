@@ -1,4 +1,3 @@
-using namespace std; 
 #include <iostream> 
 #include <fstream> 
 #include <string>
@@ -7,42 +6,43 @@ using namespace std;
 #include <pybind11/pybind11.h> 
 #include "gyems_can_functions.h" 
 #include "renishaw_can_functions.hpp" 
+using namespace std; 
 
 #define PI 3.1415926
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-// void split(const string& s, vector<string>& tokens, const string& delim=",") 
-// {
-//     tokens.clear(); 
-//     size_t lastPos = s.find_first_not_of(delim, 0); 
-//     size_t pos = s.find(delim, lastPos); 
-//     while (lastPos != string::npos) {
-//         tokens.emplace_back(s.substr(lastPos, pos - lastPos)); 
-//         lastPos = s.find_first_not_of(delim, pos); 
-//         pos = s.find(delim, lastPos); 
-//     }  
-// }  
+void split(const string& s, vector<string>& tokens, const string& delim=",") 
+{
+    tokens.clear(); 
+    size_t lastPos = s.find_first_not_of(delim, 0); 
+    size_t pos = s.find(delim, lastPos); 
+    while (lastPos != string::npos) {
+        tokens.emplace_back(s.substr(lastPos, pos - lastPos)); 
+        lastPos = s.find_first_not_of(delim, pos); 
+        pos = s.find(delim, lastPos); 
+    }  
+}  
 
-// double clip(double angle, double lower_bound, double upper_bound)
-// {
-//     double clip_angle;
+double clip(double angle, double lower_bound, double upper_bound)
+{
+    double clip_angle;
 
-//     if (angle < lower_bound)
-//     {
-//         clip_angle = lower_bound; 
-//     } 
-//     else if(angle > upper_bound)
-//     {
-//         clip_angle = upper_bound; 
-//     }
-//     else
-//     {
-//         clip_angle = angle; 
-//     }
-//     return clip_angle; 
-// }
+    if (angle < lower_bound)
+    {
+        clip_angle = lower_bound; 
+    } 
+    else if(angle > upper_bound)
+    {
+        clip_angle = upper_bound; 
+    }
+    else
+    {
+        clip_angle = angle; 
+    }
+    return clip_angle; 
+}
 
 // int add(int i, int j) {
 //     return i + 2 * j; 
