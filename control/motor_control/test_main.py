@@ -1,6 +1,5 @@
 import motor_control
 import copy
-import 
 
 
 # motor_control.reset(theta_1_initial, theta_2_initial)

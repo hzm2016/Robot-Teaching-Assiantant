@@ -4,9 +4,9 @@ import os
 # import motor_control
 
 if __name__ == "__main__":
-	# print(motor_control.add(1, 2))
+	# print(motor_control.add(1, 2)) 
 	
-	_server = Server(5005)
+	_server = Server(5005) 
 
 	# # wait encoder and motor check
 	# _server.wait_encoder_request()

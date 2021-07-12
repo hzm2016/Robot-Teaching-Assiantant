@@ -228,7 +228,7 @@ int get_demonstration(double theta_1_initial, double theta_2_initial)
 }
 
 
-int load_path_data(double &theta_1_list[], double &theta_2_list[], int Num_waypoints)
+void load_path_data(double *theta_1_list, double *theta_2_list)
 {
     ////////////////////////////////////////////////////////
     // Load path from txt file
@@ -365,13 +365,13 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     // }
 
     // int Num_waypoints = 19999; 
-    double theta_1_list[Num_waypoints];    
-    double theta_2_list[Num_waypoints];   
+    double theta_1_list[Num_waypoints] = {0};    
+    double theta_2_list[Num_waypoints] = {0};   
 
     ///////////////// load data ///////////////////////////
     ///////////////////////////////////////////////////////
 
-    load_path_data(theta_1_list, theta_2_list, Num_waypoints);   
+    load_path_data(theta_1_list, theta_2_list);   
 
     printf("Theta_1_list :: %f\n", theta_1_list[0]);    
     printf("Theta_2_list :: %f\n", theta_2_list[0]);    
