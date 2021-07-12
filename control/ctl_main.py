@@ -27,21 +27,23 @@ def run_main(show_video=False):
 	task.send_params(params)
 	
 	# # offline check the generated path :::
-	# angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', font_name='third', type=3)
-	# way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
-	# print("way_points :::", way_points.shape)
-	#
-	# task.send_way_points_request()
-	# task.send_way_points(way_points)
+	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', plot_show=False,
+	                                            font_name='third', type=3)
+	way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
+	print("way_points :::", way_points.shape)
+
+	task.send_way_points_request()
+	task.send_way_points(way_points)
 	
-	# task.send_way_points_done()
+	task.send_way_points_done()
+	
 	# # send way_points :::
 	# command_move = "Move_start"
 	
 	# if show_video:
 	# 	show_video()
 		
-	# # video record for trail :::
+	# video record for trail :::
 	run_done = task.get_movement_check()
 	if run_done:
 		print("run_done", run_done)

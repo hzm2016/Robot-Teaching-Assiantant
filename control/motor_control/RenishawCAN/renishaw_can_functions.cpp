@@ -122,10 +122,10 @@ int controller_renishaw::can_write()
     // cout << tx_msg.cframe.data[0] << endl;
     cout << "write can id \n" << tx_msg.cframe.can_id << endl; 
 
-	if (nbytes < 0)	{
+	if (nbytes < 0)	{ 
 		printf("\n\ncontroller_renishaw::can_write(): errno = %d [%s]\n", errno, strerror(errno));
-		// exit(0); 
-	}
+		// exit(0);  
+	} 
 
     // Paranoid check:
 	/*
@@ -136,7 +136,7 @@ int controller_renishaw::can_write()
 	*/
 
 	return 0;
-}
+} 
 
 
 void controller_renishaw::bytes2Float(uint8_t * bytes_temp, float* float_variable){ 
@@ -185,10 +185,10 @@ void controller_renishaw::read_ang_encoder(float (&data_arr)[2]) {
     printf("read data 2:::%d \n", received_position[2]); 
     printf("read data 3:::%d \n", received_position[3]); 
 
-	bytes2Float(received_position,&position1); 
-	bytes2Float(received_position2,&position2);
+	bytes2Float(received_position,&position1);   
+	bytes2Float(received_position2,&position2);  
  
-  	data_arr[0]=position1;
+  	data_arr[0]=position1;  
   	data_arr[1]=position2;	
 	
 	// printf("received_position = [%x]  received_position2 = [%x] \n", received_position[0],  received_position[1]);

@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import seaborn as sns
+import copy
 
 
 def initial_parameter_estimate(num_demons_each_style=30):
@@ -22,12 +23,16 @@ def initial_parameter_estimate(num_demons_each_style=30):
 
 
 def generate_path(font, style, period=10, impedance_params=[], training_episodes=10):
-
+    """
+    
+    """
     score = 0.0
     return score
 
 
-def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
+def check_path(root_path='', plot_show=True,
+               font_name='J_font', type=2, period=10, Ts=0.001):
+
     angle_1_range = np.array([-np.pi/2, np.pi/2])
     angle_2_range = np.array([-np.pi * 3/4, np.pi * 3/4])
 
@@ -90,7 +95,7 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
         else:
             angle_1 = gamma - math.acos(cos_belta)
 
-        angle_1_list_e.append(np.round(angle_1, 5))
+        angle_1_list_e.append(np.round(angle_1, 5).copy())
 
         cos_alpha = (L1**2 - L + L2**2) / (2 * L1 * L2)
 
@@ -101,7 +106,7 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
         else:
             angle_2 = np.pi - math.acos(cos_alpha)
 
-        angle_2_list_e.append(np.round(angle_2, 5))
+        angle_2_list_e.append(np.round(angle_2, 5).copy())
         
         if t == 1:
             angle_vel_1_list_e.append(0.0)
@@ -119,40 +124,41 @@ def check_path(root_path='', font_name='J_font', type=2, period=10, Ts=0.001):
         print("!!!!!! angle 1 is out of range !!!!!")
         print("max angle 2 :::", max_angle_2)
 
-    fig = plt.figure(figsize=(15, 4))
-    plt.subplot(1, 3, 1)
-    plt.subplots_adjust(wspace=2, hspace=0)
-
-    plt.plot(path_data[:, 1], path_data[:, 0], marker='o', linewidth=linewidth)
-    plt.plot(x_list, y_list, linewidth=linewidth - 2)
-    plt.xlim([0, 128])
-    plt.ylim([0, 128])
-    plt.xlabel('$x_1$')
-    plt.ylabel('$x_2$')
-    # plt.axis('equal')
-    plt.tight_layout()
-
-    plt.subplot(1, 3, 2)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
-
-    plt.plot(x_1_list, x_2_list, linewidth=linewidth + 2, color='r')
-
-    plt.xlim([0., 0.6])
-    plt.ylim([0., 0.6])
-    plt.xlabel('$x_1$(m)')
-    plt.ylabel('$x_2$(m)')
-
-    plt.subplot(1, 3, 3)
-    plt.plot(t_list[1:], angle_1_list_e, linewidth=linewidth, label='$q_1$')
-    plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
-    plt.plot(t_list[1:], angle_2_list_e, linewidth=linewidth, label='$q_2$')
-    plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    if plot_show:
+        fig = plt.figure(figsize=(15, 4))
+        plt.subplot(1, 3, 1)
+        plt.subplots_adjust(wspace=2, hspace=0)
     
-    plt.xlabel('Time (s)')
-    plt.ylabel('One-loop Angle (rad)')
-    plt.legend()
-
-    plt.show()
+        plt.plot(path_data[:, 1], path_data[:, 0], marker='o', linewidth=linewidth)
+        plt.plot(x_list, y_list, linewidth=linewidth - 2)
+        plt.xlim([0, 128])
+        plt.ylim([0, 128])
+        plt.xlabel('$x_1$')
+        plt.ylabel('$x_2$')
+        # plt.axis('equal')
+        plt.tight_layout()
+    
+        plt.subplot(1, 3, 2)
+        plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+        plt.plot(x_1_list, x_2_list, linewidth=linewidth + 2, color='r')
+    
+        plt.xlim([0., 0.6])
+        plt.ylim([0., 0.6])
+        plt.xlabel('$x_1$(m)')
+        plt.ylabel('$x_2$(m)')
+    
+        plt.subplot(1, 3, 3)
+        plt.plot(t_list[1:], angle_1_list_e, linewidth=linewidth, label='$q_1$')
+        plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+        plt.plot(t_list[1:], angle_2_list_e, linewidth=linewidth, label='$q_2$')
+        plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+        
+        plt.xlabel('Time (s)')
+        plt.ylabel('One-loop Angle (rad)')
+        plt.legend()
+    
+        plt.show()
     
     # np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) +'_angle_1.txt', np.round(np.array(angle_1_list_e), 4))
     # np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) + '_angle_2.txt', np.round(np.array(angle_2_list_e), 4))

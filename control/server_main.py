@@ -8,16 +8,16 @@ if __name__ == "__main__":
 	
 	_server = Server(5005)
 
-	# Wait impedance parameters :::
+	# # wait encoder and motor check
+	# _server.wait_encoder_request()
+	# info = dict()
+	# info['encoder'] = [1., 1.]
+	# info['motor'] = [10., 10.]
+	#
+	# _server.send_encoder_check(info)
+	
+	# Wait impedance parameters
 	_server.wait_params_request()
-
-	# wait encoder and motor check
-	_server.wait_encoder_request()
-	info = dict()
-	info['encoder'] = [1., 1.]
-	info['motor'] = [10., 10.]
-
-	_server.send_encoder_check(info)
 
 	# impedance_params = None
 	# while impedance_params is None:
@@ -26,10 +26,7 @@ if __name__ == "__main__":
 	print("impedance parameters :::", impedance_params)
 
 	# Wait way_points:::
-	# _server.wait_way_points_request()
-
-	# # read way points :::
-	# _server.read_way_points()
+	_server.wait_way_points_request()
 	
 	# receive way points
 	way_points = []
@@ -43,13 +40,14 @@ if __name__ == "__main__":
 		print("way_points ::::", way_point)
 		if way_point == "SEND_DONE":
 			break
-		
 		way_points.append(way_point)
 		line_data = str(way_point[0]) + ',' + str(way_point[1])
 		data_file.writelines(line_data)
 		# send_done = _server.wait_send_way_points_done()
 	way_points = np.array(way_points)
 	print("way_points :::", way_points)
+	
+	# start move
 
 	# send movement_done command
 	_server.send_movement_done()

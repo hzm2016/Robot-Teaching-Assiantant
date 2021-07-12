@@ -620,7 +620,7 @@ test_ctrl_imped(void* dt_ns_ref) {
 				theta_ref = AMPL_THETA_RAD_REF*(1.0 - exp( -N_T*(t_s - t_step_s)/T_EXP_R) ) * sin(omega_ref*(t_s - t_step_s));
 			}
 			else
-				theta_ref = 0;
+				theta_ref = 0; 
 		}
 
 		///////////////////////////////////////////////////////////////////////////

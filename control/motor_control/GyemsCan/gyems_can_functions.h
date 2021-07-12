@@ -28,6 +28,7 @@ struct PIDconstant{
 
 class Gcan {
 public:
+
     // Constructor
     Gcan(CANDevice can_chn): channel_name(can_chn) {}
 
