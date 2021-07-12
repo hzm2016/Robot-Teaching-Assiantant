@@ -12,3 +12,5 @@ theta_1_initial = motor_control.read_initial_angle_1()
 print("theta_1_initial :::", theta_1_initial) 
 theta_2_initial = motor_control.read_initial_angle_2()
 print("theta_2_initial :::", theta_2_initial) 
+
+motor_control.get_demonstration(theta_1_initial, theta_2_initial)

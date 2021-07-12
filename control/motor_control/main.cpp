@@ -95,37 +95,37 @@ double read_initial_angle_2()
 }
 
 
-void hardware_reset(Gcan *motor_1, Gcan *motor_2) 
-{
-    ////////////////////////////////////////////////////////
-    // Initial Encoder and Motor CAN
-    ////////////////////////////////////////////////////////
+// void hardware_reset(Gcan *motor_1, Gcan *motor_2) 
+// {
+//     ////////////////////////////////////////////////////////
+//     // Initial Encoder and Motor CAN
+//     ////////////////////////////////////////////////////////
 
-    CANDevice can0((char *) "can0");  
-    can0.begin();  
-    CANDevice can1((char *) "can1");  
-    can1.begin();  
+//     CANDevice can0((char *) "can0");  
+//     can0.begin();  
+//     CANDevice can1((char *) "can1");  
+//     can1.begin();  
 
-    motor_1(can1);  
-    motor_2(can0);  
-    // Gcan motor_1(can1);   
-    // Gcan motor_2(can0);   
-    motor_1.begin();  
-    motor_2.begin();  
+//     motor_1(can1);  
+//     motor_2(can0);  
+//     // Gcan motor_1(can1);  
+//     // Gcan motor_2(can0);   
+//     motor_1.begin();  
+//     motor_2.begin();  
 
 
-    ///////////// initial encoder ////////
-    //////////////////////////////////////
+//     ///////////// initial encoder ////////
+//     //////////////////////////////////////
 
-    // controller_renishaw encoder("can2");  
+//     // controller_renishaw encoder("can2");  
     
-    // float encoder_arr[2];  
-	// encoder.read_ang_encoder(encoder_arr);   
-  	// double theta_1 = (double) encoder_arr[1]*PI/180.0;   
-  	// double theta_2 = (double) encoder_arr[0]*PI/180.0;    
-    // printf("Encoder 1 position: %f\n", theta_1);   
-    // printf("Encoder 2 position: %f\n", theta_2);  
-}
+//     // float encoder_arr[2];  
+// 	// encoder.read_ang_encoder(encoder_arr);   
+//   	// double theta_1 = (double) encoder_arr[1]*PI/180.0;   
+//   	// double theta_2 = (double) encoder_arr[0]*PI/180.0;    
+//     // printf("Encoder 1 position: %f\n", theta_1);   
+//     // printf("Encoder 2 position: %f\n", theta_2);  
+// }
 
 
 // int reset(double *theta_1_initial, double *theta_2_initial)
@@ -153,9 +153,22 @@ int get_demonstration(double theta_1_initial, double theta_2_initial)
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN
     ////////////////////////////////////////////////////////
-    Gcan motor_1; 
-    Gcan motor_2; 
-    hardware_reset(&motor_1, &motor_2); 
+    // Gcan motor_1; 
+    // Gcan motor_2; 
+    // hardware_reset(&motor_1, &motor_2); 
+
+    CANDevice can0((char *) "can0");  
+    can0.begin();  
+    CANDevice can1((char *) "can1");  
+    can1.begin();  
+
+    // motor_1(can1);  
+    // motor_2(can0);  
+    Gcan motor_1(can1);   
+    Gcan motor_2(can0);   
+    motor_1.begin();   
+    motor_2.begin();    
+    printf("Hardware set well demonstration start !!!!\n");  
 
     ////////////////////////////////////////////////////////
     // One loop control demonstration
@@ -167,7 +180,28 @@ int get_demonstration(double theta_1_initial, double theta_2_initial)
 
     string output_angle = "demonstrated_angle_list.txt";    
     ofstream OutFileAngle(output_angle);    
-    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";    
+    OutFileAngle << "angle_1" << "," << "angle_2" << "\n"; 
+
+    double theta_1_t = 0.0;   
+    double theta_2_t = 0.0;   
+
+    double d_theta_1_t = 0.0;    
+    double d_theta_2_t = 0.0;    
+
+    double theta_1_e = 0.0;  
+    double theta_2_e = 0.0;  
+
+    double d_theta_1_e = 0.0;  
+    double d_theta_2_e = 0.0;  
+
+    double torque_1 = 0.0;  
+    double torque_2 = 0.0;  
+
+    double torque_1_t = 0.0;  
+    double torque_2_t = 0.0;  
+
+    double pos_1 = 0.0;  
+    double pos_2 = 0.0;      
 
     while(true) 
     {
