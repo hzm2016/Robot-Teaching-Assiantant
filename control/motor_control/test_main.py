@@ -5,4 +5,4 @@ import motor_control
 # motor_control.reset(theta_1_initial, theta_2_initial)
 # print(theta_1_initial)
 # print(motor_control.add(1, 2))
-motor_control.load_path_data()
+motor_control.load_path_data() 

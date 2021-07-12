@@ -185,15 +185,21 @@ int load_path_data()
         // cout << s << endl;  
         split(s, angle_list, ",");   
         theta_1_list[index_point] = atof(angle_list[0].c_str());   
-        // printf("theta 1: %f\n", theta_1_list[index_point]);  
+        printf("theta 1: %f\n", theta_1_list[index_point]);  
 
         theta_2_list[index_point] = atof(angle_list[1].c_str());   
-        // printf("theta 2: %f\n", theta_2_list[index_point]); 
+        printf("theta 2: %f\n", theta_2_list[index_point]); 
 
         index_point += 1;  
     }
     printf("Num_waypoints: %d\n", index_point);   
     input_angle_list.close();   
+
+    string output_torque = "torque_list.txt"; 
+    ofstream OutFileTorque(output_torque); 
+    OutFileTorque << "torque_1" << " " << "torque_2" << "\n";  
+    OutFileTorque.close();
+
 }
 
 
