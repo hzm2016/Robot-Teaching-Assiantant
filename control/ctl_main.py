@@ -12,7 +12,7 @@ def run_main(show_video=False):
 	task = TCPTask('169.254.0.99', 5005)
 	
 	# check motor and encode well before experiments
-	task.get_encoder_check()
+	# task.get_encoder_check()
 	
 	task.send_params_request()
 	
