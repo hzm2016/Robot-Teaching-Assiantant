@@ -99,8 +99,8 @@ class Server(HyperSocket):
     def reset_ack(self):
         self._send_cmd("RESET_DONE")
         
-    def send_done(self):
-        self._send_cmd("WRIT_DONE")
+    def send_movement_done(self):
+        self._send_cmd("MOVEMENT_DONE")
 
     def wait_demonstration_request(self):
         return self._wait_cmd("DEMO")
@@ -204,8 +204,8 @@ class Client(HyperSocket):
         return self._read_value()
     
     def wait_loop_run_done(self):
-        self._send_cmd("RUN_DONE")
-        return self._read_value()
+        self._wait_cmd("MOVEMENT_DONE")
+        return True
     
     def wait_way_points(self):
         self._send_cmd("WAY POINT")

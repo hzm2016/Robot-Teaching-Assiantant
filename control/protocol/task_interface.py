@@ -59,7 +59,7 @@ class TaskInterface:
         """
         pass
     
-
+        
 class TCPTask():
 
     def __init__(self, ip, port):
@@ -96,6 +96,9 @@ class TCPTask():
     
     def get_encoder_check(self):
         return self._conn.wait_encoder_check()
+    
+    def get_movement_check(self):
+        return self._conn.wait_loop_run_done()
     
     def get_demonstrations(self):
         return self._conn.wait_demonstration()
