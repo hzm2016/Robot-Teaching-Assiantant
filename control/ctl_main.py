@@ -1,4 +1,6 @@
-import cv2
+`import cv2
+import sys
+import os
 from control.vision_capture.main_functions import *
 from control.path_planning.path_generate import *
 import socket
@@ -52,25 +54,5 @@ def run_main(show_video=False):
 if __name__ == "__main__":
 	# check_path(root_path='path_planning/data', font_name='third', type=3, period=10, Ts=0.001)
 	# image_precessing(img_path='capture_images/', img_name='test')
-	
-	run_main()
-	
-	# import socket
-	# import sys
-	#
-	# address = ('127.0.0.1', 5005)  # 服务端地址和端口
-	# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	# try:
-	# 	s.connect(address)  # 尝试连接服务端
-	# except Exception:
-	# 	print('[!] Server not found ot not open')
-	# 	sys.exit()
-	# while True:
-	# 	trigger = input('Input: ')
-	# 	s.sendall(trigger.encode())
-	# 	data = s.recv(1024)
-	# 	data = data.decode()
-	# 	print('[Recieved]', data)
-	# 	if trigger == '###':  # 自定义结束字符串
-	# 		break
-	# s.close()
+	show_video()
+	# run_main()
