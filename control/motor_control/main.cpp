@@ -8,6 +8,8 @@
 #include "renishaw_can_functions.hpp" 
 using namespace std; 
 
+#include <cmath>
+
 #define PI 3.1415926
 
 #define STRINGIFY(x) #x
@@ -66,32 +68,40 @@ int encode_motor_test()
 } 
 
 
-double read_initial_angle_1()
+double read_angle_1()
 {
+    ////////////////////////////////////////////
+    // Read motor angle 1
+    ////////////////////////////////////////////
+
     CANDevice can1((char *) "can1");  
     can1.begin();  
 
     Gcan motor_1(can1);   
     motor_1.begin();  
     
-    double theta_1_initial = motor_1.read_sensor(2);   
-    printf("Motor 1 initial position: %f\n", theta_1_initial);  
+    double theta_1 = motor_1.read_sensor(2);   
+    printf("Motor 1 position: %f\n", theta_1);  
 
-    return theta_1_initial; 
+    return theta_1; 
 }
 
-double read_initial_angle_2()
+double read_angle_2()
 {
-    CANDevice can0((char *) "can0");  
-    can0.begin();  
+    ////////////////////////////////////////////
+    // Read motor angle 2
+    ////////////////////////////////////////////
+
+    CANDevice can0((char *) "can0");   
+    can0.begin();   
 
     Gcan motor_2(can0);   
-    motor_2.begin();  
+    motor_2.begin();   
 
-    double theta_2_initial = motor_2.read_sensor(1);  
-    printf("Motor 2 initial position: %f\n", theta_2_initial);  
+    double theta_2 = motor_2.read_sensor(1);  
+    printf("Motor 2 position: %f\n", theta_2);  
 
-    return theta_2_initial;  
+    return theta_2;  
 }
 
 
@@ -148,14 +158,108 @@ double read_initial_angle_2()
 //     return 1;  
 // } 
 
-int get_demonstration(double theta_1_initial, double theta_2_initial)
+int move_to_target(double stiffness, double damping, 
+double q_1_target, double q_2_target, 
+double theta_1_initial, double theta_2_initial, 
+double dist_threshold
+)
+{
+    ////////////////////////////////////////////////////////
+    //// Initial Encoder and Motor CAN
+    //////////////////////////////////////////////////////// 
+
+    CANDevice can0((char *) "can0");   
+    can0.begin();  
+    CANDevice can1((char *) "can1");   
+    can1.begin();  
+
+    Gcan motor_1(can1);   
+    Gcan motor_2(can0);   
+    motor_1.begin();   
+    motor_2.begin();   
+
+    printf("Move to target start !!!!\n");  
+
+    ////////////////////////////////////////////////////////
+    // One loop control demonstration
+    ////////////////////////////////////////////////////////
+
+    string output_angle = "move_target_angle_list.txt";    
+    ofstream OutFileAngle(output_angle);    
+    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
+
+    double torque_lower_bound = -2.5;   
+    double torque_upper_bound = 2.5;   
+    
+    double ctl_ratio_1 = - 2000.0/32;   
+    double ctl_ratio_2 = 2000.0/32;   
+
+    double theta_1_t = 0.0;   
+    double theta_2_t = 0.0;   
+
+    double d_theta_1_t = 0.0;    
+    double d_theta_2_t = 0.0;    
+
+    double theta_1_e = 0.0;   
+    double theta_2_e = 0.0;   
+
+    double d_theta_1_e = 0.0;   
+    double d_theta_2_e = 0.0;   
+
+    double torque_1 = 0.0;  
+    double torque_2 = 0.0;  
+
+    double torque_1_t = 0.0;  
+    double torque_2_t = 0.0;  
+
+    double pos_1 = 0.0;  
+    double pos_2 = 0.0;      
+
+    double dist = 0.0; 
+
+    while(dist > dist_threshold) 
+    {
+        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
+        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
+
+        dist = sqrt(pow((theta_1_t - q_1_target), 2) + pow((theta_2_t - q_2_target), 2));   
+
+        printf(" theta_1_t: %f\n", theta_1_t);    
+        printf(" theta_2_t: %f\n", theta_2_t);    
+
+        /////////////////////////////////////////////////////
+        // calculate torque control command 
+        ///////////////////////////////////////////////////// 
+        torque_1 = clip(- stiffness * (theta_1_e - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(- stiffness * (theta_2_e - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+
+        // double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
+        // double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
+
+        OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
+
+        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
+
+        // OutFileTorque << torque_1_t << " " << torque_2_t << "\n";   
+
+        // OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";   
+
+        // printf("d_theta_1_t: %f\n", d_theta_1_t);   
+        // printf("d_theta_2_t: %f\n", d_theta_2_t);   
+    }
+
+    return 1; 
+}
+
+int get_demonstration(double theta_1_initial, double theta_2_initial) 
 {
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN
     ////////////////////////////////////////////////////////
     // Gcan motor_1; 
     // Gcan motor_2; 
-    // hardware_reset(&motor_1, &motor_2); 
+    // hardware_reset(&motor_1, &motor_2);  
 
     CANDevice can0((char *) "can0");  
     can0.begin();  
@@ -180,7 +284,7 @@ int get_demonstration(double theta_1_initial, double theta_2_initial)
 
     string output_angle = "demonstrated_angle_list.txt";    
     ofstream OutFileAngle(output_angle);    
-    OutFileAngle << "angle_1" << "," << "angle_2" << "\n"; 
+    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
 
     double theta_1_t = 0.0;   
     double theta_2_t = 0.0;   
@@ -486,15 +590,15 @@ PYBIND11_MODULE(motor_control, m) {
     )pbdoc"); 
 
     m.def(
-        "read_initial_angle_1", &read_initial_angle_1, R"pbdoc( 
-        read initial angle 1
+        "read_angle_1", &read_angle_1, R"pbdoc( 
+        read angle 1
 
         Some other explanation about the add function. 
     )pbdoc"); 
 
     m.def(
-        "read_initial_angle_2", &read_initial_angle_2, R"pbdoc( 
-        read initial angle 2
+        "read_angle_2", &read_angle_2, R"pbdoc( 
+        read angle 2
 
         Some other explanation about the add function. 
     )pbdoc"); 
@@ -512,6 +616,12 @@ PYBIND11_MODULE(motor_control, m) {
         Some other explanation about the add function.
     )pbdoc"); 
 
+    m.def("move_to_target", &move_to_target, R"pbdoc(
+        move_to_target
+
+        Some other explanation about the add function.
+    )pbdoc"); 
+    
     // run_one_loop(double stiffness, double damping, double theta_1_initial, double theta_2_initial, int Num_waypoints)
 
 
