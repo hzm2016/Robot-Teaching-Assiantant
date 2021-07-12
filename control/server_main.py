@@ -33,7 +33,7 @@ if __name__ == "__main__":
 	# send_done = _server.wait_send_way_points_done()
 	# print("send_done :::", send_done)
 	os.remove(r'angle_list.txt')
-	data_file = open('angle_list.txt', 'w')
+	data_file = open('./motor_control/angle_list.txt', 'w')
 	way_point = None
 	while way_point != "SEND_DONE":
 		way_point = _server.read_way_points()
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 		if way_point == "SEND_DONE":
 			break
 		way_points.append(way_point)
-		line_data = str(way_point[0]) + ',' + str(way_point[1])
+		line_data = str(way_point[0]) + ',' + str(way_point[1]) + '\n'
 		data_file.writelines(line_data)
 		# send_done = _server.wait_send_way_points_done()
 	way_points = np.array(way_points)

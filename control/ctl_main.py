@@ -1,4 +1,4 @@
-`import cv2
+import cv2
 import sys
 import os
 from control.vision_capture.main_functions import *
@@ -27,12 +27,12 @@ def run_main(show_video=False):
 	task.send_params(params)
 	
 	# # offline check the generated path :::
-	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', plot_show=False,
-	                                            font_name='third', type=3)
+	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', plot_show=False, font_name='third', type=3)
 	way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
 	print("way_points :::", way_points.shape)
 
 	task.send_way_points_request()
+	
 	task.send_way_points(way_points)
 	
 	task.send_way_points_done()
@@ -56,5 +56,5 @@ def run_main(show_video=False):
 if __name__ == "__main__":
 	# check_path(root_path='path_planning/data', font_name='third', type=3, period=10, Ts=0.001)
 	# image_precessing(img_path='capture_images/', img_name='test')
-	show_video()
-	# run_main()
+	# show_video()
+	run_main()
