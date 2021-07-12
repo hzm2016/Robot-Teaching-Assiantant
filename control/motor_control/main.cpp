@@ -62,8 +62,6 @@ int encode_motor_test()
     printf("Encoder 1 position: %f\n", theta_1);  
     printf("Encoder 2 position: %f\n", theta_2);  
 
-    
-    
     return 1;  
 } 
 
@@ -97,31 +95,37 @@ double read_initial_angle_2()
 }
 
 
-// void hardware_reset() 
-// {
-//     ////////////////////////////////////////////////////////
-//     // Initial Encoder and Motor CAN
-//     ////////////////////////////////////////////////////////
+void hardware_reset(Gcan *motor_1, Gcan *motor_2) 
+{
+    ////////////////////////////////////////////////////////
+    // Initial Encoder and Motor CAN
+    ////////////////////////////////////////////////////////
 
-//     CANDevice can0((char *) "can0");  
-//     can0.begin();  
-//     CANDevice can1((char *) "can1");  
-//     can1.begin();  
+    CANDevice can0((char *) "can0");  
+    can0.begin();  
+    CANDevice can1((char *) "can1");  
+    can1.begin();  
 
-//     Gcan motor_1(can1);  
-//     Gcan motor_2(can0);  
-//     motor_1.begin();  
-//     motor_2.begin();  
+    motor_1(can1);  
+    motor_2(can0);  
+    // Gcan motor_1(can1);   
+    // Gcan motor_2(can0);   
+    motor_1.begin();  
+    motor_2.begin();  
 
-//     controller_renishaw encoder("can2");  
-//     float encoder_arr[2];  
 
-// 	encoder.read_ang_encoder(encoder_arr);   
-//   	double theta_1 = (double) encoder_arr[1]*PI/180.0;   
-//   	double theta_2 = (double) encoder_arr[0]*PI/180.0;    
-//     printf("Encoder 1 position: %f\n", theta_1);   
-//     printf("Encoder 2 position: %f\n", theta_2);  
-// }
+    ///////////// initial encoder ////////
+    //////////////////////////////////////
+
+    // controller_renishaw encoder("can2");  
+    
+    // float encoder_arr[2];  
+	// encoder.read_ang_encoder(encoder_arr);   
+  	// double theta_1 = (double) encoder_arr[1]*PI/180.0;   
+  	// double theta_2 = (double) encoder_arr[0]*PI/180.0;    
+    // printf("Encoder 1 position: %f\n", theta_1);   
+    // printf("Encoder 2 position: %f\n", theta_2);  
+}
 
 
 // int reset(double *theta_1_initial, double *theta_2_initial)
@@ -142,43 +146,52 @@ double read_initial_angle_2()
 //     printf("Motor 2 initial position: %f\n", theta_2_initial);   
     
 //     return 1;  
-// }
+// } 
 
-// int get_demonstration(double theta_1_initial, double theta_2_initial)
-// {
-//     ////////////////////////////////////////////////////////
-//     //// Initial Encoder and Motor CAN
-//     ////////////////////////////////////////////////////////
-//     hardware_reset(); 
+int get_demonstration(double theta_1_initial, double theta_2_initial)
+{
+    ////////////////////////////////////////////////////////
+    //// Initial Encoder and Motor CAN
+    ////////////////////////////////////////////////////////
+    Gcan motor_1; 
+    Gcan motor_2; 
+    hardware_reset(&motor_1, &motor_2); 
 
-//     ////////////////////////////////////////////////////////
-//     // One loop control demonstration
-//     ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    // One loop control demonstration
+    ////////////////////////////////////////////////////////
 
-//     while(true) 
-//     {
-//         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
-//         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+    // string output_torque = root_path + "torque_list.txt"; 
+    // ofstream OutFileTorque(output_torque); 
+    // OutFileTorque << "torque_1" << " " << "torque_2" << "\n";  
 
-//         printf(" theta_1_t: %f\n", theta_1_t);  
-//         printf(" theta_2_t: %f\n", theta_2_t);  
+    string output_angle = "demonstrated_angle_list.txt";    
+    ofstream OutFileAngle(output_angle);    
+    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";    
 
-//         OutFileAngle << theta_1_t << " " << theta_2_t << "\n"; 
+    while(true) 
+    {
+        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
+        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
 
-//         // torque_1 = clip(-1 * K_p * (theta_1_e - theta_1_t) - K_d * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound);  
-//         // torque_2 = clip(-1 * K_p * (theta_2_e - theta_2_t) - K_d * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound); 
+        printf(" theta_1_t: %f\n", theta_1_t);  
+        printf(" theta_2_t: %f\n", theta_2_t);  
 
-//         pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);   
-//         pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);   
+        OutFileAngle << theta_1_t << "," << theta_2_t << "\n";  
 
-//         OutFileTorque << torque_1_t << " " << torque_2_t << "\n";   
+        pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);   
 
-//         OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";   
+        // OutFileTorque << torque_1_t << " " << torque_2_t << "\n";   
 
-//         printf("d_theta_1_t: %f\n", d_theta_1_t);   
-//         printf("d_theta_2_t: %f\n", d_theta_2_t);   
-//     }
-// }
+        // OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";   
+
+        // printf("d_theta_1_t: %f\n", d_theta_1_t);   
+        // printf("d_theta_2_t: %f\n", d_theta_2_t);   
+    }
+
+    return 1; 
+}
 
 
 int load_path_data()
@@ -444,6 +457,14 @@ PYBIND11_MODULE(motor_control, m) {
 
         Some other explanation about the add function. 
     )pbdoc"); 
+
+
+    m.def("get_demonstration", &get_demonstration, R"pbdoc(
+        get_demonstration
+
+        Some other explanation about the add function.
+    )pbdoc"); 
+
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
