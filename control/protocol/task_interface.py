@@ -257,3 +257,53 @@ class RunInteractionModel:
         print("-" * 50)
         return np.array(success_list), np.array(reward_list), np.array(parameters), np.array(latent), \
                np.array(cluster), np.array(observations)
+    
+    
+# class Connector(object):
+# 	def __init__(self):
+# 		# ===================== socket connection ========================
+# 		self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 		address = ('169.254.0.99', 5005)
+# 		self.tcp_socket.connect(address)
+#
+# 		print("connect to server :::", address)
+#
+# 	def system_calib(self):
+# 		send_data = "Calibration"
+# 		self.tcp_socket.send(send_data.encode())
+#
+# 	def set_params(self):
+# 		print("Second params ::::")
+#
+# 		# send way_points to the lower-level controller
+# 		# ====================== second data =========================
+# 		# send impedance parameters ::::
+# 		# lower-level controller set impedance and motion command
+# 		stiffness = [100, 100]
+# 		damping = [50, 50]
+# 		command_move = "Move_start"
+# 		swrite_stiffness = '#Stiff ' + '[' + str('%0.3f' % stiffness[0]) + ',' + str('%0.3f' % stiffness[1]) + ']' + '@'
+# 		swrite_damping = '#Damping' + '[' + str('%0.3f' % damping[0]) + ',' + str('%0.3f' % damping[1]) + ']' + '@'
+#
+# 		self.tcp_socket.send(swrite_stiffness.encode())
+#
+# 		self.tcp_socket.send(swrite_damping.encode())
+#
+# 		self.tcp_socket.send(command_move.encode())
+#
+# 	def set_way_points(self):
+# 		# terminate with symbol @
+# 		way_points = np.array((100, 2))
+# 		length = way_points.shape[0]
+# 		for i in range(length//5+1):
+# 			swrite_way_points = '#Points '
+# 			for j in range(5):
+# 				swrite_way_points += '[' + str('%0.3f' % way_points[i+j, 0]) + ',' + str('%0.3f' % way_points[i+j, 1]) + '],'
+# 			self.tcp_socket.send(swrite_way_points.encode())
+#
+# 		self.tcp_socket.send('@'.encode())
+#
+# 	def run_one_loop(self):
+# 		# run_one_loop tasks ::: and capture the results :::
+#
+# 		pass
