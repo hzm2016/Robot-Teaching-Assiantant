@@ -284,9 +284,9 @@ double dist_threshold
     // Catch a Ctrl-C event:
 	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
 
-    // Catch a Ctrl-C event:
-    signal(SIGINT, sig_h); 
-
+    // Catch a Ctrl-C event: 
+    signal(SIGINT, sig_h);  
+ 
     // dist > dist_threshold && initial_index < max_index
     while(run_on)  
     {
@@ -301,8 +301,8 @@ double dist_threshold
         /////////////////////////////////////////////////////
         // calculate torque control command 
         ///////////////////////////////////////////////////// 
-        torque_1 = clip(- stiffness * (theta_1_e - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-        torque_2 = clip(- stiffness * (theta_2_e - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+        torque_1 = clip(- stiffness * (q_1_target - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(- stiffness * (q_2_target - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
         // double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
         // double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
@@ -312,8 +312,8 @@ double dist_threshold
         // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
         // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
 
-        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);    
-        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);   
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
 
         OutFileTorque << torque_1_t << "," << torque_2_t << "\n";   
 
@@ -322,9 +322,10 @@ double dist_threshold
         // printf("d_theta_1_t: %f\n", d_theta_1_t);   
         // printf("d_theta_2_t: %f\n", d_theta_2_t);   
     }
+
     printf("Move to target done !!!! \n"); 
 
-    OutFileAngle.close();  
+    OutFileAngle.close();   
     OutFileTorque.close();       
 
     motor_1.pack_stop_cmd(2);   
