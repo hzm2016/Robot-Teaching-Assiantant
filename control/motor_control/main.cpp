@@ -67,8 +67,44 @@ int encode_motor_test()
     return 1;  
 } 
 
+double read_initial_angle_1()
+{
+    ////////////////////////////////////////////
+    // Read motor original angle 1
+    ////////////////////////////////////////////
 
-double read_angle_1()
+    CANDevice can1((char *) "can1");  
+    can1.begin();  
+
+    Gcan motor_1(can1);   
+    motor_1.begin();  
+    
+    double theta_1 = motor_1.read_sensor(2);    
+    printf("Motor 1 original position: %f\n", theta_1);   
+
+    return theta_1;   
+}
+
+double read_initial_angle_2()   
+{
+    ////////////////////////////////////////////
+    // Read motor original angle 2
+    ////////////////////////////////////////////
+
+    CANDevice can0((char *) "can0");   
+    can0.begin();   
+
+    Gcan motor_2(can0);   
+    motor_2.begin();   
+
+    // double theta_2 = motor_2.read_sensor(1);   
+    double theta_2 = motor_2.read_sensor(1);  
+    printf("Motor 2 original position: %f\n", theta_2);   
+
+    return theta_2;   
+}
+
+double read_angle_1(double theta_1_initial)
 {
     ////////////////////////////////////////////
     // Read motor angle 1
@@ -80,13 +116,13 @@ double read_angle_1()
     Gcan motor_1(can1);   
     motor_1.begin();  
     
-    double theta_1 = motor_1.read_sensor(2);   
-    printf("Motor 1 position: %f\n", theta_1);  
+    double theta_1 = motor_1.read_sensor(2) - theta_1_initial;    
+    // printf("Motor 1 position: %f\n", theta_1);   
 
-    return theta_1; 
+    return theta_1;   
 }
 
-double read_angle_2()
+double read_angle_2(double theta_2_initial, double theta_1_t)   
 {
     ////////////////////////////////////////////
     // Read motor angle 2
@@ -98,10 +134,10 @@ double read_angle_2()
     Gcan motor_2(can0);   
     motor_2.begin();   
 
-    double theta_2 = motor_2.read_sensor(1);  
-    printf("Motor 2 position: %f\n", theta_2);  
+    double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
+    // printf("Motor 2 position: %f\n", theta_2);   
 
-    return theta_2;  
+    return theta_2;   
 }
 
 
@@ -603,6 +639,19 @@ PYBIND11_MODULE(motor_control, m) {
         Some other explanation about the add function. 
     )pbdoc"); 
 
+        m.def(
+        "read_angle_1", &read_initial_angle_1, R"pbdoc( 
+        read angle 1
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
+
+    m.def(
+        "read_angle_2", &read_initial_angle_2, R"pbdoc( 
+        read angle 2
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
 
     m.def("get_demonstration", &get_demonstration, R"pbdoc(
         get_demonstration
