@@ -8,12 +8,23 @@
 #include "renishaw_can_functions.hpp" 
 using namespace std; 
 
-#include <cmath>
+#include <unistd.h> 
+#include <signal.h>  
+#include <cmath> 
 
 #define PI 3.1415926
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
+
+
+int run_on;
+
+void 
+sigint_1_step(int dummy) {
+    if (run_on == 1)
+		run_on = 0;
+}
 
 
 void split(const string& s, vector<string>& tokens, const string& delim=",") 
@@ -268,8 +279,16 @@ double dist_threshold
         pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t); 
     }
 
+    run_on = 1; 
+
+    // Catch a Ctrl-C event:
+	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
+
+    // Catch a Ctrl-C event:
+    signal(SIGINT, sig_h); 
+
     // dist > dist_threshold && initial_index < max_index
-    while(1)  
+    while(run_on)  
     {
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
@@ -301,6 +320,13 @@ double dist_threshold
         // printf("d_theta_2_t: %f\n", d_theta_2_t);   
     }
     printf("Move to target done !!!! \n"); 
+
+    OutFileAngle.close();  
+    OutFileTorque.close();       
+
+    motor_1.pack_stop_cmd(2);   
+    motor_2.pack_stop_cmd(1);   
+
     return 1; 
 }
 
