@@ -18,6 +18,7 @@ def load_class(class_name):
         mod = getattr(mod, comp)
     return mod
 
+
 def squarify(M,val=10000):
     (a,b)=M.shape
 
@@ -30,6 +31,7 @@ def squarify(M,val=10000):
         padding=((0,b-a),(0,0))
 
     return np.pad(M,padding,mode='constant',constant_values=val)
+
 
 def pad_length(a, b, val=1000):
 

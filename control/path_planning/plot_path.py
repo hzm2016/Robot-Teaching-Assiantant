@@ -12,9 +12,9 @@ COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple'
 
 FONT_SIZE = 28
 linewidth = 4
-plt.rcParams['font.family'] = 'Times New Roman'
-plt.rcParams['font.size'] = FONT_SIZE
-sns.set_theme()
+# plt.rcParams['font.family'] = 'Times New Roman'
+# plt.rcParams['font.size'] = FONT_SIZE
+# sns.set_theme()
 params = {
 'axes.axisbelow': True,
  'axes.edgecolor': 'white',
@@ -45,7 +45,8 @@ params = {
  'ytick.major.size': 1.0,
  'ytick.minor.size': 0.0
  }
-sns.axes_style(rc=params)
+# sns.axes_style(rc=params)
+sns.set(font_scale=2.5)
 
 
 def plot_real_trajectory(
@@ -206,16 +207,16 @@ def plot_torque_path(
     plt.plot(angle_list_1_e, linewidth=linewidth, label='angle 1')
     plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2')
     
-    plt.xlabel('time($t$)', fontsize=FONT_SIZE)
-    plt.ylabel('$rad', fontsize=FONT_SIZE)
+    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
+    plt.ylabel('rad')  # fontsize=FONT_SIZE
     plt.legend()
     
     plt.subplot(1, 2, 2)
     plt.plot(torque_list_1, linewidth=linewidth, label='angle 1')
     plt.plot(torque_list_2, linewidth=linewidth, label='angle 2')
     
-    plt.xlabel('time($t$)', fontsize=FONT_SIZE)
-    plt.ylabel('$Nm', fontsize=FONT_SIZE)
+    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
+    plt.ylabel('Nm')  # fontsize=FONT_SIZE
     plt.legend()
     
     plt.show()
