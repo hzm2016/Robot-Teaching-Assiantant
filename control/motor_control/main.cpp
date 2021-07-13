@@ -88,10 +88,10 @@ double read_initial_angle_1()
     can1.begin();  
 
     Gcan motor_1(can1);   
-    motor_1.begin();  
+    motor_1.begin();   
     
-    double theta_1 = motor_1.read_sensor(2);    
-    printf("Motor 1 original position: %f\n", theta_1);   
+    double theta_1 = motor_1.read_sensor(2);   
+    printf("Motor 1 original position: %f\n", theta_1);  
 
     return theta_1;   
 }
@@ -309,8 +309,11 @@ double dist_threshold
 
         OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
 
-        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
-        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
+        // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
+        // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
+
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);    
+        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);   
 
         OutFileTorque << torque_1_t << "," << torque_2_t << "\n";   
 
