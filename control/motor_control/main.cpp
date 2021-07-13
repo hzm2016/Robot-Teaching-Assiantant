@@ -22,8 +22,8 @@ int run_on;
 
 void 
 sigint_1_step(int dummy) {
-    if (run_on == 1)
-		run_on = 0;
+    if (run_on == 1) 
+		run_on = 0; 
 }
 
 
@@ -58,22 +58,21 @@ double clip(double angle, double lower_bound, double upper_bound)
     return clip_angle; 
 }
 
-int add(int i, int j) {
-    return i + 2 * j; 
-} 
-
-int encode_motor_test() 
+int read_initial_encode() 
 { 
-
+    ////////////////////////////////////////////
+    // Read original encoder
+    ////////////////////////////////////////////
     controller_renishaw encoder("can2");  
 
     float encoder_arr[2];  
 
 	encoder.read_ang_encoder(encoder_arr);   
-  	double theta_1 = (double) encoder_arr[1]*PI/180.0;   
-  	double theta_2 = (double) encoder_arr[0]*PI/180.0;   
-    printf("Encoder 1 position: %f\n", theta_1);  
-    printf("Encoder 2 position: %f\n", theta_2);  
+  	double q_1 = (double) encoder_arr[1]*PI/180.0;   
+  	double q_2 = (double) encoder_arr[0]*PI/180.0;  
+    
+    printf("Encoder 1 position: %f\n", q_1);  
+    printf("Encoder 2 position: %f\n", q_2);  
 
     return 1;  
 } 
@@ -151,6 +150,42 @@ double read_angle_2(double theta_2_initial, double theta_1_t)
     return theta_2;   
 }
 
+double read_link_angle_1(double q_1_initial)
+{
+    ////////////////////////////////////////////
+    // Read link angle 1
+    ////////////////////////////////////////////
+
+    CANDevice can1((char *) "can1");  
+    can1.begin();  
+
+    Gcan motor_1(can1);   
+    motor_1.begin();  
+    
+    double q_1 = motor_1.read_sensor(2) - theta_1_initial;    
+    // printf("Motor 1 position: %f\n", theta_1);   
+
+    return q_1;   
+}
+
+double read_link_angle_2(double q_2_initial)   
+{
+    ////////////////////////////////////////////
+    // Read motor angle 2
+    ////////////////////////////////////////////
+
+    CANDevice can0((char *) "can0");   
+    can0.begin();   
+
+    Gcan motor_2(can0);   
+    motor_2.begin();   
+
+    double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
+    // printf("Motor 2 position: %f\n", theta_2);   
+
+    return q_2;   
+}
+
 
 // void hardware_reset(Gcan *motor_1, Gcan *motor_2) 
 // {
@@ -215,9 +250,9 @@ double dist_threshold
     //// Initial Encoder and Motor CAN
     //////////////////////////////////////////////////////// 
 
-    CANDevice can0((char *) "can0");   
+    CANDevice can0((char *) "can0");    
     can0.begin();   
-    CANDevice can1((char *) "can1");   
+    CANDevice can1((char *) "can1");     
     can1.begin();   
 
     Gcan motor_1(can1);   
@@ -646,11 +681,11 @@ PYBIND11_MODULE(motor_control, m) {
            subtract
     )pbdoc";
 
-    m.def("add", &add, R"pbdoc(
-        Add two numbers
+    // m.def("add", &add, R"pbdoc(
+    //     Add two numbers
 
-        Some other explanation about the add function.
-    )pbdoc"); 
+    //     Some other explanation about the add function.
+    // )pbdoc"); 
 
     m.def("subtract", [](int i, int j) { return i - j; }, R"pbdoc(
         Subtract two numbers
