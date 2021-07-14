@@ -27,7 +27,7 @@ def run_main(show_video=False):
 	task.send_params(params)
 	
 	# # offline check the generated path :::
-	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/data', plot_show=False, font_name='third', type=3)
+	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/font_data', plot_show=False, font_name='third', type=3)
 	way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
 	print("way_points :::", way_points.shape)
 
@@ -49,12 +49,12 @@ def run_main(show_video=False):
 		print("run_done", run_done)
 	
 	# if run_done:
-	# 	capture_image(root_path='capture_images/', font_name='test')
-	# 	image_precessing(img_path='capture_images/', img_name='test')
+	# 	capture_image(root_path='captured_images/', font_name='test')
+	# 	image_precessing(img_path='captured_images/', img_name='test')
 	
 
 if __name__ == "__main__":
-	# check_path(root_path='path_planning/data', font_name='third', type=3, period=10, Ts=0.001)
-	# image_precessing(img_path='capture_images/', img_name='test')
+	# check_path(root_path='path_planning/font_data', font_name='third', type=3, period=10, Ts=0.001)
+	# image_precessing(img_path='captured_images/', img_name='test')
 	# show_video()
 	run_main()

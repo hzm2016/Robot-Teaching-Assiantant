@@ -16,9 +16,9 @@ from datasets import ImageDataset, SequentialImageDataset
 parser = argparse.ArgumentParser()
 parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
 parser.add_argument('--dataroot', type=str, default='datasets/horse2zebra/', help='root directory of the dataset')
-parser.add_argument('--input_nc', type=int, default=3, help='number of channels of input data')
-parser.add_argument('--output_nc', type=int, default=3, help='number of channels of output data')
-parser.add_argument('--size', type=int, default=128, help='size of the data (squared assumed)')
+parser.add_argument('--input_nc', type=int, default=3, help='number of channels of input font_data')
+parser.add_argument('--output_nc', type=int, default=3, help='number of channels of output font_data')
+parser.add_argument('--size', type=int, default=128, help='size of the font_data (squared assumed)')
 parser.add_argument('--cuda', action='store_true', help='use GPU computation')
 parser.add_argument('--n_cpu', type=int, default=8, help='number of cpu threads to use during batch generation')
 parser.add_argument('--generator_A2B', type=str, default='output/199_netG_A2B.pth', help='A2B generator checkpoint file')
@@ -106,7 +106,7 @@ if opt.sequential and opt.ske:
         # Generate output
         fake_B = 0.5*(netG_A2B(A_comp_1).data + 1.0)
         fake_P = 0.5*(netG_S2P(A_full, A_ske).data + 1.0)
-        # fake_A = 0.5*(netG_B2A(real_B).data + 1.0)
+        # fake_A = 0.5*(netG_B2A(real_B).font_data + 1.0)
 
         # Save image files
         save_image(fake_P, opt.output_dir + '/P/%04d.png' % (i+1))
@@ -127,7 +127,7 @@ elif opt.sequential:
 
         # Generate output
         fake_B = 0.5*(netG_A2B.forward_with_stroke(A_full, A_part).data + 1.0)
-        # fake_A = 0.5*(netG_B2A(real_B).data + 1.0)
+        # fake_A = 0.5*(netG_B2A(real_B).font_data + 1.0)
 
         # Save image files
         # save_image(fake_A, 'output/A/%04d.png' % (i+1))

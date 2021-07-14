@@ -96,7 +96,7 @@ class Model526:
                 self.write_register(self.ISR_ADC_DONE, self.REG_ISR)
                 break
 
-        # Read the ADC data
+        # Read the ADC font_data
         readings = []
         for i in range(10):
             self.write_register(0xFFE0 | (i << 1), self.REG_ADC)

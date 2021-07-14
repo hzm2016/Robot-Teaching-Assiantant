@@ -567,11 +567,11 @@ if __name__ == '__main__':
     parser.add_argument('--decay_epoch', type=int, default=100,
                         help='epoch to start linearly decaying the learning rate to 0')
     parser.add_argument('--size', type=int, default=128,
-                        help='size of the data crop (squared assumed)')
+                        help='size of the font_data crop (squared assumed)')
     parser.add_argument('--input_nc', type=int, default=3,
-                        help='number of channels of input data')
+                        help='number of channels of input font_data')
     parser.add_argument('--output_nc', type=int, default=3,
-                        help='number of channels of output data')
+                        help='number of channels of output font_data')
     parser.add_argument('--cuda', action='store_true',
                         help='use GPU computation')
     parser.add_argument('--n_cpu', type=int, default=0,

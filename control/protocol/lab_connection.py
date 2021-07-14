@@ -30,7 +30,7 @@ class TCPClientExample:
 
         # First thing, send the dataset of demonstration
         self._server.wait_demonstration_request()
-        # Run the demonstration, .... and send the data
+        # Run the demonstration, .... and send the font_data
         self._server.send_demonstration(np.random.normal(size=(1000, self._space.n_params + self._state_dim + 1)))
 
         while True:

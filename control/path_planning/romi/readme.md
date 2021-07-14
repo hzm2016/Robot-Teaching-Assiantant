@@ -1,4 +1,4 @@
-RObotic Movement Interface
+Robotic Movement Interface
 ===========================
 
 The goal of this project is to provide the essential tools to perform imitation learning using Movement Primitives, 

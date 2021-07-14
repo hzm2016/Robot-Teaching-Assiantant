@@ -15,9 +15,8 @@ class InconsistentException(Exception):
 
 class NamedPoint:
     """
-    This represent a combination of refs and correspondent values in a given instant.
+        This represent a combination of refs and correspondent values in a given instant.
     """
-
     def __init__(self, *refs):
         self.refs = refs
         self.values = np.zeros(len(self.refs))
@@ -34,15 +33,14 @@ class NamedPoint:
 
 class NamedTrajectoryBase:
     """
-    A trajectory is a ordered sequence of NamedPoints with the duration of the transition between one point and the following.
+        A trajectory is a ordered sequence of NamedPoints with the duration of the transition between one point and the following.
     """
 
     def __init__(self, refs, durations, values):
         """
-
-        :param refs: list of M references
-        :param durations: list of N durations
-        :param values: NxM matrix of N points , each row contains the value for each 0:M-1 reference
+            refs: list of M references
+            durations: list of N durations
+            values: NxM matrix of N points , each row contains the value for each 0:M-1 reference
         """
         self.refs = refs
         self.duration = durations
@@ -54,10 +52,10 @@ class NamedTrajectoryBase:
 
     def save(self, filename):
         """
-        Save the trajectory on file
-        :param filename: Name of the file
-        :type filename: str
-        :rtype: None
+            Save the trajectory on file
+            :param filename: Name of the file
+            :type filename: str
+            :rtype: None
         """
         ret = {
            'refs': self.refs,
@@ -91,7 +89,7 @@ class NamedTrajectoryBase:
 
 class GoToTrajectory(NamedTrajectoryBase):
     """
-    A trajectory composed of only one point to e reached.
+        A trajectory composed of only one point to e reached.
     """
 
     def __init__(self, duration=10., **values):
@@ -101,11 +99,11 @@ class GoToTrajectory(NamedTrajectoryBase):
 
 def LoadTrajectory(filename):
     """
-    Load a named trajectory from file.
-    :param filename: file
-    :type filename: str
-    :return: the named-trajectory extracted from the file
-    :rtype: NamedTrajectoryBase
+        Load a named trajectory from file.
+        :param filename: file
+        :type filename: str
+        :return: the named-trajectory extracted from the file
+        :rtype: NamedTrajectoryBase
     """
     obj = np.load(filename, allow_pickle=True)
     return NamedTrajectoryBase(obj.item()['refs'], obj.item()['duration'], obj.item()['values'])
@@ -113,7 +111,7 @@ def LoadTrajectory(filename):
 
 class NamedTrajectory(NamedTrajectoryBase):
     """
-    Empty named trajectory. It is possible to notify new values and record the trajectory.
+        Empty named trajectory. It is possible to notify new values and record the trajectory.
     """
 
     def __init__(self, *refs):

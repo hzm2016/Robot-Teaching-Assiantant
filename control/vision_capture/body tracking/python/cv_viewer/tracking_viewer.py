@@ -17,7 +17,7 @@ def cvt(pt, scale):
 def render_2D(left_display, img_scale, objects, is_tracking_on):
     '''
     Parameters
-        left_display (np.array): numpy array containing image data
+        left_display (np.array): numpy array containing image font_data
         img_scale (list[float])
         objects (list[sl.ObjectData]) 
     '''

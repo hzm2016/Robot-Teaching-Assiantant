@@ -15,8 +15,8 @@ class MovementSpace:
 
     def __init__(self, group, centers, bandwidths, regularization=1E-12):
         """
-        :param group: On which group do you want to set your promp
-        :type group: Group
+            :param group: On which group do you want to set your promp
+            :type group: Group
         """
         self.n_features = len(centers)
         self.n_dim = len(group.refs)
@@ -47,6 +47,7 @@ class MovementSpace:
     def get_block_trajectory_displacement(self, z):
         return np.concatenate([self.get_trajectory_displacement(z, i)
                                for i in range(self.n_dim)], axis=0)
+
 
 class Movement:
     
@@ -90,10 +91,10 @@ class MovementPrimitive(Movement):
 
     def __init__(self, movement_space, parameters):
         """
-        :param movement_space: the movement space of the movement primitive
-        :type movement_space: MovementPrimitive
-        :param parameters: a dictionary of the parameters for each dimension
-        :type parameters: dict[np.nd_array]
+            :param movement_space: the movement space of the movement primitive
+            :type movement_space: MovementPrimitive
+            :param parameters: a dictionary of the parameters for each dimension
+            :type parameters: dict[np.nd_array]
         """
         self.movement_space = movement_space
         self.params = parameters
@@ -130,11 +131,10 @@ class MovementPrimitive(Movement):
     @staticmethod
     def get_params_from_block(movement_space, w):
         """
-
-        :param movement_space:
-        :type movement_space: MovementSpace
-        :param w:
-        :return:
+            :param movement_space:
+            :type movement_space: MovementSpace
+            :param w:
+            :return:
         """
         return {ref: w[movement_space.n_features * i:movement_space.n_features * (i + 1)]
                 for i, ref in enumerate(movement_space.group.refs)}

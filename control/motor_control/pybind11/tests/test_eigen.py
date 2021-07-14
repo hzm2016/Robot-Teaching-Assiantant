@@ -524,7 +524,7 @@ def test_numpy_ref_mutators():
     y1 = np.array(m.get_cm_const_ref())
 
     assert y1.flags.owndata and y1.flags.writeable
-    # We should get copies of the eigen data, which was modified above:
+    # We should get copies of the eigen font_data, which was modified above:
     assert y1[1, 2] == 99
     y1[1, 2] += 12
     assert y1[1, 2] == 111
