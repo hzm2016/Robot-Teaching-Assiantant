@@ -2,13 +2,13 @@ import numpy as np
 from scipy.linalg import block_diag
 import time
 
-from romi.groups import Group
-from romi.trajectory import GoToTrajectory, NamedTrajectoryBase
+from .groups import Group
+from .trajectory import GoToTrajectory, NamedTrajectoryBase
 
 
 def rbf(centers, width):
     b = lambda x: np.array([np.exp(-(x - c_i) ** 2 / (2 * h_i)) for c_i, h_i in zip(centers, width)]).T  # eq 7
-    return lambda x: b(x) / np.sum(b(x), axis=1, keepdims=True)  # eq 8
+    return lambda x: b(x) / np.sum(b(x), axis=1, keepdims=True)
 
 
 class MovementSpace:
@@ -27,20 +27,20 @@ class MovementSpace:
         self.phi = rbf(self.centers, self.bandwidths)
         self.l = regularization
         self.equal_phi = True
-
+ 
     def get_phi(self, z, dim=0):
         return self.phi(z)
 
     def get_block_phi(self, z):
         ret = block_diag(*([self.get_phi(z, dim=0)] * self.n_dim))
         return ret
-
+ 
     def get_displacement(self, dim=0):
         return np.zeros(self.n_features)
-
+ 
     def get_block_displacement(self):
         return np.concatenate([self.get_displacement(i) for i in range(self.n_dim)])
-
+    
     def get_trajectory_displacement(self, z, i):
         return np.matmul(MovementSpace.get_phi(self, z, i), self.get_displacement(i))
 
@@ -88,7 +88,6 @@ class ProjectedMovementSpace(MovementSpace):
 
 
 class MovementPrimitive(Movement):
-
     def __init__(self, movement_space, parameters):
         """
             :param movement_space: the movement space of the movement primitive
@@ -123,7 +122,8 @@ class MovementPrimitive(Movement):
     def get_full_trajectory_from_z(self, z, ctr_time=0.1):
         phi = self.movement_space.phi(z)
         y = np.array([np.matmul(phi, self.params[ref]) for ref in self.movement_space.group.refs]).T
-        return NamedTrajectoryBase(self.movement_space.group.refs, np.array([ctr_time] * len(z)), y)
+        return NamedTrajectoryBase(self.movement_space.group.refs,
+                                   np.array([ctr_time] * len(z)), y)
 
     def get_block_params(self):
         return np.concatenate([self.params[ref] for ref in self.movement_space.group.refs], axis=0)
@@ -144,11 +144,10 @@ class ProbabilisticMovementPrimitives:
 
     def __init__(self, movement_space, movements):
         """
-
-        :param movement_space: movement space of the probabilistic movement primitive framework
-        :type movement_space: MovementSpace
-        :param movements: a list of movements
-        :type movements: list[MovementPrimitive]
+            :param movement_space: movement space of the probabilistic movement primitive framework
+            :type movement_space: MovementSpace
+            :param movements: a list of movements
+            :type movements: list[MovementPrimitive]
         """
         self.movement_space = movement_space
         self.movements = movements
@@ -217,12 +216,11 @@ def ClassicSpace(group, n_features=10, regularization=1E-12):
 
 def LearnTrajectory(movement_space, trajectory):
     """
-
-    :param movement_space:
-    :type movement_space: MovementSpace
-    :param trajectory:
-    :type trajectory: NamedTrajectoryBase
-    :return:
+        :param movement_space:
+        :type movement_space: MovementSpace
+        :param trajectory:
+        :type trajectory: NamedTrajectoryBase
+        :return:
     """
     n = len(trajectory.duration)
     t = np.cumsum(trajectory.duration)

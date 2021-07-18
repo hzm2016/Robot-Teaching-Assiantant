@@ -8,7 +8,7 @@ class Reacher2D(TaskInterface):
 
     def __init__(self,  n_features, points=0, headless=True):
 
-        super().__init__(n_features)
+        super().__init__()
         self._group = Group("reacher2d", ["j%d" % i for i in range(2)])
         self._space = ClassicSpace(self._group, n_features)
 
@@ -21,7 +21,7 @@ class Reacher2D(TaskInterface):
                        self._point(2/3, np.pi + np.pi/4),
                        self._point(1/2, 3/2*np.pi + np.pi/6)]
         self._kinematics = Forward2DKinematics(1., 1.)
-
+    
         self._context = None
 
     def _point(self, d, theta):
@@ -75,6 +75,15 @@ class Reacher2D(TaskInterface):
         reward = -self._kinematics.get_loss(vals["j0"][-1], vals["j1"][-1], self._context)
 
         return reward, reward
+    
+    def get_movement(self, weights, duration):
+        mp = MovementPrimitive(self._space, MovementPrimitive.get_params_from_block(self._space, weights))
+        duration = 1 if duration < 0 else duration
+        trajectory = mp.get_full_trajectory(duration=duration, frequency=200)
+    
+        vals = trajectory.get_dict_values()
+        
+        return vals
 
     def reset(self):
         self._context = self._generate_context()

@@ -66,11 +66,11 @@ class NamedTrajectoryBase:
 
     def get_sub_trajectory(self, *refs):
         """
-        Extract a trajectory with a subset of references.
-        :param refs: references
-        :type refs: str
-        :return: a sub NamedTrajectory
-        :rtype: NamedTrajectoryBase
+            Extract a trajectory with a subset of references.
+            :param refs: references
+            :type refs: str
+            :return: a sub NamedTrajectory
+            :rtype: NamedTrajectoryBase
         """
         ret = self._get_movement(*refs)
         return NamedTrajectoryBase(refs, self.duration, np.array(ret).T)
@@ -95,8 +95,8 @@ class GoToTrajectory(NamedTrajectoryBase):
     def __init__(self, duration=10., **values):
         NamedTrajectoryBase.__init__(self, values.keys(),
                                      np.array([duration]), np.array([[values[ref] for ref in values.keys()]]))
-
-
+        
+        
 def LoadTrajectory(filename):
     """
         Load a named trajectory from file.
@@ -119,11 +119,11 @@ class NamedTrajectory(NamedTrajectoryBase):
 
     def notify(self, duration=0.1, **values):
         """
-        Add one point to the trajectory.
-        :param duration: number of seconds from the previous point
-        :param values: value for each reference
-        :return: None
-        :rtype: None
+            Add one point to the trajectory.
+            :param duration: number of seconds from the previous point
+            :param values: value for each reference
+            :return: None
+            :rtype: None
         """
         if len(values.values()) != len(self.refs):
             raise InconsistentException()
