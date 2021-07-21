@@ -1,12 +1,12 @@
 import torch
-from basegan import GAN
-from PIL import  Image
+import itertools
+from .basegan import GAN
+from PIL import Image
 import torchvision.transforms as transforms
-from ..nn.modules import Generator, Discriminator 
-from ..utils import DataLoader
-from ..datasets import ImageDataset, SequentialImageDataset
-from ..utils import get_cyc_loss, get_gan_loss, ReplayBuffer, to_cuda
-import torch.Tensor as Tensor
+from nn.modules import Generator, Discriminator
+from utils import DataLoader, ReplayBuffer, to_cuda, Logger
+from datasets import ImageDataset
+
 
 class CycleGAN(GAN):
 
@@ -14,10 +14,14 @@ class CycleGAN(GAN):
         super().__init__()
 
         self.cuda = args.cuda
+        self.args = args
         self.init_network(args)
         self.init_all_optimizer(args)
         self.init_dataset(args)
         self.init_loss(args)
+        self.logger = Logger(args.n_epochs, len(self.dataloader))
+        if self.cuda:
+            self.to_cuda()
 
     def init_network(self, args):
 
@@ -27,25 +31,31 @@ class CycleGAN(GAN):
         self.D_A = Discriminator(args.input_nc)
         self.D_B = Discriminator(args.output_nc)
 
-    def init_all_optimizer(self,args):
+    def to_cuda(self):
+        to_cuda([self.G_A2B, self.G_B2A, self.D_A, self.D_B])
 
-        self.optimizer_G = self.init_optimizer([self.G_A2B.parameters(), self.G_B2A.parameters()], args.lr)
-        self.optimizer_D = self.init_optimizer([self.D_A.parameters(), self.D_B.parameters()],args.lr)
-        self.G_scheduler = self.init_scheduler(self.optimizer_g, args.n_epochs, args.epoch, args.decay_epoch)
-        self.G_scheduler = self.init_scheduler(self.optimizer_d, args.n_epochs, args.epoch, args.decay_epoch)
+    def init_all_optimizer(self, args):
+
+        self.optimizer_G = self.init_optimizer(
+            itertools.chain(self.G_A2B.parameters(), self.G_B2A.parameters()), args.lr)
+        self.optimizer_D = self.init_optimizer(
+            itertools.chain(self.D_A.parameters(), self.D_B.parameters()), args.lr)
+        self.G_scheduler = self.init_scheduler(
+            self.optimizer_G, args.n_epochs, args.epoch, args.decay_epoch)
+        self.D_scheduler = self.init_scheduler(
+            self.optimizer_D, args.n_epochs, args.epoch, args.decay_epoch)
 
     def init_dataset(self, args):
-    # Dataset loader
+        # Dataset loader
         transforms_ = [transforms.Resize(int(args.size*1.12), Image.BICUBIC),
-                        transforms.RandomCrop(args.size),
-                        transforms.RandomHorizontalFlip(),
-                        transforms.ToTensor(),
-                        transforms.Normalize((0.5,), (0.5,))]
+                       transforms.RandomCrop(args.size),
+                       transforms.RandomHorizontalFlip(),
+                       transforms.ToTensor(),
+                       transforms.Normalize((0.5,), (0.5,))]
 
         self.dataloader = DataLoader(ImageDataset(args.dataroot, transforms_=transforms_, unaligned=True),
-                                    batch_size=args.batchSize, shuffle=True, num_workers=args.n_cpu)
+                                     batch_size=args.batchSize, shuffle=True, num_workers=args.n_cpu)
 
-    
     def init_loss(self, args):
 
         self.criterion_GAN = torch.nn.MSELoss()
@@ -55,11 +65,9 @@ class CycleGAN(GAN):
         self.fake_A_buffer = ReplayBuffer()
         self.fake_B_buffer = ReplayBuffer()
 
-    def generator_process(self, A, B):
+    def generator_process(self, A, B, target_real):
 
         self.optimizer_G.zero_grad()
-
-        target_real = Tensor(A.shape[0]).fill_(1.0).unsqueeze(-1)
 
         # GAN loss
         fake_B = self.G_A2B(A)
@@ -70,38 +78,65 @@ class CycleGAN(GAN):
         pred_fake = self.D_A(fake_A)
         loss_GAN_B2A = self.criterion_GAN(pred_fake, target_real)
 
+        # Cycle loss
         recovered_A = self.G_B2A(fake_B)
         loss_cycle_ABA = self.criterion_cycle(recovered_A, A)*10.0
 
         recovered_B = self.G_A2B(fake_A)
         loss_cycle_BAB = self.criterion_cycle(recovered_B, B)*10.0
 
+        # Sum all losses
         loss_G = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB
 
         loss_G.backward(retain_graph=True)
-    
         self.optimizer_G.step()
 
-        pass
+        return loss_G, fake_A, fake_B
 
+    def discriminator_process(self, A, B, fake_A, fake_B, target_real, target_fake):
 
-    def discriminator_process(self,):
-        
-        target_fake = Tensor(B.shape[0]).fill_(0.0).unsqueeze(-1)   
-        pass
+        self.optimizer_D.zero_grad()
 
+        D_loss_A = self.discriminator(
+            self.D_A, self.criterion_GAN, A, fake_A, self.fake_A_buffer, target_fake, target_real)
+        D_loss_B = self.discriminator(
+            self.D_B, self.criterion_GAN, B, fake_B, self.fake_B_buffer, target_fake, target_real)
 
-    def train(self, args, dataset):
-        Tensor = torch.cuda.FloatTensor if args.cuda else torch.Tensor
+        loss_D = D_loss_A + D_loss_B
 
-        for epoch in range(args.epoch, args.n_epochs):
+        loss_D.backward(retain_graph=True)
+
+        self.optimizer_D.step()
+
+        return loss_D
+
+    def train(self):
+        Tensor = torch.cuda.FloatTensor if self.cuda else torch.Tensor
+        frequency = self.args.frequency
+        output_dir = self.args.output_dir
+
+        for epoch in range(self.args.epoch, self.args.n_epochs):
             for i, batch in enumerate(self.dataloader):
-                if args.cuda:
+                if self.cuda:
                     batch = to_cuda(batch)
 
                 A = batch['A']
                 B = batch['B']
+                target_real = Tensor(A.shape[0]).fill_(1.0).unsqueeze(-1)
+                target_fake = Tensor(A.shape[0]).fill_(0.0).unsqueeze(-1)
 
+                loss_G, fake_A, fake_B = self.generator_process(
+                    A, B, target_real)
+                loss_D = self.discriminator_process(
+                    A, B, fake_A, fake_B,  target_real, target_fake)
+                self.logger.log({'loss_G': loss_G, 'loss_D': loss_D},
+                                images={'real_A': A, 'real_B': B, 'fake_A': fake_A, 'fake_B': fake_B})
 
-                fake_A, fake_B = self.generator_process(A, B)
-                self.discriminator_process()
+            if epoch % frequency == (frequency - 1):
+                torch.save(self.G_A2B.state_dict(), output_dir +
+                           '/{}_{}.pth'.format('G_A2B', epoch))
+                torch.save(self.G_B2A.state_dict(), output_dir +
+                           '/{}_{}.pth'.format('G_B2A', epoch))
+
+            self.G_scheduler.step()
+            self.D_scheduler.step()

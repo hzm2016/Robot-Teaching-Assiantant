@@ -6,7 +6,7 @@ import sys
 
 from torch.autograd import Variable
 import torch
-from visdom import Visdom
+# from visdom import Visdom
 import torchvision.transforms as transforms
 import numpy as np
 from nn.modules import Generator, StyleGanGenerator
