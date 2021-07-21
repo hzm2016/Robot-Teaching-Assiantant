@@ -12,13 +12,13 @@ from .skeltonize import *
 import random
 import shutil
 
-def skeletonize(img, num_points=10, show_image=False):
+def skeletonize(img, chunk_size=3, show_image=False):
 
     im = (img>128).astype(np.uint8)
     im = thinning(im)
     
     rects = []
-    polys = traceSkeleton(im,0,0,im.shape[1],im.shape[0],num_points,999,rects)
+    polys = traceSkeleton(im,0,0,im.shape[1],im.shape[0],chunk_size,999,rects)
     
     img_canvas = np.full((128,128),255, np.uint8)
 
