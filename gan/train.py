@@ -19,7 +19,7 @@ if __name__ == '__main__':
                         help='number of epochs of training')
     parser.add_argument('--batchSize', type=int, default=2,
                         help='size of the batches')
-    parser.add_argument('--dataroot', type=str, default='datasets/lantingkai/',
+    parser.add_argument('--dataroot', type=str, default='data/lantingkai/',
                         help='root directory of the dataset')
     parser.add_argument('--lr', type=float, default=0.0005,
                         help='initial learning rate')
