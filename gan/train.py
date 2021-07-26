@@ -3,7 +3,7 @@
 import argparse
 import os
 import torch
-from models import CycleGAN
+from models import *
 
 def main(args):
 
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, default='CycleGAN', help='type of models')
     parser.add_argument('--n_epochs', type=int, default=200,
                         help='number of epochs of training')
-    parser.add_argument('--batchSize', type=int, default=2,
+    parser.add_argument('--batchSize', type=int, default=8,
                         help='size of the batches')
     parser.add_argument('--dataroot', type=str, default='data/lantingkai/',
                         help='root directory of the dataset')

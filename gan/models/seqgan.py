@@ -2,19 +2,18 @@ from genericpath import exists
 import torch
 import itertools
 import os
-from tqdm import tqdm 
+from tqdm import tqdm
 from .basegan import GAN
 from PIL import Image
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
 from nn.modules import Generator, Discriminator
 from utils import DataLoader, ReplayBuffer, to_cuda, Logger
-from datasets import ImageDataset
+from datasets import SequentialImageDataset
 
+class SeqGAN(GAN):
 
-class CycleGAN(GAN):
-
-    def __init__(self, args, train = True) -> None:
+    def __init__(self, args, train=True) -> None:
         super().__init__()
 
         self.cuda = args.cuda
@@ -36,57 +35,47 @@ class CycleGAN(GAN):
 
     def init_network(self, args):
 
-        self.G_A2B = Generator(args.input_nc, args.output_nc)
-        self.G_B2A = Generator(args.output_nc, args.input_nc)
+        self.G = Generator(args.input_nc, args.output_nc)
+        self.D = Discriminator(args.input_nc)
 
-        self.D_A = Discriminator(args.input_nc)
-        self.D_B = Discriminator(args.output_nc)
-
-        self.G_B2A.train()
-        self.G_A2B.train()
-        self.D_A.train()
-        self.D_B.train()
+        self.G.train()
+        self.D.train()
 
     def to_cuda(self):
-        to_cuda([self.G_A2B, self.G_B2A, self.D_A, self.D_B])
+        to_cuda([self.G, self.D])
 
     def init_all_optimizer(self, args):
 
-        self.optimizer_G = self.init_optimizer(
-            itertools.chain(self.G_A2B.parameters(), self.G_B2A.parameters()), args.lr)
-        self.optimizer_D = self.init_optimizer(
-            itertools.chain(self.D_A.parameters(), self.D_B.parameters()), args.lr)
+        self.optimizer_G = self.init_optimizer(self.G, args.lr)
+        self.optimizer_D = self.init_optimizer(self.D, args.lr)
         self.G_scheduler = self.init_scheduler(
             self.optimizer_G, args.n_epochs, args.epoch, args.decay_epoch)
         self.D_scheduler = self.init_scheduler(
             self.optimizer_D, args.n_epochs, args.epoch, args.decay_epoch)
 
     def init_dataset(self, args):
-        # Dataset loader
+
         transforms_ = [transforms.Resize(int(args.size*1.12), Image.BICUBIC),
                        transforms.RandomCrop(args.size),
                        transforms.RandomHorizontalFlip(),
                        transforms.ToTensor(),
                        transforms.Normalize((0.5,), (0.5,))]
 
-        self.dataloader = DataLoader(ImageDataset(args.dataroot, transforms_=transforms_, unaligned=True),
+        self.dataloader = DataLoader(SequentialImageDataset(args.dataroot, transforms_=transforms_, unaligned=True),
                                      batch_size=args.batchSize, shuffle=True, num_workers=args.n_cpu)
 
     def init_loss(self, args):
 
         self.criterion_GAN = torch.nn.MSELoss()
-        self.criterion_cycle = torch.nn.L1Loss()
-        self.criterion_identity = torch.nn.L1Loss()
 
         self.fake_A_buffer = ReplayBuffer()
-        self.fake_B_buffer = ReplayBuffer()
 
     def generator_process(self, A, B, target_real):
 
         self.optimizer_G.zero_grad()
 
         # GAN loss
-        fake_B = self.G_A2B(A)
+        fake_B = self.G(A)
         pred_fake = self.D_B(fake_B)
         loss_GAN_A2B = self.criterion_GAN(pred_fake, target_real)
 
@@ -113,17 +102,13 @@ class CycleGAN(GAN):
 
         self.optimizer_D.zero_grad()
 
-        D_loss_A = self.discriminator(
-            self.D_A, self.criterion_GAN, A, fake_A, self.fake_A_buffer, target_fake, target_real)
-        D_loss_B = self.discriminator(
-            self.D_B, self.criterion_GAN, B, fake_B, self.fake_B_buffer, target_fake, target_real)
+        D_loss = self.discriminator(
+            self.D, self.criterion_GAN, A, fake_A, self.fake_A_buffer, target_fake, target_real)
 
-        loss_D = D_loss_A + D_loss_B
-
+        loss_D = D_loss
         loss_D.backward()
 
         self.optimizer_D.step()
-
         return loss_D
 
     def train(self):
@@ -136,8 +121,6 @@ class CycleGAN(GAN):
                 if self.cuda:
                     batch = to_cuda(batch)
 
-                A = batch['A']
-                B = batch['B']
                 target_real = Tensor(A.shape[0]).fill_(1.0).unsqueeze(-1)
                 target_fake = Tensor(A.shape[0]).fill_(0.0).unsqueeze(-1)
 
@@ -162,8 +145,8 @@ class CycleGAN(GAN):
         self.G_A2B.eval()
         self.G_B2A.eval()
 
-        transforms_ = [ transforms.ToTensor(),
-                transforms.Normalize((0.5,), (0.5,)) ]
+        transforms_ = [transforms.ToTensor(),
+                       transforms.Normalize((0.5,), (0.5,))]
 
         test_dataloader = DataLoader(ImageDataset(self.args.dataroot, transforms_=transforms_, unaligned=False, mode='train'),
                                      batch_size=self.args.batchSize, shuffle=False, num_workers=self.args.n_cpu)
@@ -187,4 +170,3 @@ class CycleGAN(GAN):
             # Save image files
             save_image(fake_A, self.args.output_dir + '/A/%04d.png' % (i+1))
             save_image(fake_B, self.args.output_dir + '/B/%04d.png' % (i+1))
-
