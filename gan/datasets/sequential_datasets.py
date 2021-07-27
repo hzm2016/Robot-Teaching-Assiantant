@@ -2,6 +2,7 @@ import glob
 import random
 import os
 import cv2
+import torch
 
 from torch.utils.data import Dataset
 from PIL import Image
@@ -9,24 +10,67 @@ import numpy as np
 import torchvision.transforms as transforms
 
 class SequentialImageDataset(Dataset):
-    def __init__(self, root, transforms_=None, unaligned=False, mode='train'):
-        self.transform = transforms.Compose(transforms_)
+    def __init__(self, root, unaligned=False, mode='train'):
         self.unaligned = unaligned
+        self.data_list = []
 
         dir_root = root + '/' + mode
-        img_dirs_part = os.path.join(dir_root,'imgs_part')
-        img_dirs_part_ske = os.path.join(dir_root,'imgs_part_ske')
-        img_dirs_full = os.path.join(dir_root,'imgs_full')
-        img_dirs_full_ske = os.path.join(dir_root,'imgs_full_ske')
+        img_dirs_part_points = os.path.join(dir_root,'imgs_part_points')
+        self._form_dataset(img_dirs_part_points)
+    
+    @staticmethod
+    def rotate(points):
 
-        self.full = []
-        self.A_part = []
-        self.A_label = []
-        self.A_ske = []
+        x_mean = points[:,0].mean()
+        y_mean = points[:,1].mean()
 
-        self._form_dataset_label(img_dirs_full)
+        origin = [x_mean, y_mean]
 
-        assert len(self.A_full) == len(self.A_part) == len(self.A_label) == len(self.A_ske)
+        # +- 30 degrees
+        angle = random.uniform(-1, 1) * np.pi * 0.083
+
+        R = np.array([[np.cos(angle), -np.sin(angle)],
+                    [np.sin(angle),  np.cos(angle)]])
+        
+        o = np.atleast_2d(origin)
+        p = np.atleast_2d(points)
+        return np.clip(np.squeeze((R @ (p.T-o.T) + o.T).T), 0, 127)
+
+    @staticmethod
+    def scale(points):
+
+        x_mean = points[:,0].mean()
+        y_mean = points[:,1].mean()
+
+        origin = [x_mean, y_mean]
+
+        distance = points - origin
+
+        scale_factor = random.uniform(0.7,1)
+        scaled_distance = distance * scale_factor
+
+        scaled_points = origin + scaled_distance
+
+        return np.clip(scaled_points,0,127)
+
+    @staticmethod
+    def shift(points):
+        
+        max_shift = 10
+        x_shift_value = random.randrange(-max_shift, max_shift)
+        y_shift_value = random.randrange(-max_shift, max_shift)
+
+        points[:,0] = points[:,0] + x_shift_value
+        points[:,1] = points[:,1] + y_shift_value
+
+        return np.clip(points, 0, 127)
+
+    def cut(self, points):
+        
+        raise NotImplementedError
+
+    def drop(self, points):
+        raise NotImplementedError
 
     def _rank_file_accd_num(self, all_files):
         
@@ -39,73 +83,79 @@ class SequentialImageDataset(Dataset):
 
         for i in sort_index:
             sorted_files.append(all_files[i])
-
         return sorted_files
     
+
+    def form_train_sample(self,file_list):
+
+        points_list = []
+        num_list = []
+
+        for file_name in file_list:
+            points = np.loadtxt(file_name)
+            points_list.append(points)
+            num_list.append(points.shape[0])
+
+        points_list = np.concatenate(points_list)
+        num_list = np.array(num_list)
+
+        return {
+            'points': torch.from_numpy(points_list),
+            'num': torch.from_numpy(num_list)
+        }
+
     def _form_dataset(self, path): 
 
         for folder_name in glob.glob(path+'/*'):
-            for img_name in self._rank_file_accd_num(glob.glob(folder_name + '/*.jpg'))[1:]:
-                self.A_ske.append(img_name)
-    
-    def _form_dataset_label(self, path):
-       
-        for folder_name in glob.glob(path+'/*'):
-            for img_name in self._rank_file_accd_num(glob.glob(folder_name + '/*.jpg'))[1:]:
-                self.A_label.append(img_name)
-
-    def _show_image(self, index):
-    
-        img_to_show = cv2.imread(self.A_full[index % len(self.A_full)])
-        cv2.imshow('',img_to_show);cv2.waitKey(0)
-        img_to_show = cv2.imread(self.A_part[index % len(self.A_part)])
-        cv2.imshow('',img_to_show);cv2.waitKey(0)
-        img_to_show = cv2.imread(self.A_label[index % len(self.A_label)])
-        cv2.imshow('',img_to_show);cv2.waitKey(0)
-        img_to_show = cv2.imread(self.A_ske[index % len(self.A_ske)])
-        cv2.imshow('',img_to_show);cv2.waitKey(0)
-
-    def _show_image_name(self, index):
-        
-        print('\npart:' + self.A_part[index % len(self.A_part)])
-        print('\nlabel:' + self.A_label[index % len(self.A_label)])
-        print('\nlabel:' + self.A_ske[index % len(self.A_ske)])
+            file_list = []
+            for idx, txt_name in enumerate(self._rank_file_accd_num(glob.glob(folder_name + '/*.txt'))):
+                file_list.append(txt_name)
+                if idx == 0:
+                    continue
+                self.data_list.append(self.form_train_sample(file_list))
 
     def __getitem__(self, index):
 
-        stroke = self.transform(Image.open(self.A_part[index % len(self.A_part)]))
-
-        if self.unaligned:
-            A_comp_0 = self.transform(Image.open(self.A_comp_0[random.randint(0, len(self.A_comp_0) - 1)]))
-            A_comp_1 = self.transform(Image.open(self.A_comp_1[random.randint(0, len(self.A_comp_1) - 1)]))
-            A_comp_2 = self.transform(Image.open(self.A_comp_2[random.randint(0, len(self.A_comp_2) - 1)]))
-            A_comp_3 = self.transform(Image.open(self.A_comp_3[random.randint(0, len(self.A_comp_3) - 1)]))
-            A_comp_0_1 = self.transform(Image.open(self.A_comp_0[index % len(self.A_comp_0)]))
-            A_comp_1_1 = self.transform(Image.open(self.A_comp_1[index % len(self.A_comp_1)]))
-            A_comp_2_1 = self.transform(Image.open(self.A_comp_2[index % len(self.A_comp_2)]))
-            A_comp_3_1 = self.transform(Image.open(self.A_comp_3[index % len(self.A_comp_3)]))
-            item_B = self.transform(Image.open(self.files_B[random.randint(0, len(self.files_B) - 1)]))
-        else:
-            A_comp_0 = self.transform(Image.open(self.A_comp_0[index % len(self.A_comp_0)]))
-            A_comp_1 = self.transform(Image.open(self.A_comp_1[index % len(self.A_comp_1)]))
-            A_comp_2 = self.transform(Image.open(self.A_comp_2[index % len(self.A_comp_2)]))
-            A_comp_3 = self.transform(Image.open(self.A_comp_3[index % len(self.A_comp_3)]))
-            item_B = self.transform(Image.open(self.files_B[index % len(self.files_B)]))
-
-        return {
-                }
-
+        return self.data_list[index]
+        
     def __len__(self):
-        return max(len(self.A_traj), len(self.files_B))
+        
+        return len(self.data_list)
 
+def visulize_points(points,name):
+
+    img_canvas = np.full((128,128),255, np.uint8)
+    points = [points.astype(int)]
+    for l in points:
+        c = (0,0,0)
+        for i in range(0,len(l)-1):
+            cv2.line(img_canvas,(l[i][0],l[i][1]),(l[i+1][0],l[i+1][1]),c,2)
+
+    cv2.imwrite(name,img_canvas)
+
+def unit_test_1():
+
+    filename = '/home/cunjun/Robot-Teaching-Assiantant/gan/data/seq/train/imgs_part_points/且/0.txt'
+    points = np.loadtxt(open(filename, 'r'))
+    visulize_points(points,'ori.jpg')
+    points = SequentialImageDataset.shift(points)
+    visulize_points(points,'new.jpg')
+
+def unit_test_2():
+
+    root = '/home/cunjun/Robot-Teaching-Assiantant/gan/data/seq'
+    SequentialImageDataset(root)
 
 if __name__ == '__main__':
 
-    dir_root = 'datasets/seq/train'
-    img_dirs_part = os.path.join(dir_root,'imgs_ske')
-    for folder_name in glob.glob(img_dirs_part+'/*'):
-        for img_name in sorted(glob.glob(folder_name + '/*.jpg'))[1:]:
-            img = cv2.imread(img_name)
-            img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            succ = cv2.imwrite(img_name, img[:,:,0])
+    unit_test_1()
+    unit_test_2()
+
+    # dir_root = 'datasets/seq/train'
+    # img_dirs_part = os.path.join(dir_root,'imgs_ske')
+    # for folder_name in glob.glob(img_dirs_part+'/*'):
+    #     for img_name in sorted(glob.glob(folder_name + '/*.jpg'))[1:]:
+    #         img = cv2.imread(img_name)
+    #         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #         succ = cv2.imwrite(img_name, img[:,:,0])
 
