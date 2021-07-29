@@ -8,6 +8,13 @@ class GAN(object):
     def __init__(self) -> None:
         super().__init__()
 
+    
+    def load_networks(self, key_pairs):
+
+        for key, value in key_pairs.items():
+            getattr(self, key).load_state_dict(
+                {k.replace('module.', ''): v for k, v in torch.load(value).items()})
+
     def generator(self):
 
         raise NotImplementedError

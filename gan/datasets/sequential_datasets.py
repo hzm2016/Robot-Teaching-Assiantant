@@ -5,6 +5,7 @@ import cv2
 import torch
 
 from torch.utils.data import Dataset
+from sklearn.metrics import pairwise_distances
 from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
@@ -46,7 +47,7 @@ class SequentialImageDataset(Dataset):
 
         distance = points - origin
 
-        scale_factor = random.uniform(0.7,1)
+        scale_factor = random.uniform(0.7,1.3)
         scaled_distance = distance * scale_factor
 
         scaled_points = origin + scaled_distance
@@ -84,24 +85,48 @@ class SequentialImageDataset(Dataset):
         for i in sort_index:
             sorted_files.append(all_files[i])
         return sorted_files
-    
 
+    def aug_points(self, points):
+
+        func_list = [self.rotate, self.shift, self.scale]
+        func_index = random.randint(0,2)
+
+        return func_list[func_index](points)
+    
     def form_train_sample(self,file_list):
 
         points_list = []
+        modified_points_list = []
         num_list = []
 
-        for file_name in file_list:
+        for file_name in file_list[:-1]:
             points = np.loadtxt(file_name)
             points_list.append(points)
             num_list.append(points.shape[0])
+            modified_points_list.append(self.aug_points(points))
 
         points_list = np.concatenate(points_list)
+        edge_index_ori = pairwise_distances(points_list) < 12.8
+        edge_index_ori = edge_index_ori.astype(int)
+
+        modified_points_list = np.concatenate(modified_points_list)
+        edge_index_modified = pairwise_distances(modified_points_list) < 12.8
+        edge_index_modified = edge_index_modified.astype(int)
+
         num_list = np.array(num_list)
 
+        cur_points = np.loadtxt(file_list[-1]) 
+        edge_index_c = pairwise_distances(cur_points) < 12.8
+        edge_index_c = edge_index_c.astype(int)
+
         return {
-            'points': torch.from_numpy(points_list),
-            'num': torch.from_numpy(num_list)
+            'm_points': torch.from_numpy(modified_points_list / 128),
+            'o_points': torch.from_numpy(points_list / 128),
+            'c_points': torch.from_numpy(cur_points / 128), 
+            'edge_index_o': torch.from_numpy(edge_index_ori),
+            'edge_index_m': torch.from_numpy(edge_index_modified),
+            'edge_index_c': torch.from_numpy(edge_index_c),
+            'num': torch.from_numpy(num_list),
         }
 
     def _form_dataset(self, path): 
@@ -110,7 +135,7 @@ class SequentialImageDataset(Dataset):
             file_list = []
             for idx, txt_name in enumerate(self._rank_file_accd_num(glob.glob(folder_name + '/*.txt'))):
                 file_list.append(txt_name)
-                if idx == 0:
+                if idx < 8:
                     continue
                 self.data_list.append(self.form_train_sample(file_list))
 
@@ -119,7 +144,6 @@ class SequentialImageDataset(Dataset):
         return self.data_list[index]
         
     def __len__(self):
-        
         return len(self.data_list)
 
 def visulize_points(points,name):

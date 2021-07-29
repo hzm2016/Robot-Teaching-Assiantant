@@ -8,8 +8,9 @@ from PIL import Image
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
 from nn.modules import Generator, Discriminator
-from utils import DataLoader, ReplayBuffer, to_cuda, Logger
+from utils import ReplayBuffer, to_cuda, Logger
 from datasets import ImageDataset
+from torch.utils.data import DataLoader
 
 
 class CycleGAN(GAN):
@@ -19,7 +20,7 @@ class CycleGAN(GAN):
 
         self.cuda = args.cuda
         self.args = args
-        self.init_network(args)
+        self.init_networks(args)
         if train:
             self.init_all_optimizer(args)
             self.init_dataset(args)
@@ -28,13 +29,7 @@ class CycleGAN(GAN):
         if self.cuda:
             self.to_cuda()
 
-    def load_network(self, key_pairs):
-
-        for key, value in key_pairs.items():
-            getattr(self, key).load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(value).items()})
-
-    def init_network(self, args):
+    def init_networks(self, args):
 
         self.G_A2B = Generator(args.input_nc, args.output_nc)
         self.G_B2A = Generator(args.output_nc, args.input_nc)
