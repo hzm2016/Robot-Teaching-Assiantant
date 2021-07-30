@@ -2,6 +2,35 @@ from tools import skeletonize
 from utils import hungarian_matching
 # from control.vision_capture import capture_image
 import numpy as np
+import cv2
+
+
+def draw_points(points,canvas_size=256):
+
+    canvas = np.zeros((canvas_size, canvas_size, 3),dtype=np.uint8) + 255
+
+    for point in points:
+        cv2.circle(canvas,tuple(point*2), 2, (0,0,0), -1)
+
+    return canvas
+
+def draw_matching(points_1, points_2, matching, canvas_size=256):
+
+    points_1 = 2 * points_1
+    points_2 = 2 * points_2
+    canvas = np.zeros((canvas_size, canvas_size,3),dtype=np.uint8) + 255
+
+    for point in points_1:
+        cv2.circle(canvas,tuple(point), 2, (255,0,0), -1)
+    
+    for point in points_2:
+        cv2.circle(canvas,tuple(point), 2, (0,255,0), -1)
+
+    for match in matching:
+        print(tuple(points_1[match[0]]))
+        cv2.line(canvas, tuple(points_1[match[0]]),tuple(points_2[match[0]]), (0,0,0))
+
+    return canvas
 
 class Controller(object):
 
@@ -34,7 +63,16 @@ class Controller(object):
         tgt_pts = np.squeeze(tgt_pts, axis=0)
         in_pts = np.squeeze(in_pts, axis=0)
 
+        tgt_pts_vis = draw_points(tgt_pts)
+        cv2.imwrite('tgt_pts_vis.jpg',tgt_pts_vis)
+
+        in_pts_vis = draw_points(in_pts)
+        cv2.imwrite('in_pts_vis.jpg',in_pts_vis)
+
         matching = self.key_point_matching(tgt_pts, in_pts)
+        matching_vis = draw_matching(tgt_pts, in_pts, matching)
+        cv2.imwrite('matching_vis.jpg',matching_vis)
+
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
 
