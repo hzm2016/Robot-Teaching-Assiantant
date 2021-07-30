@@ -1,8 +1,12 @@
 from tools import skeletonize
 from utils import hungarian_matching
-# from control.vision_capture import capture_image
 import numpy as np
 import cv2
+
+# task interface
+from control.vision_capture.main_functions import *
+from control.protocol.task_interface import *
+from control.path_planning.path_generate import *
 
 
 def draw_points(points,canvas_size=256):
@@ -13,6 +17,7 @@ def draw_points(points,canvas_size=256):
         cv2.circle(canvas,tuple(point*2), 2, (0,0,0), -1)
 
     return canvas
+
 
 def draw_matching(points_1, points_2, matching, canvas_size=256):
 
@@ -32,12 +37,19 @@ def draw_matching(points_1, points_2, matching, canvas_size=256):
 
     return canvas
 
+
 class Controller(object):
 
-    def __init__(self, img_processor=None, impedance_level=0) -> None:
+    def __init__(self, args, img_processor=None, impedance_level=0) -> None:
+        self.args = args
+        
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
         self.y_impedance_level = impedance_level
+        
+        self.action_dim = 2
+        self.stiffness = [1.0, 1.0]
+        self.damping = [1.0, 1.0]
         pass
 
     def guide(self,):
@@ -92,6 +104,11 @@ class Controller(object):
         self.x_impedance_level = x_dis / 128
         self.y_impedance_level = y_dis / 128
 
+        # # send impedance params :::
+        self.stiffness = [100, 100]
+        self.damping = [50, 50]
+        
+        return self.stiffness, self.damping
 
     def key_point_matching(self, tgt_pts, in_pts):
 
@@ -106,8 +123,43 @@ class Controller(object):
         Raises:
             NotImplementedError: [description]
         """
-        raise NotImplementedError
+        period = 5
+        return period
+    
+    def interact(self, traj):
+        written_image = None
+        period = self.update_period()
+        
+        # initial TCP connection :::
+        task = TCPTask('169.254.0.99', 5005)
 
+        # check motor and encode well before experiments
+        # task.get_encoder_check()
+        task.send_params_request()
+        
+        params = self.stiffness + self.damping
+        task.send_params(params)
+
+        way_points = generate_path(traj, period=period)
+
+        task.send_way_points_request()
+
+        task.send_way_points(way_points)
+
+        task.send_way_points_done()
+
+        if self.args.show_video:
+            show_video()
+
+        # video record for trail :::
+        run_done = task.get_movement_check()
+        
+        if run_done:
+            print("run_done", run_done)
+            written_image = capture_image(root_path='captured_images/', font_name='test')
+        
+        return written_image
+    
 
 if __name__ == "__main__":
 

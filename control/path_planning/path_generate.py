@@ -22,12 +22,16 @@ def initial_parameter_estimate(num_demons_each_style=30):
     return writting_vel, impedance_params
 
 
-def generate_path(font, style, period=10, impedance_params=[], training_episodes=10):
+def generate_path(traj, period=10):
     """
     
     """
-    score = 0.0
-    return score
+    angle_1_list_e = None
+    angle_2_list_e = None
+
+    way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
+    print("way_points :::", way_points.shape)
+    return way_points
 
 
 def check_path(root_path='', plot_show=True, font_name='J_font',
@@ -169,4 +173,5 @@ def check_path(root_path='', plot_show=True, font_name='J_font',
     print("angle 1 list :::", len(angle_1_list_e))
     print("angle 2 list :::", len(angle_2_list_e))
     return np.array(angle_1_list_e), np.array(angle_2_list_e)
+
 

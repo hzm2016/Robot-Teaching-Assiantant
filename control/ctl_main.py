@@ -16,7 +16,6 @@ def run_main(show_video=False):
 	
 	# check motor and encode well before experiments
 	# task.get_encoder_check()
-	
 	task.send_params_request()
 	
 	# # generate impedance parameters::
