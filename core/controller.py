@@ -1,11 +1,15 @@
 from tools import skeletonize
-from .utils import hungarian_matching
-# from control.vision_capture import capture_image
+from utils import hungarian_matching
 import numpy as np
 import cv2
 
+# task interface
+from control.vision_capture.main_functions import *
+from control.protocol.task_interface import *
+from control.path_planning.path_generate import *
 
-def draw_points(points,canvas_size=256):
+
+def draw_points(points, canvas_size=256):
 
     canvas = np.zeros((canvas_size, canvas_size, 3),dtype=np.uint8) + 255
 
@@ -13,6 +17,7 @@ def draw_points(points,canvas_size=256):
         cv2.circle(canvas,tuple(point*2), 2, (0,0,0), -1)
 
     return canvas
+
 
 def draw_matching(points_1, points_2, matching, canvas_size=256):
 
@@ -32,12 +37,20 @@ def draw_matching(points_1, points_2, matching, canvas_size=256):
 
     return canvas
 
+
 class Controller(object):
 
-    def __init__(self, img_processor=None, impedance_level=0) -> None:
+    def __init__(self, args, img_processor=None, impedance_level=0) -> None:
+        self.args = args
+        self.root_path = '..controller/data/'
+        
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
         self.y_impedance_level = impedance_level
+        
+        self.action_dim = 2
+        self.stiffness = [1.0, 1.0]
+        self.damping = [1.0, 1.0]
         pass
 
     def guide(self,):
@@ -63,6 +76,16 @@ class Controller(object):
         tgt_pts = np.squeeze(tgt_pts, axis=0)
         in_pts = np.squeeze(in_pts, axis=0)
 
+        tgt_pts_vis = draw_points(tgt_pts)
+        cv2.imwrite('tgt_pts_vis.jpg', tgt_pts_vis)
+
+        in_pts_vis = draw_points(in_pts)
+        cv2.imwrite('in_pts_vis.jpg', in_pts_vis)
+
+        matching = self.key_point_matching(tgt_pts, in_pts)
+        matching_vis = draw_matching(tgt_pts, in_pts, matching)
+        cv2.imwrite('matching_vis.jpg', matching_vis)
+
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
 
@@ -82,6 +105,12 @@ class Controller(object):
         self.x_impedance_level = x_dis / 128
         self.y_impedance_level = y_dis / 128
 
+        # # send impedance params :::
+        self.stiffness = [100, 100]
+        self.damping = [50, 50]
+        
+        return self.stiffness, self.damping
+
     def key_point_matching(self, tgt_pts, in_pts):
 
         matching = hungarian_matching(tgt_pts, in_pts)
@@ -95,13 +124,50 @@ class Controller(object):
         Raises:
             NotImplementedError: [description]
         """
-        raise NotImplementedError
+        period = 5
+        return period
+    
+    def interact(self, traj, target_img):
+        written_image = None
+        num_episodes = 5
+        
+        # initial TCP connection :::
+        task = TCPTask('169.254.0.99', 5005)
 
-    def interact(self, traj):
-
-        pass
-
-
+        # check motor and encode well before experiments
+        # task.get_encoder_check()
+        
+        for i in range(num_episodes):
+            
+            task.send_params_request()
+            
+            # update impedance
+            self.update_impedance(target_img, written_image)
+            params = self.stiffness + self.damping
+            task.send_params(params)
+    
+            # update period
+            period = self.update_period()
+            way_points = generate_path(traj, period=period)
+     
+            task.send_way_points_request()
+    
+            task.send_way_points(way_points)
+    
+            task.send_way_points_done()
+    
+            if self.args.show_video:
+                show_video()
+    
+            # video record for trail :::
+            run_done = task.get_movement_check()
+            
+            if run_done:
+                print("run_done", run_done)
+                written_image = capture_image(root_path=self.root_path, font_name='test')
+        
+        return written_image
+    
 
 if __name__ == "__main__":
 

@@ -207,8 +207,7 @@ class Executor(object):
 
                     break
 
-                written_image = self.interact(traj)
-                self.learner.satisfied = self.evaluate(written_image)
+                written_image = self.controller.interact(traj, stroke_img)
 
         self.__quit()
 
