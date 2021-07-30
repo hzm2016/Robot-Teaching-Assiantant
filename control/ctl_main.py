@@ -20,6 +20,11 @@ def run_main(show_video=False):
 	task.send_params_request()
 	
 	# # generate impedance parameters::
+	# GP-UCB
+	# ================================================================
+	
+	
+	# ================================================================
 	
 	# # send impedance params :::
 	stiffness = [100, 100]
@@ -27,7 +32,7 @@ def run_main(show_video=False):
 	params = stiffness + damping
 	task.send_params(params)
 	
-	# # offline check the generated path :::
+	# offline check the generated path :::
 	angle_1_list_e, angle_2_list_e = check_path(root_path='path_planning/font_data', plot_show=False, font_name='third', type=3)
 	way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
 	print("way_points :::", way_points.shape)
@@ -55,17 +60,20 @@ def run_main(show_video=False):
 	
 
 if __name__ == "__main__":
-	# check_path(root_path='path_planning/font_data', font_name='third', type=3, period=10, Ts=0.001)
-	# image_precessing(img_path='captured_images/', img_name='test')
-	# show_video()
+	check_path(root_path='data/font_data', font_name='third', center_shift=np.array([0.0, 0.10]),
+	           type=3, period=10, Ts=0.001)
 	
-	# run_main()
-	
-	n_clusters = config["reacher2d_1"]["n_cluster"]
-	
-	task = config["reacher2d_1"]["task_box"](False)
-	print("tasks group :::", task._group)
+	# capture_image(root_path='data/captured_images/', font_name='test_image')
 
-	weights = np.random.rand(40).tolist()
-	results = task.get_movement(weights=weights, duration=10.)
-	print("results :::", results)
+	# show_video()
+#
+# 	run_main()
+	
+	# n_clusters = config["reacher2d_1"]["n_cluster"]
+	#
+	# task = config["reacher2d_1"]["task_box"](False)
+	# print("tasks group :::", task._group)
+	#
+	# weights = np.random.rand(40).tolist()
+	# results = task.get_movement(weights=weights, duration=10.)
+	# print("results :::", results)

@@ -189,7 +189,7 @@ def plot_torque_path(
     linewidth = 4
     # plt.rcParams['font.family'] = 'Times New Roman'
     # plt.rcParams['font.size'] = FONT_SIZE
-    max_index = 1000
+    max_index = 19999
     
     angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1)
     angle_list_1_e = angle_list_e[:max_index, 0]

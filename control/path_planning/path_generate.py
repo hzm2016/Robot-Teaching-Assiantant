@@ -30,8 +30,8 @@ def generate_path(font, style, period=10, impedance_params=[], training_episodes
     return score
 
 
-def check_path(root_path='', plot_show=True,
-               font_name='J_font', type=2, period=10, Ts=0.001):
+def check_path(root_path='', plot_show=True, font_name='J_font',
+               center_shift=np.array([0.0, 0.0]), type=2, period=10, Ts=0.001):
 
     angle_1_range = np.array([-np.pi/2, np.pi/2])
     angle_2_range = np.array([-np.pi * 3/4, np.pi * 3/4])
@@ -56,7 +56,7 @@ def check_path(root_path='', plot_show=True,
     # transform to Catersian space
     ratio = 128/0.6
 
-    center_shift = np.array([0.0, 0.0])
+    center_shift = center_shift
 
     x_1_list = x_list / ratio + center_shift[0]
     x_2_list = y_list / ratio + center_shift[1]

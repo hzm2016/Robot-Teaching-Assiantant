@@ -68,7 +68,7 @@ int read_initial_encode()
     float encoder_arr[2];  
 
 	encoder.read_ang_encoder(encoder_arr);   
-  	double q_1 = (double) encoder_arr[1]*PI/180.0;   
+  	double q_1 = (double) encoder_arr[1]*PI/180.0;  
   	double q_2 = (double) encoder_arr[0]*PI/180.0;  
     
     printf("Encoder 1 position: %f\n", q_1);  
@@ -156,36 +156,38 @@ double read_link_angle_1(double q_1_initial)
     // Read link angle 1
     ////////////////////////////////////////////  
 
-    CANDevice can1((char *) "can1");   
-    can1.begin();   
+    controller_renishaw encoder("can2");  
 
-    Gcan motor_1(can1);   
-    motor_1.begin();   
-    
-    double q_1 = motor_1.read_sensor(2) - theta_1_initial;    
-    // printf("Motor 1 position: %f\n", theta_1);   
+    float encoder_arr[2];  
 
-    return q_1;   
+	encoder.read_ang_encoder(encoder_arr);  
+
+  	double q_1 = (double) encoder_arr[1]*PI/180.0 + q_1_initial;  
+
+    return q_1;  
 } 
 
 double read_link_angle_2(double q_2_initial)   
 {
     ////////////////////////////////////////////   
-    // Read motor angle 2
+    // Read link angle 2    
     ////////////////////////////////////////////   
 
-    CANDevice can0((char *) "can0");   
-    can0.begin();   
+    controller_renishaw encoder("can2");  
 
-    Gcan motor_2(can0);   
-    motor_2.begin();   
+    float encoder_arr[2];  
 
-    double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);    
-    // printf("Motor 2 position: %f\n", theta_2);   
+	encoder.read_ang_encoder(encoder_arr);  
 
+<<<<<<< HEAD
     return q_2;    
 } 
+=======
+  	double q_2 = (double) encoder_arr[0]*PI/180.0 + q_2_initial;  
+>>>>>>> b43e551f999dc762af7479a2f1b2cf65cf42450c
 
+    return q_2;  
+}  
 
 // void hardware_reset(Gcan *motor_1, Gcan *motor_2) 
 // {
@@ -366,7 +368,154 @@ double dist_threshold
     motor_1.pack_stop_cmd(2);   
     motor_2.pack_stop_cmd(1);   
 
-    return 1; 
+    return 1;  
+}
+
+
+int vic_optimization(
+double stiffness, double damping,  
+double q_1_target, double q_2_target,  
+double q_1_initial, double q_2_initial,  
+double theta_1_initial, double theta_2_initial,  
+double dist_threshold  
+)
+{
+    ////////////////////////////////////////////////////////
+    //// Initial Encoder and SEA Motor CAN
+    //////////////////////////////////////////////////////// 
+
+    CANDevice can0((char *) "can0");    
+    can0.begin();   
+    CANDevice can1((char *) "can1");   
+    can1.begin();   
+
+    Gcan motor_1(can1);   
+    Gcan motor_2(can0);   
+    motor_1.begin();   
+    motor_2.begin();   
+
+    printf("Move to target start !!!!\n");  
+
+    ///////////////////// encoder reading //////////////////
+    controller_renishaw encoder("can2");  
+    float encoder_arr[2];  
+
+    ////////////////////////////////////////////////////////
+    // One loop control demonstration   
+    ////////////////////////////////////////////////////////
+
+    string output_angle = "move_target_angle_list.txt";    
+    ofstream OutFileAngle(output_angle);    
+    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";    
+
+    string output_torque = "move_target_torque_list.txt";    
+    ofstream OutFileTorque(output_torque);    
+    OutFileTorque << "torque_1" << "," << "torque_2" << "\n";    
+
+    double torque_lower_bound = -1.5;    
+    double torque_upper_bound = 1.5;   
+    
+    double ctl_ratio_1 = -2000.0/32;   
+    double ctl_ratio_2 = 2000.0/32;   
+
+    double theta_1_t = 0.0;   
+    double theta_2_t = 0.0;   
+
+    double d_theta_1_t = 0.0;    
+    double d_theta_2_t = 0.0;    
+
+    double theta_1_e = 0.0;   
+    double theta_2_e = 0.0;   
+
+    double d_theta_1_e = 0.0;   
+    double d_theta_2_e = 0.0;   
+
+    double torque_1 = 0.0;   
+    double torque_2 = 0.0;   
+
+    double torque_1_t = 0.0;  
+    double torque_2_t = 0.0;  
+
+    double pos_1 = 0.0;  
+    double pos_2 = 0.0;      
+
+    double q_1_t = 0.0; 
+    double q_2_t = 0.0; 
+
+    double dist = 0.0; 
+    int initial_index = 0; 
+    int max_index = 10000; 
+
+    /////////////////////////////////////////////////////
+    /////  avoid large motion at starting points  ///////
+    /////////////////////////////////////////////////////
+    for(int index=0; index<5; index=index+1) 
+    {
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t); 
+        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t); 
+    }
+
+    run_on = 1; 
+
+    // Catch a Ctrl-C event:
+	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
+
+    // Catch a Ctrl-C event: 
+    signal(SIGINT, sig_h);  
+ 
+    // dist > dist_threshold && initial_index < max_index
+    while(run_on)  
+    {
+        ////////////////////////////////////////////////////////
+        //// Initial Encoder and SEA Motor CAN
+        ////////////////////////////////////////////////////////
+        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
+        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+
+        encoder.read_ang_encoder(encoder_arr);  
+
+        q_1_t = (double) encoder_arr[1]*PI/180.0 - q_1_initial;  
+        q_2_t = (double) encoder_arr[0]*PI/180.0 - q_2_initial;  
+
+        dist = sqrt(pow((theta_1_t - q_1_target), 2) + pow((theta_2_t - q_2_target), 2));   
+
+        printf(" theta_1_t: %f\n", theta_1_t);    
+        printf(" theta_2_t: %f\n", theta_2_t);    
+
+        /////////////////////////////////////////////////////
+        // calculate torque control command 
+        ///////////////////////////////////////////////////// 
+        torque_1 = clip(- stiffness * (q_1_target - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(- stiffness * (q_2_target - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+
+        // double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
+        // double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
+
+        OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
+
+        // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
+        // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
+
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
+
+        OutFileTorque << torque_1_t << "," << torque_2_t << "\n";   
+
+        // OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";   
+
+        // printf("d_theta_1_t: %f\n", d_theta_1_t);   
+        // printf("d_theta_2_t: %f\n", d_theta_2_t);   
+    }
+
+    printf("Move to target done !!!! \n"); 
+
+    OutFileAngle.close();   
+    OutFileTorque.close();       
+
+    motor_1.pack_stop_cmd(2);   
+    motor_2.pack_stop_cmd(1);    
+
+    return 1;  
 }
 
 
@@ -423,9 +572,17 @@ int get_demonstration(double theta_1_initial, double theta_2_initial)
     double torque_2_t = 0.0;  
 
     double pos_1 = 0.0;  
-    double pos_2 = 0.0;      
+    double pos_2 = 0.0;   
 
-    while(true) 
+    run_on = 1; 
+
+    // Catch a Ctrl-C event:
+	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
+
+    // Catch a Ctrl-C event: 
+    signal(SIGINT, sig_h);  
+
+    while(run_on)
     {
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
@@ -446,8 +603,8 @@ int get_demonstration(double theta_1_initial, double theta_2_initial)
         // printf("d_theta_2_t: %f\n", d_theta_2_t);   
     }
 
-    return 1; 
-}
+    return 1;  
+}  
 
 
 void load_path_data(double *theta_1_list, double *theta_2_list)
@@ -549,7 +706,7 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     double torque_upper_bound = 2.5;   
     
     double ctl_ratio_1 = - 2000.0/32;   
-    double ctl_ratio_2 = 2000.0/32;  
+    double ctl_ratio_2 = 2000.0/32;   
 
     double d_t = 0.001;   
 
@@ -601,65 +758,65 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     ///////////////////////////////////////////////////////
     // avoid large motion at starting points
     ///////////////////////////////////////////////////////
-    // for(int index=0; index<5; index=index+1) 
-    // {
-    //     pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t); 
-    //     pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t); 
-    // }
+    for(int index=0; index<5; index=index+1) 
+    {
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);  
+        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);  
+    }
 
-    // for(int index=0; index<Num_waypoints; index=index+1) 
-    // {
-    //     theta_1_e = theta_1_list[index];  
-    //     theta_2_e = theta_2_list[index];  
+    for(int index=0; index<Num_waypoints; index=index+1)  
+    {
+        theta_1_e = theta_1_list[index];  
+        theta_2_e = theta_2_list[index];  
 
-    //     if(index==0) 
-    //     {
-    //         d_theta_1_e = 0.0; 
-    //         d_theta_2_e = 0.0; 
-    //     }
-    //     else 
-    //     {
-    //         d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t; 
-    //         d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t; 
-    //     }
+        if(index==0) 
+        {
+            d_theta_1_e = 0.0; 
+            d_theta_2_e = 0.0; 
+        }
+        else  
+        {
+            d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t;  
+            d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t;  
+        }
         
-    //     // read joint angles 
-    //     theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
-    //     theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+        // read joint angles 
+        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
+        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
 
-    //     /////////////////////////////////////////////////////
-    //     // set torque control command 
-    //     ///////////////////////////////////////////////////// 
-    //     torque_1 = clip(- K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-    //     torque_2 = clip(- K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+        /////////////////////////////////////////////////////
+        // set torque control command 
+        ///////////////////////////////////////////////////// 
+        torque_1 = clip(- K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(- K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
-    //     double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
-    //     double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t); 
+        double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
+        double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
 
-    //     // printf("input_torque_1_t: %f\n", torque_1); 
-    //     // printf("input_torque_2_t: %f\n", torque_1); 
+        // printf("input_torque_1_t: %f\n", torque_1);  
+        // printf("input_torque_2_t: %f\n", torque_1);  
 
-    //     pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t); 
-    //     pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t); 
+        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);  
+        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);  
 
 
-    //     ////////////////////////////////////////////////////////
-    //     // Save Data
-    //     ////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////
+        // Save Data
+        ////////////////////////////////////////////////////////
 
-    //     OutFileAngle << theta_1_t << "," << theta_2_t << "\n";  
+        OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
 
-    //     OutFileTorque << torque_1_o << "," << torque_2_o << "\n"; 
+        OutFileTorque << torque_1_o << "," << torque_2_o << "\n";   
 
-    //     OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n"; 
-    // }
+        OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n";   
+    }
     
-    // OutFileTorque.close();   
-    // OutFileAngle.close();    
-    // OutFileVel.close();   
+    OutFileTorque.close();   
+    OutFileAngle.close();    
+    OutFileVel.close();   
 
-    // motor_1.pack_stop_cmd(2);  
-    // motor_2.pack_stop_cmd(1);  
+    motor_1.pack_stop_cmd(2);  
+    motor_2.pack_stop_cmd(1);  
 
     return 0;  
 }
@@ -721,11 +878,11 @@ PYBIND11_MODULE(motor_control, m) {
         Some other explanation about the add function. 
     )pbdoc"); 
 
-        m.def(
+    m.def(
         "read_initial_angle_1", &read_initial_angle_1, R"pbdoc( 
-        read_initial_angle_1
+        read_initial_angle_1 
 
-        Some other explanation about the add function. 
+        Some other explanation about the add function.  
     )pbdoc"); 
 
     m.def(
@@ -741,10 +898,10 @@ PYBIND11_MODULE(motor_control, m) {
         Some other explanation about the add function.
     )pbdoc"); 
 
-    m.def("run_one_loop", &run_one_loop, R"pbdoc(
-        run_one_loop
+    m.def("run_one_loop", &run_one_loop, R"pbdoc( 
+        run_one_loop 
 
-        Some other explanation about the add function.
+        Some other explanation about the add function. 
     )pbdoc"); 
 
     m.def("move_to_target", &move_to_target, R"pbdoc(
@@ -759,6 +916,6 @@ PYBIND11_MODULE(motor_control, m) {
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-    m.attr("__version__") = "dev";
+    m.attr("__version__") = "dev"; 
 #endif
 }
