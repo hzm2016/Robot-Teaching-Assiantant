@@ -42,15 +42,20 @@ class Controller(object):
 
     def __init__(self, args, img_processor=None, impedance_level=0) -> None:
         self.args = args
+        
         self.root_path = '..controller/data/'
+        self.show_video = True
         
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
         self.y_impedance_level = impedance_level
         
+        # impedane parameters
         self.action_dim = 2
-        self.stiffness = [1.0, 1.0]
-        self.damping = [1.0, 1.0]
+        self.stiffness_high = np.array([10.0, 10.0])
+        self.stiffness_low = np.array([0.0, 0.0])
+        self.stiffness = np.zeros(self.action_dim)
+        self.damping = np.zeros_like(self.stiffness)
         pass
 
     def guide(self,):
@@ -164,7 +169,7 @@ class Controller(object):
             
             if run_done:
                 print("run_done", run_done)
-                written_image = capture_image(root_path=self.root_path, font_name='test')
+                written_image = capture_image(root_path=self.root_path, font_name='written_image')
         
         return written_image
     
@@ -176,13 +181,18 @@ if __name__ == "__main__":
     from imgprocessor import Postprocessor
     c = Controller(Postprocessor(
         {'CROPPING': [478, 418, 1586, 672],'ROTATE': 0, 'BINARIZE': 128, 'RESCALE': 0.8}))
-    import cv2
-    written_stroke = cv2.imread('./example/example_feedback.png')
-    sample_stroke = cv2.imread(
-        './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
-    # cv2.imshow('',sample_stroke)
+    
+    # written_stroke = cv2.imread('./example/example_feedback.png')
+    # sample_stroke = cv2.imread(
+    #     './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
+    
+    root_path = '../control/data/captured_images/'
+    sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
+    cv2.imshow('', ori_img)
     # cv2.waitKey(0)
+    
+    # show_video()
 
-    x_dis, y_dis = c.update_impedance(sample_stroke, written_stroke)
-    print(x_dis, y_dis)
-    matching = c.key_point_matching(a, b)
+    # x_dis, y_dis = c.update_impedance(sample_stroke, written_stroke)
+    # print(x_dis, y_dis)
+    # matching = c.key_point_matching(a, b)
