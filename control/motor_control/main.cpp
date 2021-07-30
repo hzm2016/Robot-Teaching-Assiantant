@@ -83,14 +83,14 @@ double read_initial_angle_1()
     // Read motor original angle 1
     ////////////////////////////////////////////
 
-    CANDevice can1((char *) "can1");  
-    can1.begin();  
+    CANDevice can1((char *) "can1");   
+    can1.begin();   
 
     Gcan motor_1(can1);   
     motor_1.begin();   
     
     double theta_1 = motor_1.read_sensor(2);   
-    printf("Motor 1 original position: %f\n", theta_1);  
+    printf("Motor 1 original position: %f\n", theta_1);   
 
     return theta_1;   
 }
@@ -116,9 +116,9 @@ double read_initial_angle_2()
 
 double read_angle_1(double theta_1_initial)
 {
-    ////////////////////////////////////////////
+    //////////////////////////////////////////// 
     // Read motor angle 1
-    ////////////////////////////////////////////
+    //////////////////////////////////////////// 
 
     CANDevice can1((char *) "can1");  
     can1.begin();  
@@ -183,59 +183,6 @@ double read_link_angle_2(double q_2_initial)
 
     return q_2;  
 }  
-
-// void hardware_reset(Gcan *motor_1, Gcan *motor_2) 
-// {
-//     ////////////////////////////////////////////////////////
-//     // Initial Encoder and Motor CAN
-//     ////////////////////////////////////////////////////////
-
-//     CANDevice can0((char *) "can0");  
-//     can0.begin();  
-//     CANDevice can1((char *) "can1");  
-//     can1.begin();  
-
-//     motor_1(can1);  
-//     motor_2(can0);  
-//     // Gcan motor_1(can1);  
-//     // Gcan motor_2(can0);   
-//     motor_1.begin();  
-//     motor_2.begin();  
-
-
-//     ///////////// initial encoder ////////
-//     //////////////////////////////////////
-
-//     // controller_renishaw encoder("can2");  
-    
-//     // float encoder_arr[2];  
-// 	// encoder.read_ang_encoder(encoder_arr);   
-//   	// double theta_1 = (double) encoder_arr[1]*PI/180.0;   
-//   	// double theta_2 = (double) encoder_arr[0]*PI/180.0;    
-//     // printf("Encoder 1 position: %f\n", theta_1);   
-//     // printf("Encoder 2 position: %f\n", theta_2);  
-// }
-
-
-// int reset(double *theta_1_initial, double *theta_2_initial)
-// {
-//     ////////////////////////////////////////////////////////
-//     // Initial Calibration  
-//     ////////////////////////////////////////////////////////
-//     // double theta_1_initial = motor_1.read_sensor(2); 
-//     // printf(" Motor 1 initial position: %f\n", theta_1_initial); 
-
-//     // double theta_2_initial = motor_2.read_sensor(1); 
-//     // printf(" Motor 2 initial position: %f\n", theta_2_initial); 
-
-//     theta_1_initial = motor_1.read_sensor(2);   
-//     printf("Motor 1 initial position: %f\n", theta_1_initial);   
-
-//     theta_2_initial = motor_2.read_sensor(1);  
-//     printf("Motor 2 initial position: %f\n", theta_2_initial);   
-    
-//     return 1;  
-// } 
 
 int move_to_target(double stiffness, double damping,  
 double q_1_target, double q_2_target,  
@@ -609,7 +556,7 @@ void load_path_data(double *theta_1_list, double *theta_2_list)
     ////////////////////////////////////////////////////////   
     int index_point = 0;    
 
-    // int Num_waypoints = 19999; 
+    // int Num_waypoints = 19999;  
     // double theta_1_list[Num_waypoints];    
     // double theta_2_list[Num_waypoints];     
 
@@ -665,7 +612,7 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     CANDevice can0((char *) "can0");  
     can0.begin();  
     CANDevice can1((char *) "can1");  
-    can1.begin(); 
+    can1.begin();  
 
     Gcan motor_1(can1);   
     Gcan motor_2(can0);   
@@ -679,14 +626,14 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     ////////////////////////////////////////////////////////
 
     // string root_path = "home/zhimin/code/8_nus/robotic-teaching/control/motor_control"; 
-    string root_path = ""; 
+    string root_path = "";  
 
     string output_torque = root_path + "real_torque_list.txt"; 
-    ofstream OutFileTorque(output_torque); 
+    ofstream OutFileTorque(output_torque);   
     OutFileTorque << "torque_1" << "," << "torque_2" << "\n";  
 
     string output_angle = root_path + "real_angle_list.txt";    
-    ofstream OutFileAngle(output_angle);  
+    ofstream OutFileAngle(output_angle);   
     OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
 
     string output_vel = root_path + "real_angle_vel_list.txt";  
@@ -697,14 +644,13 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     // Impedance Parameters ::: input 
     ////////////////////////////////////////////////////////
 
-    double torque_lower_bound = -2.5;   
-    double torque_upper_bound = 2.5;   
+    double torque_lower_bound = -1.0;   
+    double torque_upper_bound = 1.0;   
     
     double ctl_ratio_1 = - 2000.0/32;   
     double ctl_ratio_2 = 2000.0/32;   
 
     double d_t = 0.001;   
-
     
     double theta_1_t = 0.0;   
     double theta_2_t = 0.0;   
@@ -712,8 +658,8 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     double d_theta_1_t = 0.0;    
     double d_theta_2_t = 0.0;    
 
-    double theta_1_e = 0.0;  
-    double theta_2_e = 0.0;  
+    double theta_1_e = 0.0;   
+    double theta_2_e = 0.0;   
 
     double d_theta_1_e = 0.0;  
     double d_theta_2_e = 0.0;  
@@ -753,7 +699,7 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     ///////////////////////////////////////////////////////
     // avoid large motion at starting points
     ///////////////////////////////////////////////////////
-    for(int index=0; index<5; index=index+1) 
+    for(int index=0; index<20; index=index+1)  
     {
         pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);  
         pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);  
@@ -761,13 +707,13 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
 
     for(int index=0; index<Num_waypoints; index=index+1)  
     {
-        theta_1_e = theta_1_list[index];  
-        theta_2_e = theta_2_list[index];  
+        theta_1_e = theta_1_list[index];   
+        theta_2_e = theta_2_list[index];   
 
         if(index==0) 
         {
-            d_theta_1_e = 0.0; 
-            d_theta_2_e = 0.0; 
+            d_theta_1_e = 0.0;  
+            d_theta_2_e = 0.0;  
         }
         else  
         {
@@ -788,17 +734,15 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
         double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
         double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
 
-        // printf("input_torque_1_t: %f\n", torque_1);  
-        // printf("input_torque_2_t: %f\n", torque_1);  
+        // printf("input_torque_1_t: %f\n", torque_1);   
+        // printf("input_torque_2_t: %f\n", torque_1);   
 
-        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);  
-        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);  
-
+        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
 
         ////////////////////////////////////////////////////////
         // Save Data
         ////////////////////////////////////////////////////////
-
         OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
 
         OutFileTorque << torque_1_o << "," << torque_2_o << "\n";   
@@ -807,14 +751,67 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     }
     
     OutFileTorque.close();   
-    OutFileAngle.close();    
+    OutFileAngle.close();   
     OutFileVel.close();   
 
-    motor_1.pack_stop_cmd(2);  
-    motor_2.pack_stop_cmd(1);  
+    motor_1.pack_stop_cmd(2);    
+    motor_2.pack_stop_cmd(1);     
 
     return 0;  
 }
+
+// void hardware_reset(Gcan *motor_1, Gcan *motor_2) 
+// {
+//     ////////////////////////////////////////////////////////
+//     // Initial Encoder and Motor CAN
+//     ////////////////////////////////////////////////////////
+
+//     CANDevice can0((char *) "can0");  
+//     can0.begin();  
+//     CANDevice can1((char *) "can1");  
+//     can1.begin();  
+
+//     motor_1(can1);  
+//     motor_2(can0);  
+//     // Gcan motor_1(can1);  
+//     // Gcan motor_2(can0);   
+//     motor_1.begin();  
+//     motor_2.begin();  
+
+
+//     ///////////// initial encoder ////////
+//     //////////////////////////////////////
+
+//     // controller_renishaw encoder("can2");  
+    
+//     // float encoder_arr[2];  
+// 	// encoder.read_ang_encoder(encoder_arr);   
+//   	// double theta_1 = (double) encoder_arr[1]*PI/180.0;   
+//   	// double theta_2 = (double) encoder_arr[0]*PI/180.0;    
+//     // printf("Encoder 1 position: %f\n", theta_1);   
+//     // printf("Encoder 2 position: %f\n", theta_2);  
+// }
+
+
+// int reset(double *theta_1_initial, double *theta_2_initial)
+// {
+//     ////////////////////////////////////////////////////////
+//     // Initial Calibration  
+//     ////////////////////////////////////////////////////////
+//     // double theta_1_initial = motor_1.read_sensor(2); 
+//     // printf(" Motor 1 initial position: %f\n", theta_1_initial); 
+
+//     // double theta_2_initial = motor_2.read_sensor(1); 
+//     // printf(" Motor 2 initial position: %f\n", theta_2_initial); 
+
+//     theta_1_initial = motor_1.read_sensor(2);   
+//     printf("Motor 1 initial position: %f\n", theta_1_initial);   
+
+//     theta_2_initial = motor_2.read_sensor(1);  
+//     printf("Motor 2 initial position: %f\n", theta_2_initial);   
+    
+//     return 1;  
+// } 
 
 
 namespace py = pybind11;
