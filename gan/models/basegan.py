@@ -1,6 +1,6 @@
 import torch
 import itertools
-from utils import LambdaLR
+from ..utils import LambdaLR
 
 
 class GAN(object):

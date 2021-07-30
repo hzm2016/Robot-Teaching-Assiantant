@@ -9,10 +9,10 @@ import torch
 # from visdom import Visdom
 import torchvision.transforms as transforms
 import numpy as np
-from nn.modules import Generator, StyleGanGenerator
-from nn.modules import Discriminator
+from .nn.modules import Generator, StyleGanGenerator
+from .nn.modules import Discriminator
 from PIL import Image
-from datasets import ImageDataset, SequentialImageDataset
+from .datasets import ImageDataset, SequentialImageDataset
 from torch.utils.data import DataLoader
 
 def tensor2image(tensor):

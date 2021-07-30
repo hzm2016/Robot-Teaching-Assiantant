@@ -29,7 +29,7 @@ class Executor(object):
         self.save_traj = args.get('SAVE_TRAJ', False)
 
         self.__init_parameters(args)
-        self.__init_network()
+        self.__init_network(args)
         self.__parse_feedback()
 
     def __parse_feedback(self,):
@@ -41,7 +41,7 @@ class Executor(object):
 
         self.postprocessor = Postprocessor(
             self.feedback.get('POST_PRORCESS'))
-        print(self.feedback.get('POST_PRORCESS'))
+
         self.learner = Learner()
         self.controller = Controller(Postprocessor(
             self.feedback.get('POST_PRORCESS')))
@@ -73,11 +73,12 @@ class Executor(object):
                            ]
         self.pre_process = transforms.Compose(pre_process)
 
-    def __init_network(self,):
+    def __init_network(self, args):
 
         self.gan = load_class(self.gan_type)(
-            self.input_channel, self.output_channel, True)
-        self.dis = load_class(self.dis_type)(self.output_channel, 5)
+            args['GAN_PARAM'], mode='inference')
+        self.dis = load_class(self.dis_type)(
+            args['GAN_PARAM'], mode='inference')
 
         mapping_device = 'cpu'
         if self.cuda:
