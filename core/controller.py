@@ -9,7 +9,7 @@ from control.protocol.task_interface import *
 from control.path_planning.path_generate import *
 
 
-def draw_points(points,canvas_size=256):
+def draw_points(points, canvas_size=256):
 
     canvas = np.zeros((canvas_size, canvas_size, 3),dtype=np.uint8) + 255
 
@@ -42,6 +42,7 @@ class Controller(object):
 
     def __init__(self, args, img_processor=None, impedance_level=0) -> None:
         self.args = args
+        self.root_path = '..controller/data/'
         
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
@@ -76,14 +77,14 @@ class Controller(object):
         in_pts = np.squeeze(in_pts, axis=0)
 
         tgt_pts_vis = draw_points(tgt_pts)
-        cv2.imwrite('tgt_pts_vis.jpg',tgt_pts_vis)
+        cv2.imwrite('tgt_pts_vis.jpg', tgt_pts_vis)
 
         in_pts_vis = draw_points(in_pts)
-        cv2.imwrite('in_pts_vis.jpg',in_pts_vis)
+        cv2.imwrite('in_pts_vis.jpg', in_pts_vis)
 
         matching = self.key_point_matching(tgt_pts, in_pts)
         matching_vis = draw_matching(tgt_pts, in_pts, matching)
-        cv2.imwrite('matching_vis.jpg',matching_vis)
+        cv2.imwrite('matching_vis.jpg', matching_vis)
 
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
@@ -126,37 +127,44 @@ class Controller(object):
         period = 5
         return period
     
-    def interact(self, traj):
+    def interact(self, traj, target_img):
         written_image = None
-        period = self.update_period()
+        num_episodes = 5
         
         # initial TCP connection :::
         task = TCPTask('169.254.0.99', 5005)
 
         # check motor and encode well before experiments
         # task.get_encoder_check()
-        task.send_params_request()
         
-        params = self.stiffness + self.damping
-        task.send_params(params)
-
-        way_points = generate_path(traj, period=period)
-
-        task.send_way_points_request()
-
-        task.send_way_points(way_points)
-
-        task.send_way_points_done()
-
-        if self.args.show_video:
-            show_video()
-
-        # video record for trail :::
-        run_done = task.get_movement_check()
-        
-        if run_done:
-            print("run_done", run_done)
-            written_image = capture_image(root_path='captured_images/', font_name='test')
+        for i in range(num_episodes):
+            
+            task.send_params_request()
+            
+            # update impedance
+            self.update_impedance(target_img, written_image)
+            params = self.stiffness + self.damping
+            task.send_params(params)
+    
+            # update period
+            period = self.update_period()
+            way_points = generate_path(traj, period=period)
+     
+            task.send_way_points_request()
+    
+            task.send_way_points(way_points)
+    
+            task.send_way_points_done()
+    
+            if self.args.show_video:
+                show_video()
+    
+            # video record for trail :::
+            run_done = task.get_movement_check()
+            
+            if run_done:
+                print("run_done", run_done)
+                written_image = capture_image(root_path=self.root_path, font_name='test')
         
         return written_image
     
