@@ -1,4 +1,3 @@
-from .model.models import Generator, StyleGanGenerator
-from .model.models import Discriminator
+from .models import CycleGAN
 
-__all__ = [Generator, Discriminator, StyleGanGenerator]
+__all__ = [CycleGAN]

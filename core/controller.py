@@ -1,5 +1,5 @@
 from tools import skeletonize
-from utils import hungarian_matching
+from .utils import hungarian_matching
 # from control.vision_capture import capture_image
 import numpy as np
 import cv2
@@ -63,16 +63,6 @@ class Controller(object):
         tgt_pts = np.squeeze(tgt_pts, axis=0)
         in_pts = np.squeeze(in_pts, axis=0)
 
-        tgt_pts_vis = draw_points(tgt_pts)
-        cv2.imwrite('tgt_pts_vis.jpg',tgt_pts_vis)
-
-        in_pts_vis = draw_points(in_pts)
-        cv2.imwrite('in_pts_vis.jpg',in_pts_vis)
-
-        matching = self.key_point_matching(tgt_pts, in_pts)
-        matching_vis = draw_matching(tgt_pts, in_pts, matching)
-        cv2.imwrite('matching_vis.jpg',matching_vis)
-
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
 
@@ -92,7 +82,6 @@ class Controller(object):
         self.x_impedance_level = x_dis / 128
         self.y_impedance_level = y_dis / 128
 
-
     def key_point_matching(self, tgt_pts, in_pts):
 
         matching = hungarian_matching(tgt_pts, in_pts)
@@ -107,6 +96,11 @@ class Controller(object):
             NotImplementedError: [description]
         """
         raise NotImplementedError
+
+    def interact(self, traj):
+
+        pass
+
 
 
 if __name__ == "__main__":

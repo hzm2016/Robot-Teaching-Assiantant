@@ -4,11 +4,14 @@ PRE_PROCESS: default
 INPUT_CHANNEL: 1
 OUTPUT_CHANNEL: 1
 
-GAN_MODEL_TYPE: gan.Generator
-DIS_MODEL_TYPE: gan.Discriminator
-
-GAN_MODEL_PATH: ./saved_model/199_netG_S2P.pth
-DIS_MODEL_PATH: ./saved_model/199_netD_P.pth
+GAN_MODEL_TYPE: gan.models.CycleGAN
+DIS_MODEL_TYPE: gan.models.CycleGAN
+GAN_PARAM: 
+  INPUT_NC: 1
+  OUTPUT_NC: 1 
+  CUDA: False
+# GAN_MODEL_PATH: ./saved_model/199_netG_S2P.pth
+# DIS_MODEL_PATH: ./saved_model/199_netD_P.pth
 
 FONT_SIZE: 128
 MAX_PADDING: 0

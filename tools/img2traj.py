@@ -8,7 +8,7 @@ import scipy.special
 import time, math, copy
 import bezier
 import matplotlib.pyplot as plt
-from skeltonize import *
+from .skeltonize import *
 import random
 import shutil
 import tqdm 
