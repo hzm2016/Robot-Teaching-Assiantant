@@ -183,7 +183,7 @@ double read_link_angle_2(double q_2_initial)
     double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);    
     // printf("Motor 2 position: %f\n", theta_2);   
 
-    return q_2;   
+    return q_2;    
 } 
 
 
