@@ -33,13 +33,7 @@ if __name__ == '__main__':
 
 
     dir_name = './dummy'
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--save_path', type=string, default='./one_stroke', help='size of the batches')
-    # parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
-    # parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
-    # parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
-    
-    # args = parser.parse_args()
+
     generate(dir_name)
 
     
