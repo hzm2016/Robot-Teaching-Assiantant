@@ -70,7 +70,7 @@ def image_precessing(img_path, img_name):
 	return img
 
 
-def capture_image(root_path='', font_name='font_1'):
+def capture_image(root_path='', font_name='font_1', size=(128, 128)):
 	print("Capture image ...")
 	init = sl.InitParameters()
 	cam = sl.Camera()
@@ -98,14 +98,15 @@ def capture_image(root_path='', font_name='font_1'):
 		cv2.imshow("ZED", mat.get_data())
 		img = mat.get_data()
 		height, weight = img.shape[:2]
-		print("height :::", height)
-		# print("weight :::", weight)
+		# print("height :::", height)
+		# # print("weight :::", weight)
 		
 		# need to define according to robot position
-		crop_img = img[135:735, 380:880]
-		resize_img = cv2.resize(crop_img, (128, 128), cv2.INTER_AREA)
+		crop_img = img[200:750, 400:850]
+		
+		resize_img = cv2.resize(crop_img, size, cv2.INTER_AREA)
 		cv2.imwrite(root_path + font_name + '_resize.png', crop_img)
-		cv2.imshow("Processed Image", resize_img)
+		# cv2.imshow("Processed Image", resize_img)
 		
 		cols, rows = resize_img.shape[:2]
 		

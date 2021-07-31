@@ -1,5 +1,5 @@
 from tools import skeletonize
-from .utils import hungarian_matching
+from utils import hungarian_matching
 import numpy as np
 import cv2
 
@@ -45,7 +45,10 @@ class Controller(object):
         
         self.root_path = '..controller/data/'
         self.show_video = True
-        
+
+        # initial TCP connection :::
+        self.task = TCPTask('169.254.0.99', 5005)
+
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
         self.y_impedance_level = impedance_level
@@ -129,47 +132,45 @@ class Controller(object):
         Raises:
             NotImplementedError: [description]
         """
-        period = 5
-        return period
+        velocity = 5
+        return velocity
     
     def interact(self, traj, target_img):
         written_image = None
         num_episodes = 5
-        
-        # initial TCP connection :::
-        task = TCPTask('169.254.0.99', 5005)
+        run_done = False
 
         # check motor and encode well before experiments
-        # task.get_encoder_check()
+        # self.task.get_encoder_check()
         
         for i in range(num_episodes):
             
-            task.send_params_request()
+            self.task.send_params_request()
             
             # update impedance
             self.update_impedance(target_img, written_image)
             params = self.stiffness + self.damping
-            task.send_params(params)
+            self.task.send_params(params)
     
             # update period
-            period = self.update_period()
-            way_points = generate_path(traj, period=period)
+            velocity = self.update_period()
+            way_points = generate_path(traj, center_shift=np.array([0.16, -WIDTH / 2]), velocity=velocity, Ts=0.001, plot_show=False)
      
-            task.send_way_points_request()
+            self.task.send_way_points_request()
     
-            task.send_way_points(way_points)
+            self.task.send_way_points(way_points)
     
-            task.send_way_points_done()
+            self.task.send_way_points_done()
     
             if self.args.show_video:
                 show_video()
     
             # video record for trail :::
-            run_done = task.get_movement_check()
+            run_done = self.task.get_movement_check()
             
             if run_done:
                 print("run_done", run_done)
-                written_image = capture_image(root_path=self.root_path, font_name='written_image')
+                written_image, _ = capture_image(root_path=self.root_path, font_name='written_image')
         
         return written_image
     
@@ -186,9 +187,9 @@ if __name__ == "__main__":
     # sample_stroke = cv2.imread(
     #     './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
     
-    # root_path = '../control/data/captured_images/'
-    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
-    # cv2.imshow('', ori_img)
+    root_path = '../control/data/captured_images/'
+    sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
+    cv2.imshow('', ori_img)
     
     # cv2.waitKey(0)
     

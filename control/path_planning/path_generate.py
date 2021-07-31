@@ -42,15 +42,24 @@ def calibrate_para():
 
 
 def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
-                  period=10, Ts=0.001, plot_show=False):
+                  velocity=10, Ts=0.001, plot_show=False):
     """
          generate trajectory from list
     """
     L1 = Length[0]
     L2 = Length[2]
     
-    path_data = traj
+    # calculate length of path
+    dist = 0.0
+    for i in range(len(traj) - 1):
+        point_1 = np.array([traj[i, 1], traj[i, 0]])
+        point_2 = np.array([traj[i+1, 1], traj[i+1, 0]])
+        dist += np.linalg.norm((point_2.copy() - point_1.copy()), ord=2)
     
+    path_data = traj
+    period = dist/velocity
+    print("Distance (mm) :", dist)
+    print("Period (s) :", period)
     N = np.array(period / Ts).astype(int)
     # M = N//len(traj)
     # x_list = []
@@ -136,8 +145,8 @@ def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
     
     max_angle_1 = np.max(angle_1_list_e)
     max_angle_2 = np.max(angle_2_list_e)
-    print("max angle 1 :::", max_angle_1)
-    print("max angle 2 :::", max_angle_2)
+    print("Max angle 1 (rad) :", max_angle_1)
+    print("Max angle 2 (rad):", max_angle_2)
     if max_angle_1 < ANGLE_1_RANGE[0] or max_angle_1 > ANGLE_1_RANGE[1]:
         print("!!!!!! angle 1 is out of range !!!!!")
         print("max angle 1 :::", max_angle_1)
