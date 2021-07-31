@@ -1,5 +1,5 @@
 from tools import skeletonize
-from utils import hungarian_matching
+from .utils import hungarian_matching
 import numpy as np
 import cv2
 
@@ -186,9 +186,10 @@ if __name__ == "__main__":
     # sample_stroke = cv2.imread(
     #     './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
     
-    root_path = '../control/data/captured_images/'
-    sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
-    cv2.imshow('', ori_img)
+    # root_path = '../control/data/captured_images/'
+    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
+    # cv2.imshow('', ori_img)
+    
     # cv2.waitKey(0)
     
     # show_video()

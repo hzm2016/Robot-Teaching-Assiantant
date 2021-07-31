@@ -102,7 +102,7 @@ def capture_image(root_path='', font_name='font_1'):
 		# print("weight :::", weight)
 		
 		# need to define according to robot position
-		crop_img = img[130:435, 445:945]
+		crop_img = img[135:735, 380:880]
 		resize_img = cv2.resize(crop_img, (128, 128), cv2.INTER_AREA)
 		cv2.imwrite(root_path + font_name + '_resize.png', crop_img)
 		cv2.imshow("Processed Image", resize_img)
@@ -113,7 +113,7 @@ def capture_image(root_path='', font_name='font_1'):
 		M = cv2.getRotationMatrix2D((cols / 2, rows / 2), -90, 1)
 		dst_img = cv2.warpAffine(resize_img, M, (cols, rows))
 		
-		cv2.imwrite(root_path + font_name + '.png', img)
+		cv2.imwrite(root_path + font_name + '.png', dst_img)
 		key = cv2.waitKey(5)
 		settings(key, cam, runtime, mat)
 	else:

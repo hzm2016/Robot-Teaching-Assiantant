@@ -59,8 +59,14 @@ def run_main(show_video=False):
 	
 
 if __name__ == "__main__":
-	check_path(root_path='data/font_data', font_name='third', center_shift=np.array([0.0, 0.10]),
-	           type=3, period=10, Ts=0.001)
+	root_path = 'data/font_data'
+	font_name = 'first'
+	type = 1
+	path_data = np.loadtxt(root_path + '/' + font_name + '/1_font_' + str(type) + '.txt')
+	way_points = generate_path(path_data,  center_shift=np.array([0.16, -WIDTH/2]), period=10, Ts=0.001, plot_show=True)
+	
+	# check_path(root_path='data/font_data', font_name='third',
+	#            type=3, period=10, Ts=0.001)
 	
 	# capture_image(root_path='data/captured_images/', font_name='test_image')
 
