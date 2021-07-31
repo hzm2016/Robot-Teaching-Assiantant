@@ -147,10 +147,6 @@ class Controller(object):
         # check motor and encode well before experiments
         angle_initial = self.task.wait_encoder_check()
         print("Angle_initial (rad) :", angle_initial)
-        
-        self.task.send_params_request()
-
-        self.task.send_params(impedance_params)
 
         way_points = generate_path(traj,
                                    center_shift=np.array([0.16, -WIDTH / 2]),
@@ -162,6 +158,10 @@ class Controller(object):
         self.task.send_way_points(way_points)
 
         self.task.send_way_points_done()
+        
+        self.task.send_params_request()
+
+        self.task.send_params(impedance_params)
 
         if self.args.show_video:
             show_video()
