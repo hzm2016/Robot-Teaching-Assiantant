@@ -146,32 +146,32 @@ class Controller(object):
         """
         # check motor and encode well before experiments
         angle_initial = self.task.wait_encoder_check()
-        print("Angle_initial ::::", angle_initial)
+        print("Angle_initial (rad) :", angle_initial)
         
-        # self.task.send_params_request()
-        #
-        # self.task.send_params(impedance_params)
-        #
-        # way_points = generate_path(traj,
-        #                            center_shift=np.array([0.16, -WIDTH / 2]),
-        #                            velocity=velocity, Ts=0.001,
-        #                            plot_show=False)
-        #
-        # self.task.send_way_points_request()
-        #
-        # self.task.send_way_points(way_points)
-        #
-        # self.task.send_way_points_done()
-        #
-        # if self.args.show_video:
-        #     show_video()
-        #
-        # # video record for trail :::
-        # run_done = self.task.get_movement_check()
-        #
-        # if run_done:
-        #     print("run_done", run_done)
-        #     written_image, _ = capture_image(root_path=self.root_path, font_name='written_image')
+        self.task.send_params_request()
+
+        self.task.send_params(impedance_params)
+
+        way_points = generate_path(traj,
+                                   center_shift=np.array([0.16, -WIDTH / 2]),
+                                   velocity=velocity, Ts=0.001,
+                                   plot_show=False)
+
+        self.task.send_way_points_request()
+
+        self.task.send_way_points(way_points)
+
+        self.task.send_way_points_done()
+
+        if self.args.show_video:
+            show_video()
+
+        # video record for trail :::
+        run_done = self.task.get_movement_check()
+
+        if run_done:
+            print("run_done", run_done)
+            written_image, _ = capture_image(root_path=self.root_path, font_name='written_image')
     
     def interact(self, traj, target_img):
         written_image = None

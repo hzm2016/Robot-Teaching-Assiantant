@@ -67,50 +67,51 @@ def train():
     angle_initial = reset_and_calibration()
     _server.send_encoder_check(angle_initial)
 
-    # # ######################################################
-    # # ############## Wait way_points #######################
-    # # ######################################################
-    # _server.wait_way_points_request()
-    #
-    # # receive way points
-    # way_points = []
-    #
-    # os.remove(r'angle_list.txt')
-    # data_file = open('angle_list.txt', 'w')
-    # way_point = None
-    # while way_point != "SEND_DONE":
-    #     way_point = _server.read_way_points()
-    #     print("way_points ::::", way_point)
-    #     if way_point == "SEND_DONE":
-    #         break
-    #     way_points.append(way_point)
-    #     line_data = str(way_point[0]) + ',' + str(way_point[1]) + '\n'
-    #     data_file.writelines(line_data)
-    #     # send_done = _server.wait_send_way_points_done()
-    # way_points = np.array(way_points)
-    # N_way_points = way_points.shape[0]
-    # print("way_points :::", way_points)
-    #
-    # # ######################################################
-    # # ############## Wait impedance parameters  ############
-    # # ######################################################
-    # _server.wait_params_request()
-    #
-    # # impedance_params = None
-    # # while impedance_params is None:
-    # # read impedance parameters :::
-    # impedance_params = _server.read_params()
-    # print("impedance parameters :::", impedance_params)
-    # if impedance_params is not None:
-    #     pass
-    #
-    # # start move
-    # if run_on:
-    #     motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
-    #                                angle_initial[0], angle_initial[1], N_way_points)
-    #
-    # # send movement_done command
-    # _server.send_movement_done()
+    # ######################################################
+    # ############## Wait way_points #######################
+    # ######################################################
+    _server.wait_way_points_request()
+
+    # receive way points
+    way_points = []
+
+    os.remove(r'angle_list.txt')
+    data_file = open('angle_list.txt', 'w')
+    way_point = None
+    while way_point != "SEND_DONE":
+        way_point = _server.read_way_points()
+        # print("way_points ::::", way_point)
+        if way_point == "SEND_DONE":
+            break
+        way_points.append(way_point)
+        line_data = str(way_point[0]) + ',' + str(way_point[1]) + '\n'
+        data_file.writelines(line_data)
+        # send_done = _server.wait_send_way_points_done()
+    way_points = np.array(way_points)
+    N_way_points = way_points.shape[0]
+    print("way_points :::", way_points.shape)
+    print("N_way_points :::", N_way_points)
+
+    # ######################################################
+    # ############## Wait impedance parameters  ############
+    # ######################################################
+    _server.wait_params_request()
+
+    # impedance_params = None
+    # while impedance_params is None:
+    # read impedance parameters :::
+    impedance_params = _server.read_params()
+    print("impedance parameters :::", impedance_params)
+    if impedance_params is not None:
+        pass
+
+    # start move
+    if run_on:
+        motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
+                                   angle_initial[0], angle_initial[1], N_way_points)
+
+    # send movement_done command
+    _server.send_movement_done()
 
 
 def eval():
