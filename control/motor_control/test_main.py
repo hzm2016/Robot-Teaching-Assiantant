@@ -22,7 +22,7 @@ sns.set(font_scale=2.5)
 # theta_2_initial = motor_control.read_initial_angle_2()
 # print("theta_2_initial :::", theta_2_initial) 
 
-theta_1_initial = -0.336998
+theta_1_initial = -0.336998 
 theta_2_initial = 0.426342
 L_1 = 300 
 L_2 = 250 

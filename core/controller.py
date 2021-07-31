@@ -61,9 +61,6 @@ class Controller(object):
         self.stiffness = np.zeros(self.action_dim)
         self.damping = np.zeros_like(self.stiffness)
         
-        # initial position
-        self.initial_angle = np.array([-1.31, 1.527])
-        self.initial_point = np.array([0.32, -0.2377])
         pass
 
     def guide(self,):
@@ -157,7 +154,7 @@ class Controller(object):
 
         self.task.send_way_points(way_points)
 
-        self.task.send_way_points_done()
+        # self.task.send_way_points_done()
         
         self.task.send_params_request()
 

@@ -5,13 +5,13 @@
  * V1.0 by Chang Hong - Dec 2020
  * ******************************/
 
-int Gcan::begin()
+int Gcan::begin() 
 {
-    channel_name.begin();
-    return 0;
+    channel_name.begin(); 
+    return 0; 
 }
 
-int Gcan::readcan()
+int Gcan::readcan() 
 {   
     int i=0;
     while (!channel_name.available()){
@@ -169,7 +169,6 @@ void Gcan::unpack_speed_torque_reply(struct can_frame* msg, uint8_t* temp, int16
     #endif    
 }
  
-
 void Gcan::pack_off_cmd(int nodeID){
      
      /// pack ints into the can buffer ///
@@ -201,7 +200,7 @@ void Gcan::pack_stop_cmd(int nodeID){
      msg.data[6] = 0;  
      msg.data[7] = 0;    
      
-    channel_name.write(msg);
+    channel_name.write(msg); 
     }
 
 void Gcan::pack_run_cmd(int nodeID){
@@ -342,13 +341,13 @@ void Gcan::pack_multi_torque_cmd(int nodeID, int16_t iqControl, int16_t iqContro
     }
 
 void Gcan::pack_position_1_cmd(int nodeID, int32_t angle){
-     //multi-turn
+    //multi-turn
     //actual position is 0.01degree/LSB, 36000 represents 360°
      #ifdef DEBUG   
     printf("Error: angle: %ld \n", angle);
      #endif
      
-     // keep the outer degree consistent with the inner degree input
+    // keep the outer degree consistent with the inner degree input
      angle = angle * 6;
 
      msg.can_id  = 0x140+nodeID;

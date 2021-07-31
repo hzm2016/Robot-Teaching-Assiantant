@@ -6,21 +6,27 @@ from motor_control import motor_control
 L_1 = 300
 L_2 = 250
 action_dim = 2
-DIST_THREHOLD = 0.05
+DIST_THREHOLD = 0.05 
+
+
+# initial angle (rad) ::: 
+Initial_angle = np.array([-1.31, 1.527]) 
+
+Initial_point = np.array([0.32, -0.2377]) 
 
 
 def reset_and_calibration():
     print("Please make sure two links are at zero position !!!")
     angle_initial = np.zeros(action_dim)
     
-    angle_initial[0] = motor_control.read_initial_angle_1()
-    angle_initial[1] = motor_control.read_initial_angle_2()
+    angle_initial[0] = motor_control.read_initial_angle_1() 
+    angle_initial[1] = motor_control.read_initial_angle_2() 
     print("theta_1_initial :::", angle_initial[0])
     print("theta_2_initial :::", angle_initial[1])
     
-    # theta_1_initial = -0.336998
-    # theta_2_initial = 0.426342
-    return angle_initial
+    # theta_1_initial = -0.336998 
+    # theta_2_initial = 0.426342 
+    return angle_initial 
 
 
 def get_observation(angle_initial=np.array([-0.336998, 0.426342])):
@@ -30,22 +36,25 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342])):
     # ######################################################
     # ############## get current state #####################
     # ######################################################
-    angle = np.zeros(action_dim)
-    point = np.zeros(action_dim)
+    angle = np.zeros(action_dim)  
+    point = np.zeros(action_dim)  
     
-    angle[0] = motor_control.read_angle_1(angle_initial[0])
-    angle[1] = motor_control.read_angle_2(angle_initial[1], angle[0].copy())
-    print("Joint angles (rad) :", angle)
+    angle[0] = motor_control.read_angle_1(angle_initial[0])  
+    angle[1] = motor_control.read_angle_2(angle_initial[1], angle[0].copy())  
+    print("Joint angles (rad) :", angle)  
     
     point[0] = L_1 * math.cos(angle[0]) + L_2 * math.cos(angle[0] + angle[1])
     point[1] = L_1 * math.sin(angle[0]) + L_2 * math.sin(angle[0] + angle[1])
     print("Position (m) :", point)
     
-    return angle, point
+    return angle, point 
 
 
-def move_to_initial_point(target_point):
-    curr_angle, curr_point = get_observation()
+def move_to_target_point(target_point): 
+    """
+        move to target point 
+    """
+    curr_angle, curr_point = get_observation() 
     dist = np.linalg.norm((curr_point - target_point), ord=2)
     while dist > DIST_THREHOLD:
         motor_control.move_to_target(target_point)
@@ -54,8 +63,8 @@ def move_to_initial_point(target_point):
     return done, dist
 
 
-def train():
-    _server = Server(5005)
+def train(angle_initial): 
+    _server = Server(5005) 
     
     run_on = False
     
@@ -63,14 +72,17 @@ def train():
     # ############## wait encoder and motor check ##########
     # ################### Position calibrate ###############
     # ######################################################
-    _server.wait_encoder_request()
-    angle_initial = reset_and_calibration()
-    _server.send_encoder_check(angle_initial)
+    _server.wait_encoder_request() 
+    curr_angle, curr_point = get_observation(angle_initial) 
+    _server.send_encoder_check(angle_initial) 
+
+
+    move_to_initial_point(Initial_angle)
 
     # ######################################################
     # ############## Wait way_points #######################
     # ######################################################
-    _server.wait_way_points_request()
+    _server.wait_way_points_request() 
 
     # receive way points
     way_points = []
@@ -100,25 +112,28 @@ def train():
     # impedance_params = None
     # while impedance_params is None:
     # read impedance parameters :::
-    impedance_params = _server.read_params()
-    print("impedance parameters :::", impedance_params)
-    if impedance_params is not None:
+    impedance_params = _server.read_params() 
+    print("impedance parameters :::", impedance_params) 
+    if impedance_params is not None: 
         pass
 
     # start move
-    if run_on:
+    if run_on: 
         motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
                                    angle_initial[0], angle_initial[1], N_way_points)
 
-    # send movement_done command
-    _server.send_movement_done()
+    # send movement_done command 
+    _server.send_movement_done() 
 
 
-def eval():
+def eval(): 
     
-    pass
+    pass 
 
 
 if __name__ == "__main__":
-    """ """
-    train()
+
+    """ calibrate position for each start up """ 
+    angle_initial = reset_and_calibration() 
+
+    train(angle_initial) 
