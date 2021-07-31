@@ -179,12 +179,7 @@ double read_link_angle_2(double q_2_initial)
 
 	encoder.read_ang_encoder(encoder_arr);  
 
-<<<<<<< HEAD
-    return q_2;    
-} 
-=======
   	double q_2 = (double) encoder_arr[0]*PI/180.0 + q_2_initial;  
->>>>>>> b43e551f999dc762af7479a2f1b2cf65cf42450c
 
     return q_2;  
 }  
@@ -285,8 +280,8 @@ double dist_threshold
         /////////////////////////////////////////////////////
         // calculate torque control command 
         ///////////////////////////////////////////////////// 
-        torque_1 = clip(- stiffness * (q_1_target - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-        torque_2 = clip(- stiffness * (q_2_target - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+        torque_1 = clip(-1 * stiffness * (q_1_target - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(-1 * stiffness * (q_2_target - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
         // double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
         // double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
@@ -430,7 +425,7 @@ double dist_threshold
         printf(" theta_2_t: %f\n", theta_2_t);    
 
         /////////////////////////////////////////////////////
-        // calculate torque control command 
+        //// calculate torque control command 
         ///////////////////////////////////////////////////// 
         torque_1 = clip(- stiffness * (q_1_target - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
         torque_2 = clip(- stiffness * (q_2_target - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
@@ -597,14 +592,14 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     printf("Input stiffness :: %f\n", stiffness);  
     printf("Input damping :: %f\n", damping);  
 
-    double K_p_1 = stiffness;   // 16
-	double K_d_1 = damping;   // 0.8
+    double K_p_1 = stiffness; 
+	double K_d_1 = damping; 
 
-    double K_p_2 = stiffness;   
-	double K_d_2 = damping;   
+    double K_p_2 = stiffness; 
+	double K_d_2 = damping; 
 
     ////////////////////////////////////////////////////////
-    // Initial offset angles ::: input 
+    // Initial offset angles ::: input  
     //////////////////////////////////////////////////////// 
     // double theta_1_initial = -0.294288;   
     // double theta_2_initial = 0.402938;   
@@ -633,7 +628,7 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     // string root_path = "home/zhimin/code/8_nus/robotic-teaching/control/motor_control"; 
     string root_path = "";  
 
-    string output_torque = root_path + "real_torque_list.txt"; 
+    string output_torque = root_path + "real_torque_list.txt";  
     ofstream OutFileTorque(output_torque);   
     OutFileTorque << "torque_1" << "," << "torque_2" << "\n";  
 
@@ -641,9 +636,9 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     ofstream OutFileAngle(output_angle);   
     OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
 
-    string output_vel = root_path + "real_angle_vel_list.txt";  
+    string output_vel = root_path + "real_angle_vel_list.txt";   
     ofstream OutFileVel(output_vel);   
-    OutFileVel << "vel_1" << "," << "vel_2" << "\n";  
+    OutFileVel << "vel_1" << "," << "vel_2" << "\n";   
 
     ////////////////////////////////////////////////////////
     // Impedance Parameters ::: input 
@@ -702,7 +697,7 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     printf("Theta_2_list :: %f\n", theta_2_list[0]);    
 
     ///////////////////////////////////////////////////////
-    // avoid large motion at starting points
+    // avoid large motion at starting points 
     ///////////////////////////////////////////////////////
     for(int index=0; index<20; index=index+1)  
     {
@@ -715,17 +710,23 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
         theta_1_e = theta_1_list[index];   
         theta_2_e = theta_2_list[index];   
 
-        if(index==0) 
-        {
-            d_theta_1_e = 0.0;  
-            d_theta_2_e = 0.0;  
-        }
-        else  
-        {
-            d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t;  
-            d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t;  
-        }
-        
+        printf("theta_1_e :: %f\n", theta_1_e);    
+        printf("theta_2_e :: %f\n", theta_2_e);    
+
+        d_theta_1_e = 0.0;  
+        d_theta_2_e = 0.0; 
+
+        // if(index==0) 
+        // {
+        //     d_theta_1_e = 0.0;  
+        //     d_theta_2_e = 0.0;  
+        // }
+        // else  
+        // {
+        //     d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t;  
+        //     d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t;  
+        // }
+
         // read joint angles 
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
@@ -742,8 +743,11 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
         // printf("input_torque_1_t: %f\n", torque_1);   
         // printf("input_torque_2_t: %f\n", torque_1);   
 
-        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
-        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);   
+
+        // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
+        // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);  
 
         ////////////////////////////////////////////////////////
         // Save Data
