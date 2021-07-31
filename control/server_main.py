@@ -5,6 +5,7 @@ import os
 from motor_control import motor_control
 from path_planning.plot_path import * 
 from path_planning.path_generate import * 
+import ctypes
 
 L_1 = 0.3 
 L_2 = 0.25  
@@ -61,11 +62,15 @@ def move_to_target_point(target_point, impedance_params, angle_initial, dist_thr
     print("Curr_point (m) :", curr_point)  
     print("Initial dist (m) :", dist)  
 
-    angle_list = path_planning(curr_point, target_point, T=2.0) 
+    angle_list = path_planning(curr_point, target_point, T=0.005) 
     N = angle_list.shape[0]  
 
+    angle_array = ctypes.c_float * 5
+    angle_1_list = angle_array(-1.31575, -1.31585, -1.31594, -1.31601, -1.31605)
+    angle_2_list = angle_array(1.54802, 1.54307, 1.53811, 1.53312, 1.52811)
+
     motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
-        angle_list[:, 0], angle_list[:, 1], N,   
+        angle_1_list, angle_2_list, N,   
         angle_initial[0], angle_initial[1],  
         dist_threshold   
     )

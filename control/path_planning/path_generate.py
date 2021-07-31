@@ -83,22 +83,24 @@ def IK(point):
     return angle
 
 
-def path_planning(start_point, target_point, T=2.0):
+def path_planning(start_point, target_point, T=0.005):
     """
         path planning
     """
-    N = T/Ts
+    N = int(T/Ts)
+    print("start_point :", start_point[0])  
+    print("end_point :", start_point[1])  
     x_list = np.linspace(start_point[0], target_point[0], N)
     y_list = np.linspace(start_point[1], target_point[1], N)
     point = start_point
     angle_list = []
     for i in range(N):
-        point[i, 0] = x_list[i]
-        point[i, 1] = y_list[i]
+        point[0] = x_list[i]
+        point[1] = y_list[i]
         angle = IK(point)
-        angle_list.append(angle)
+        angle_list.append(angle)  
         
-    return np.array(angle_list)
+    return np.array(angle_list)  
     
 
 def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),

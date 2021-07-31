@@ -185,7 +185,7 @@ double read_link_angle_2(double q_2_initial)
 }  
 
 int move_to_target(double stiffness, double damping,  
-double q_1_target, double q_2_target,  
+double q_1_target[], double q_2_target[], int N,   
 double theta_1_initial, double theta_2_initial,  
 double dist_threshold  
 )
@@ -272,7 +272,7 @@ double dist_threshold
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
 
-        dist = sqrt(pow((theta_1_t - q_1_target), 2) + pow((theta_2_t - q_2_target), 2));   
+        dist = sqrt(pow((theta_1_t - q_1_target[0]), 2) + pow((theta_2_t - q_2_target[0]), 2));   
 
         printf(" theta_1_t: %f\n", theta_1_t);    
         printf(" theta_2_t: %f\n", theta_2_t);    
@@ -280,8 +280,8 @@ double dist_threshold
         /////////////////////////////////////////////////////
         // calculate torque control command 
         ///////////////////////////////////////////////////// 
-        torque_1 = clip(-1 * stiffness * (q_1_target - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-        torque_2 = clip(-1 * stiffness * (q_2_target - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+        torque_1 = clip(-1 * stiffness * (q_1_target[0] - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(-1 * stiffness * (q_2_target[0] - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
         // double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
         // double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
@@ -316,7 +316,7 @@ double dist_threshold
 
 int move_to_target_point(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
-double q_1_target[], double q_2_target[], int N, 
+float q_1_target[], float q_2_target[], int N, 
 double theta_1_initial, double theta_2_initial,  
 double dist_threshold  
 )
@@ -410,7 +410,7 @@ double dist_threshold
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
 
-        dist = sqrt(pow((theta_1_t - q_1_target), 2) + pow((theta_2_t - q_2_target), 2));   
+        dist = sqrt(pow((theta_1_t - q_1_target[0]), 2) + pow((theta_2_t - q_2_target[0]), 2));   
         printf("dist : %f\n", dist); 
         printf("theta_1_t: %f\n", theta_1_t);     
         printf("theta_2_t: %f\n", theta_2_t);    
@@ -418,8 +418,8 @@ double dist_threshold
         /////////////////////////////////////////////////////
         // calculate torque control command 
         ///////////////////////////////////////////////////// 
-        torque_1 = clip(-1 * stiffness_1 * (q_1_target - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-        torque_2 = clip(-1 * stiffness_2 * (q_2_target - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+        torque_1 = clip(-1 * stiffness_1 * (q_1_target[0] - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(-1 * stiffness_2 * (q_2_target[0] - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
         // double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
         // double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
