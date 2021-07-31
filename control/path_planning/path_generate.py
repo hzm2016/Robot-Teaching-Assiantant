@@ -13,10 +13,17 @@ IMAGE_WIDTH = 128
 IMAGE_HEIGHT = 128
 
 # joints limits
+action_dim = 2
 ANGLE_1_RANGE = np.array([-1.90, 1.90])
 ANGLE_2_RANGE = np.array([-2.2, 2.5])
 
 Length = [0.30, 0.150, 0.25, 0.125]
+L1 = Length[0]
+L2 = Length[2]
+
+Ts = 0.001
+
+# plot parameters
 linewidth = 3
 
 
@@ -41,14 +48,64 @@ def calibrate_para():
     ori_point = np.array([])
 
 
+def IK(point):
+    """
+        Inverse kinematics
+    """
+    angle = np.zeros(action_dim)
+    x1 = point[0]
+    x2 = point[1]
+    
+    L = x1**2 + x2**2
+
+    gamma = math.atan2(x2, x1)
+
+    cos_belta = (L1 ** 2 + L - L2 ** 2) / (2 * L1 * np.sqrt(L))
+
+    if cos_belta > 1:
+        angle_1 = gamma
+    elif cos_belta < -1:
+        angle_1 = gamma - np.pi
+    else:
+        angle_1 = gamma - math.acos(cos_belta)
+
+    cos_alpha = (L1 ** 2 - L + L2 ** 2) / (2 * L1 * L2)
+
+    if cos_alpha > 1:
+        angle_2 = np.pi
+    elif cos_alpha < -1:
+        angle_2 = 0
+    else:
+        angle_2 = np.pi - math.acos(cos_alpha)
+
+    angle[0] = np.round(angle_1, 5).copy()
+    angle[1] = np.round(angle_2, 5).copy()
+    return angle
+
+
+def path_planning(start_point, target_point, T=2.0):
+    """
+        path planning
+    """
+    N = T/Ts
+    x_list = np.linspace(start_point[0], target_point[0], N)
+    y_list = np.linspace(start_point[1], target_point[1], N)
+    point = start_point
+    angle_list = []
+    for i in range(N):
+        point[i, 0] = x_list[i]
+        point[i, 1] = y_list[i]
+        angle = IK(point)
+        angle_list.append(angle)
+        
+    return np.array(angle_list)
+    
+
 def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
                   velocity=10, Ts=0.001, plot_show=False):
     """
          generate trajectory from list
     """
-    L1 = Length[0]
-    L2 = Length[2]
-    
     # calculate length of path
     dist = 0.0
     for i in range(len(traj) - 1):
