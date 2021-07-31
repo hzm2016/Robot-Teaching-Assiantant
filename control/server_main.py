@@ -5,11 +5,10 @@ import os
 from motor_control import motor_control
 from path_planning.plot_path import * 
 
-L_1 = 300  
-L_2 = 250  
+L_1 = 0.3 
+L_2 = 0.25  
 action_dim = 2  
 DIST_THREHOLD = 0.05  
-
 
 # initial angle (rad) ::: 
 Initial_angle = np.array([-1.31, 1.527])  
@@ -73,7 +72,7 @@ def move_to_target_point(target_point, impedance_params, angle_initial, dist_thr
     final_dist = np.linalg.norm((curr_point - target_point), ord=2) 
     print("Final dist (m) :", final_dist) 
     done = True
-    return done, final_dist
+    return done, final_dist 
 
 
 def train(angle_initial): 
@@ -143,23 +142,27 @@ def eval():
     pass 
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
 
     # """ calibrate position for each start up """ 
     # angle_initial = reset_and_calibration()  
+    # print("angle_initial :", angle_initial)
 
-    # angle, point = get_observation(angle_initial=np.array([-0.336998, 0.426342])) 
-    # print("curr_angle :", angle) 
-    # print("curr_point :", point) 
+    impedance_params = np.array([4.0, 4.0, 0.0, 0.0])  
+    N_way_points = 16357
+    angle_initial = np.array([-0.346447, 0.421545]) 
+
+    angle, point = get_observation(angle_initial=np.array([-0.336998, 0.426342])) 
+    print("curr_angle :", angle) 
+    print("curr_point :", point) 
 
     # # train(angle_initial)  
-    impedance_params = np.array([6.0, 6.0, 0.0, 0.0])  
-    N_way_points = 16357
-    angle_initial = np.array([-0.336998, 0.426342]) 
+
+
     # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
     #                                angle_initial[0], angle_initial[1], N_way_points) 
 
-    move_to_target_point(Initial_angle, impedance_params, angle_initial, dist_threshold=0.05)
+    move_to_target_point(Initial_angle, impedance_params, angle_initial, dist_threshold=0.05)  
 
 #     plot_torque_path(
 #         root_path='',

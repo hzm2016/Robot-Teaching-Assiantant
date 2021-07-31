@@ -349,8 +349,8 @@ double dist_threshold
     ofstream OutFileTorque(output_torque);    
     OutFileTorque << "torque_1" << "," << "torque_2" << "\n";    
 
-    double torque_lower_bound = -1.5;    
-    double torque_upper_bound = 1.5;   
+    double torque_lower_bound = -1.0;    
+    double torque_upper_bound = 1.0;   
     
     double ctl_ratio_1 = -2000.0/32;   
     double ctl_ratio_2 = 2000.0/32;   
@@ -377,14 +377,14 @@ double dist_threshold
     double pos_1 = 0.0;      
     double pos_2 = 0.0;      
  
-    double dist = 0.0;   
+    double dist = 1.0;   
     int initial_index = 0;   
     int max_index = 10000;   
 
     /////////////////////////////////////////////////////
     /////  avoid large motion at starting points  ///////
     /////////////////////////////////////////////////////
-    for(int index=0; index<5; index=index+1) 
+    for(int index=0; index<5; index=index+1)  
     {
         pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t); 
         pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t); 
@@ -405,9 +405,9 @@ double dist_threshold
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
 
         dist = sqrt(pow((theta_1_t - q_1_target), 2) + pow((theta_2_t - q_2_target), 2));   
-
-        printf(" theta_1_t: %f\n", theta_1_t);    
-        printf(" theta_2_t: %f\n", theta_2_t);    
+        printf("dist : %f\n", dist); 
+        printf("theta_1_t: %f\n", theta_1_t);     
+        printf("theta_2_t: %f\n", theta_2_t);    
 
         /////////////////////////////////////////////////////
         // calculate torque control command 
@@ -1121,7 +1121,7 @@ PYBIND11_MODULE(motor_control, m) {
         Some other explanation about the add function.
     )pbdoc"); 
 
-    m.def("move_to_target", &move_to_target_point, R"pbdoc(
+    m.def("move_to_target_point", &move_to_target_point, R"pbdoc(
         move_to_target_point
 
         Some other explanation about the add function.
