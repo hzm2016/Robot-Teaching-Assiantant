@@ -140,44 +140,52 @@ class Controller(object):
         velocity = 5
         return velocity
     
+    def interact_once(self, traj, impedance_params, velocity=10):
+        """
+            interact with robot once
+        """
+        # check motor and encode well before experiments
+        self.task.wait_encoder_check()
+        
+        self.task.send_params_request()
+        
+        self.task.send_params(impedance_params)
+
+        way_points = generate_path(traj,
+                                   center_shift=np.array([0.16, -WIDTH / 2]),
+                                   velocity=velocity, Ts=0.001,
+                                   plot_show=False)
+
+        self.task.send_way_points_request()
+
+        self.task.send_way_points(way_points)
+
+        self.task.send_way_points_done()
+
+        if self.args.show_video:
+            show_video()
+
+        # video record for trail :::
+        run_done = self.task.get_movement_check()
+
+        if run_done:
+            print("run_done", run_done)
+            written_image, _ = capture_image(root_path=self.root_path, font_name='written_image')
+    
     def interact(self, traj, target_img):
         written_image = None
         num_episodes = 5
         run_done = False
-
-        # check motor and encode well before experiments
-        # self.task.get_encoder_check()
         
         for i in range(num_episodes):
-            
-            self.task.send_params_request()
-            
             # update impedance
             if written_image is not None:
                 self.update_impedance(target_img, written_image)
             params = self.stiffness + self.damping
-            self.task.send_params(params)
-    
+
             # update period
             velocity = self.update_period()
-            way_points = generate_path(traj, center_shift=np.array([0.16, -WIDTH / 2]), velocity=velocity, Ts=0.001, plot_show=False)
-     
-            self.task.send_way_points_request()
-    
-            self.task.send_way_points(way_points)
-    
-            self.task.send_way_points_done()
-    
-            if self.args.show_video:
-                show_video()
-    
-            # video record for trail :::
-            run_done = self.task.get_movement_check()
             
-            if run_done:
-                print("run_done", run_done)
-                written_image, _ = capture_image(root_path=self.root_path, font_name='written_image')
-        
         return written_image
     
 

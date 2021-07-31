@@ -94,7 +94,7 @@ class TCPTask():
         # position reset :::
         return self._conn.send_reset()
     
-    def get_encoder_check(self):
+    def wait_encoder_check(self):
         return self._conn.wait_encoder_check()
     
     def get_movement_check(self):
