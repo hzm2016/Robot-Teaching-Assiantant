@@ -2,6 +2,7 @@ from tools import skeletonize
 from utils import hungarian_matching
 import numpy as np
 import cv2
+import argparse
 
 # task interface
 from control.vision_capture.main_functions import *
@@ -53,12 +54,16 @@ class Controller(object):
         self.x_impedance_level = impedance_level
         self.y_impedance_level = impedance_level
         
-        # impedane parameters
+        # impedance parameters
         self.action_dim = 2
         self.stiffness_high = np.array([10.0, 10.0])
         self.stiffness_low = np.array([0.0, 0.0])
         self.stiffness = np.zeros(self.action_dim)
         self.damping = np.zeros_like(self.stiffness)
+        
+        # initial position
+        self.initial_angle = np.array([-1.31, 1.527])
+        self.initial_point = np.array([0.32, -0.2377])
         pass
 
     def guide(self,):
@@ -148,7 +153,8 @@ class Controller(object):
             self.task.send_params_request()
             
             # update impedance
-            self.update_impedance(target_img, written_image)
+            if written_image is not None:
+                self.update_impedance(target_img, written_image)
             params = self.stiffness + self.damping
             self.task.send_params(params)
     
@@ -176,13 +182,29 @@ class Controller(object):
     
 
 if __name__ == "__main__":
-
-    a = np.array([(3, 4), (7, 8)])
-    b = np.array([(1, 2), (3, 4), (5, 6)])
-    from imgprocessor import Postprocessor
-    c = Controller(Postprocessor(
-        {'CROPPING': [478, 418, 1586, 672],'ROTATE': 0, 'BINARIZE': 128, 'RESCALE': 0.8}))
+    parser = argparse.ArgumentParser(
+        description='Runs a learning example on a registered gym environment.')
     
+    parser.add_argument('--show_video',
+                        default=False,
+                        help='enables useful debug settings')
+    
+    args = parser.parse_args()
+
+    # root_path = '../control/data/font_data'
+    # font_name = 'first'
+    # type = 1
+    # path_data = np.loadtxt(root_path + '/' + font_name + '/1_font_' + str(type) + '.txt')
+    # writing_controller = Controller(args, img_processor=None, impedance_level=0)
+    # target_img = cv2.imread(root_path + '/1_font_1.png')
+    # writing_controller.interact(path_data, target_img)
+    
+    # a = np.array([(3, 4), (7, 8)])
+    # b = np.array([(1, 2), (3, 4), (5, 6)])
+    # from imgprocessor import Postprocessor
+    # c = Controller(Postprocessor(
+    #     {'CROPPING': [478, 418, 1586, 672],'ROTATE': 0, 'BINARIZE': 128, 'RESCALE': 0.8}))
+    #
     # written_stroke = cv2.imread('./example/example_feedback.png')
     # sample_stroke = cv2.imread(
     #     './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
