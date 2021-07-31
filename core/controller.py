@@ -140,37 +140,38 @@ class Controller(object):
         velocity = 5
         return velocity
     
-    def interact_once(self, traj, impedance_params, velocity=10):
+    def interact_once(self, traj, impedance_params=[5, 5, 0.5, 0.5], velocity=10):
         """
             interact with robot once
         """
         # check motor and encode well before experiments
-        self.task.wait_encoder_check()
+        angle_initial = self.task.wait_encoder_check()
+        print("Angle_initial ::::", angle_initial)
         
-        self.task.send_params_request()
-        
-        self.task.send_params(impedance_params)
-
-        way_points = generate_path(traj,
-                                   center_shift=np.array([0.16, -WIDTH / 2]),
-                                   velocity=velocity, Ts=0.001,
-                                   plot_show=False)
-
-        self.task.send_way_points_request()
-
-        self.task.send_way_points(way_points)
-
-        self.task.send_way_points_done()
-
-        if self.args.show_video:
-            show_video()
-
-        # video record for trail :::
-        run_done = self.task.get_movement_check()
-
-        if run_done:
-            print("run_done", run_done)
-            written_image, _ = capture_image(root_path=self.root_path, font_name='written_image')
+        # self.task.send_params_request()
+        #
+        # self.task.send_params(impedance_params)
+        #
+        # way_points = generate_path(traj,
+        #                            center_shift=np.array([0.16, -WIDTH / 2]),
+        #                            velocity=velocity, Ts=0.001,
+        #                            plot_show=False)
+        #
+        # self.task.send_way_points_request()
+        #
+        # self.task.send_way_points(way_points)
+        #
+        # self.task.send_way_points_done()
+        #
+        # if self.args.show_video:
+        #     show_video()
+        #
+        # # video record for trail :::
+        # run_done = self.task.get_movement_check()
+        #
+        # if run_done:
+        #     print("run_done", run_done)
+        #     written_image, _ = capture_image(root_path=self.root_path, font_name='written_image')
     
     def interact(self, traj, target_img):
         written_image = None
@@ -199,12 +200,13 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    # root_path = '../control/data/font_data'
-    # font_name = 'first'
-    # type = 1
-    # path_data = np.loadtxt(root_path + '/' + font_name + '/1_font_' + str(type) + '.txt')
-    # writing_controller = Controller(args, img_processor=None, impedance_level=0)
-    # target_img = cv2.imread(root_path + '/1_font_1.png')
+    root_path = '../control/data/font_data'
+    font_name = 'first'
+    type = 1
+    path_data = np.loadtxt(root_path + '/' + font_name + '/1_font_' + str(type) + '.txt')
+    writing_controller = Controller(args, img_processor=None, impedance_level=0)
+    target_img = cv2.imread(root_path + '/1_font_1.png')
+    writing_controller.interact_once(path_data)
     # writing_controller.interact(path_data, target_img)
     
     # a = np.array([(3, 4), (7, 8)])
@@ -217,9 +219,9 @@ if __name__ == "__main__":
     # sample_stroke = cv2.imread(
     #     './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
     
-    root_path = '../control/data/captured_images/'
-    sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
-    cv2.imshow('', ori_img)
+    # root_path = '../control/data/captured_images/'
+    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
+    # cv2.imshow('', ori_img)
     
     # cv2.waitKey(0)
     
