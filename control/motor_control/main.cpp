@@ -361,6 +361,7 @@ double dist_threshold
     double d_theta_1_t = 0.0;    
     double d_theta_2_t = 0.0;    
 
+    //// 
     double theta_1_e = 0.0;   
     double theta_2_e = 0.0;   
 
@@ -398,7 +399,7 @@ double dist_threshold
     signal(SIGINT, sig_h);  
  
     // dist > dist_threshold && initial_index < max_index
-    while(run_on)  
+    while(run_on && (dist > dist_threshold))  
     {
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
@@ -422,7 +423,7 @@ double dist_threshold
         // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
         // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
 
-        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
+        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
         pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
 
         OutFileTorque << torque_1_t << "," << torque_2_t << "\n";   
