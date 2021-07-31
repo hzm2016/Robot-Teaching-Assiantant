@@ -114,7 +114,7 @@ double read_initial_angle_2()
     return theta_2;   
 }
 
-double read_angle_1(double theta_1_initial)
+double read_angle_1(double theta_1_initial) 
 {
     //////////////////////////////////////////// 
     // Read motor angle 1
@@ -316,7 +316,7 @@ double dist_threshold
 
 int move_to_target_point(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
-double q_1_target, double q_2_target,  
+double q_1_target[], double q_2_target[], int N, 
 double theta_1_initial, double theta_2_initial,  
 double dist_threshold  
 )
@@ -381,6 +381,12 @@ double dist_threshold
     int initial_index = 0;   
     int max_index = 10000;   
 
+    for(int i=0; i < N; i = i + 1)  
+    {
+        printf("theta_1_t: %f\n", q_1_target[i]);      
+        printf("theta_2_t: %f\n", q_2_target[i]);    
+    }
+
     /////////////////////////////////////////////////////
     /////  avoid large motion at starting points  ///////
     /////////////////////////////////////////////////////
@@ -423,8 +429,8 @@ double dist_threshold
         // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
         // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
 
-        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
-        pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);   
 
         OutFileTorque << torque_1_t << "," << torque_2_t << "\n";   
 

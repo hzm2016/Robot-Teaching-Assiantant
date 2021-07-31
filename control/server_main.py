@@ -4,6 +4,7 @@ import math
 import os
 from motor_control import motor_control
 from path_planning.plot_path import * 
+from path_planning.path_generate import * 
 
 L_1 = 0.3 
 L_2 = 0.25  
@@ -57,10 +58,14 @@ def move_to_target_point(target_point, impedance_params, angle_initial, dist_thr
     """ 
     curr_angle, curr_point = get_observation() 
     dist = np.linalg.norm((curr_point - target_point), ord=2) 
-    print("Initial dist (m) :", dist) 
+    print("Curr_point (m) :", curr_point)  
+    print("Initial dist (m) :", dist)  
+
+    angle_list = path_planning(curr_point, target_point, T=2.0) 
+    N = angle_list.shape[0]  
 
     motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
-        target_point[0], target_point[1],  
+        angle_list[:, 0], angle_list[:, 1], N,   
         angle_initial[0], angle_initial[1],  
         dist_threshold   
     )
@@ -72,7 +77,7 @@ def move_to_target_point(target_point, impedance_params, angle_initial, dist_thr
     final_dist = np.linalg.norm((curr_point - target_point), ord=2) 
     print("Final dist (m) :", final_dist) 
     done = True
-    return done, final_dist 
+    return done, final_dist  
 
 
 def train(angle_initial): 
@@ -137,7 +142,7 @@ def train(angle_initial):
     _server.send_movement_done() 
 
 
-def eval(): 
+def eval():  
     
     pass 
 
@@ -162,7 +167,7 @@ if __name__ == "__main__":
     # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
     #                                angle_initial[0], angle_initial[1], N_way_points) 
 
-    move_to_target_point(Initial_angle, impedance_params, angle_initial, dist_threshold=0.05)  
+    move_to_target_point(Initial_point, impedance_params, angle_initial, dist_threshold=0.05)  
 
 #     plot_torque_path(
 #         root_path='',
