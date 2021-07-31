@@ -3,16 +3,18 @@ import numpy as np
 import math
 import os
 from motor_control import motor_control
-L_1 = 300
-L_2 = 250
-action_dim = 2
-DIST_THREHOLD = 0.05 
+from path_planning.plot_path import * 
+
+L_1 = 300  
+L_2 = 250  
+action_dim = 2  
+DIST_THREHOLD = 0.05  
 
 
 # initial angle (rad) ::: 
-Initial_angle = np.array([-1.31, 1.527]) 
+Initial_angle = np.array([-1.31, 1.527])  
 
-Initial_point = np.array([0.32, -0.2377]) 
+Initial_point = np.array([0.32, -0.2377])  
 
 
 def reset_and_calibration():
@@ -24,9 +26,9 @@ def reset_and_calibration():
     print("theta_1_initial :::", angle_initial[0])
     print("theta_2_initial :::", angle_initial[1])
     
-    # theta_1_initial = -0.336998 
-    # theta_2_initial = 0.426342 
-    return angle_initial 
+    # theta_1_initial = -0.336998  
+    # theta_2_initial = 0.426342  
+    return angle_initial  
 
 
 def get_observation(angle_initial=np.array([-0.336998, 0.426342])):
@@ -76,8 +78,7 @@ def train(angle_initial):
     curr_angle, curr_point = get_observation(angle_initial) 
     _server.send_encoder_check(angle_initial) 
 
-
-    move_to_initial_point(Initial_angle)
+    move_to_target_point(Initial_angle) 
 
     # ######################################################
     # ############## Wait way_points #######################
@@ -85,7 +86,7 @@ def train(angle_initial):
     _server.wait_way_points_request() 
 
     # receive way points
-    way_points = []
+    way_points = [] 
 
     os.remove(r'angle_list.txt')
     data_file = open('angle_list.txt', 'w')
@@ -93,16 +94,16 @@ def train(angle_initial):
     while way_point != "SEND_DONE":
         way_point = _server.read_way_points()
         # print("way_points ::::", way_point)
-        if way_point == "SEND_DONE":
+        if way_point == "SEND_DONE": 
             break
         way_points.append(way_point)
         line_data = str(way_point[0]) + ',' + str(way_point[1]) + '\n'
         data_file.writelines(line_data)
         # send_done = _server.wait_send_way_points_done()
     way_points = np.array(way_points)
-    N_way_points = way_points.shape[0]
-    print("way_points :::", way_points.shape)
-    print("N_way_points :::", N_way_points)
+    N_way_points = way_points.shape[0] 
+    print("way_points :::", way_points.shape) 
+    print("N_way_points :::", N_way_points) 
 
     # ######################################################
     # ############## Wait impedance parameters  ############
@@ -133,7 +134,22 @@ def eval():
 
 if __name__ == "__main__":
 
-    """ calibrate position for each start up """ 
-    angle_initial = reset_and_calibration() 
+    # """ calibrate position for each start up """ 
+    # angle_initial = reset_and_calibration()  
 
-    train(angle_initial) 
+    # angle, point = get_observation(angle_initial=np.array([-0.336998, 0.426342])) 
+    # print("curr_angle :", angle) 
+    # print("curr_point :", point) 
+
+    # # train(angle_initial)  
+    # impedance_params = np.array([12.0, 12.0, 0.0, 0.0])  
+    # N_way_points = 16357
+    # angle_initial = np.array([-0.336998, 0.426342]) 
+    # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
+    #                                angle_initial[0], angle_initial[1], N_way_points) 
+
+    plot_torque_path(
+        root_path='',
+        file_angle_name='real_angle_list.txt', 
+        file_torque_name='real_torque_list.txt' 
+) 

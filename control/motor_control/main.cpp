@@ -317,6 +317,7 @@ double dist_threshold
 int move_to_target_point(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
 double q_1_target, double q_2_target,  
+double theta_1_initial, double theta_2_initial,  
 double dist_threshold  
 )
 {
@@ -410,8 +411,8 @@ double dist_threshold
         /////////////////////////////////////////////////////
         // calculate torque control command 
         ///////////////////////////////////////////////////// 
-        torque_1 = clip(-1 * stiffness * (q_1_target - theta_1_t) - damping * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-        torque_2 = clip(-1 * stiffness * (q_2_target - theta_2_t) - damping * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+        torque_1 = clip(-1 * stiffness_1 * (q_1_target - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(-1 * stiffness_2 * (q_2_target - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
         // double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
         // double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
@@ -701,10 +702,10 @@ void load_path_data(double *theta_1_list, double *theta_2_list)
         // cout << s << endl;  
         split(s, angle_list, ",");   
         theta_1_list[index_point] = atof(angle_list[0].c_str());   
-        printf("theta 1: %f\n", theta_1_list[index_point]);  
+        // printf("theta 1: %f\n", theta_1_list[index_point]);  
 
         theta_2_list[index_point] = atof(angle_list[1].c_str());   
-        printf("theta 2: %f\n", theta_2_list[index_point]);  
+        // printf("theta 2: %f\n", theta_2_list[index_point]);  
 
         index_point += 1;  
     }
@@ -713,20 +714,23 @@ void load_path_data(double *theta_1_list, double *theta_2_list)
 }
 
 
-int run_one_loop(double stiffness, double damping, double theta_1_initial, double theta_2_initial, int Num_waypoints) 
+int run_one_loop(double stiffness_1, double stiffness_2,  
+double damping_1, double damping_2,  
+double theta_1_initial, double theta_2_initial,  
+int Num_waypoints)  
 {
     //////////////////////////////////////////////////////// 
     // give way points :::: 
     //////////////////////////////////////////////////////// 
 
-    printf("Input stiffness :: %f\n", stiffness);  
-    printf("Input damping :: %f\n", damping);  
+    // printf("Input stiffness :: %f\n", stiffness);  
+    // printf("Input damping :: %f\n", damping);  
 
-    double K_p_1 = stiffness; 
-	double K_d_1 = damping; 
+    double K_p_1 = stiffness_1;  
+	double K_d_1 = damping_1;  
 
-    double K_p_2 = stiffness; 
-	double K_d_2 = damping; 
+    double K_p_2 = stiffness_2;  
+	double K_d_2 = damping_2;  
 
     ////////////////////////////////////////////////////////
     // Initial offset angles ::: input  
@@ -762,9 +766,9 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     ofstream OutFileTorque(output_torque);   
     OutFileTorque << "torque_1" << "," << "torque_2" << "\n";  
 
-    string output_angle = root_path + "real_angle_list.txt";    
-    ofstream OutFileAngle(output_angle);   
-    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
+    string output_angle = root_path + "real_angle_list.txt";   
+    ofstream OutFileAngle(output_angle);  
+    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";  
 
     string output_vel = root_path + "real_angle_vel_list.txt";   
     ofstream OutFileVel(output_vel);   
@@ -777,7 +781,7 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     double torque_lower_bound = -1.0;   
     double torque_upper_bound = 1.0;   
     
-    double ctl_ratio_1 = - 2000.0/32;   
+    double ctl_ratio_1 = -2000.0/32;   
     double ctl_ratio_2 = 2000.0/32;   
 
     double d_t = 0.001;   
@@ -804,6 +808,14 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
     double pos_2 = 0.0;  
     
 
+    run_on = 1; 
+
+    // Catch a Ctrl-C event:
+	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
+
+    // Catch a Ctrl-C event: 
+    signal(SIGINT, sig_h);  
+
     // for(int index=0; index<Num_waypoints; index=index+1) 
     // {
     //     theta_1_e = theta_1_list[index]; 
@@ -816,15 +828,26 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
 
     // int Num_waypoints = 19999; 
     double theta_1_list[Num_waypoints] = {0};    
-    double theta_2_list[Num_waypoints] = {0};   
+    double theta_2_list[Num_waypoints] = {0};    
 
     ///////////////// load data ///////////////////////////
     ///////////////////////////////////////////////////////
 
     load_path_data(theta_1_list, theta_2_list);   
 
-    printf("Theta_1_list :: %f\n", theta_1_list[0]);    
-    printf("Theta_2_list :: %f\n", theta_2_list[0]);    
+    // printf("Theta_1_list :: %f\n", theta_1_list);    
+    // printf("Theta_2_list :: %f\n", theta_2_list);  
+
+    // for(int index=0; index<Num_waypoints; index=index+1)  
+    // {
+    //     theta_1_e = theta_1_list[index];   
+    //     theta_2_e = theta_2_list[index];   
+
+    //     printf("theta_1_e :: %f\n", theta_1_e);    
+    //     printf("theta_2_e :: %f\n", theta_2_e);   
+
+    //     OutFileAngle << theta_1_e << "," << theta_2_e << "\n";    
+    // }
 
     ///////////////////////////////////////////////////////
     // avoid large motion at starting points 
@@ -835,59 +858,115 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
         pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);  
     }
 
-    for(int index=0; index<Num_waypoints; index=index+1)  
+    while (run_on) 
     {
-        theta_1_e = theta_1_list[index];   
-        theta_2_e = theta_2_list[index];   
+        for (int index = 0; index<Num_waypoints; index=index+1)
+        {
+            theta_1_e = theta_1_list[index];   
+            theta_2_e = theta_2_list[index];   
 
-        printf("theta_1_e :: %f\n", theta_1_e);    
-        printf("theta_2_e :: %f\n", theta_2_e);    
+            // printf("theta_1_e :: %f\n", theta_1_e);    
+            // printf("theta_2_e :: %f\n", theta_2_e);    
 
-        d_theta_1_e = 0.0;  
-        d_theta_2_e = 0.0; 
+            d_theta_1_e = 0.0;   
+            d_theta_2_e = 0.0;   
 
-        // if(index==0) 
-        // {
-        //     d_theta_1_e = 0.0;  
-        //     d_theta_2_e = 0.0;  
-        // }
-        // else  
-        // {
-        //     d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t;  
-        //     d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t;  
-        // }
+            // if(index==0) 
+            // {
+            //     d_theta_1_e = 0.0;  
+            //     d_theta_2_e = 0.0;  
+            // }
+            // else  
+            // {
+            //     d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t;  
+            //     d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t;  
+            // }
 
-        // read joint angles 
-        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
-        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+            // read joint angles 
+            theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
+            theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);    
 
-        /////////////////////////////////////////////////////
-        // set torque control command 
-        ///////////////////////////////////////////////////// 
-        torque_1 = clip(- K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-        torque_2 = clip(- K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+            /////////////////////////////////////////////////////
+            // set torque control command 
+            ///////////////////////////////////////////////////// 
+            torque_1 = clip(- K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+            torque_2 = clip(- K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
-        double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
-        double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
+            double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);   
+            double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);   
 
-        // printf("input_torque_1_t: %f\n", torque_1);   
-        // printf("input_torque_2_t: %f\n", torque_1);   
+            // printf("input_torque_1_t: %f\n", torque_1);   
+            // printf("input_torque_2_t: %f\n", torque_1);   
 
-        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
-        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);   
+            pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
+            pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
 
-        // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
-        // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);  
+            // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
+            // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);  
 
-        ////////////////////////////////////////////////////////
-        // Save Data
-        ////////////////////////////////////////////////////////
-        OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
+            ////////////////////////////////////////////////////////
+            // Save Data
+            ////////////////////////////////////////////////////////
+            OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
 
-        OutFileTorque << torque_1_o << "," << torque_2_o << "\n";   
+            OutFileTorque << torque_1_o << "," << torque_2_o << "\n";   
 
-        OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n";   
-    }
+            OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n"; 
+        }
+    }    
+    // for(int index=0; index<Num_waypoints; index=index+1)  
+    // {
+    //     theta_1_e = theta_1_list[index];   
+    //     theta_2_e = theta_2_list[index];   
+
+    //     // printf("theta_1_e :: %f\n", theta_1_e);    
+    //     // printf("theta_2_e :: %f\n", theta_2_e);    
+
+    //     d_theta_1_e = 0.0;   
+    //     d_theta_2_e = 0.0;   
+
+    //     // if(index==0) 
+    //     // {
+    //     //     d_theta_1_e = 0.0;  
+    //     //     d_theta_2_e = 0.0;  
+    //     // }
+    //     // else  
+    //     // {
+    //     //     d_theta_1_e = (theta_1_list[index] - theta_1_list[index-1])/d_t;  
+    //     //     d_theta_2_e = (theta_2_list[index] - theta_2_list[index-1])/d_t;  
+    //     // }
+
+    //     // read joint angles 
+    //     theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
+    //     theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+
+    //     /////////////////////////////////////////////////////
+    //     // set torque control command 
+    //     ///////////////////////////////////////////////////// 
+    //     torque_1 = clip(- K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+    //     torque_2 = clip(- K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+
+    //     double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);  
+    //     double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);  
+
+    //     printf("input_torque_1_t: %f\n", torque_1);   
+    //     // printf("input_torque_2_t: %f\n", torque_1);   
+
+    //     pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
+    //     pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);   
+
+    //     // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
+    //     // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);  
+
+    //     ////////////////////////////////////////////////////////
+    //     // Save Data
+    //     ////////////////////////////////////////////////////////
+    //     OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
+
+    //     OutFileTorque << torque_1_o << "," << torque_2_o << "\n";   
+
+    //     OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n";   
+    // }
     
     OutFileTorque.close();   
     OutFileAngle.close();   
@@ -953,7 +1032,7 @@ int run_one_loop(double stiffness, double damping, double theta_1_initial, doubl
 // } 
 
 
-namespace py = pybind11;
+namespace py = pybind11; 
 
 PYBIND11_MODULE(motor_control, m) {
     m.doc() = R"pbdoc(
@@ -1037,6 +1116,12 @@ PYBIND11_MODULE(motor_control, m) {
 
     m.def("move_to_target", &move_to_target, R"pbdoc(
         move_to_target
+
+        Some other explanation about the add function.
+    )pbdoc"); 
+
+    m.def("move_to_target", &move_to_target_point, R"pbdoc(
+        move_to_target_point
 
         Some other explanation about the add function.
     )pbdoc"); 
