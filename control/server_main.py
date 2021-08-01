@@ -60,9 +60,9 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
         move to target point  
     """ 
     curr_angle, curr_point = get_observation() 
-    dist = np.linalg.norm((curr_point - target_point), ord=2) 
-    print("Curr_point (m) :", curr_point)  
-    print("Initial dist (m) :", dist)  
+    dist = np.linalg.norm((curr_point - target_point), ord=2)  
+    # print("Curr_point (m) :", curr_point)  
+    # print("Initial dist (m) :", dist)  
 
     angle_list = path_planning(curr_point, target_point, T=3.0) 
     N = angle_list.shape[0]  
@@ -112,7 +112,7 @@ def train(angle_initial=Angle_initial, run_on=False):
     data_file = open('angle_list.txt', 'w')
     way_point = None
     while way_point != "SEND_DONE":
-        way_point = _server.read_way_points()
+        way_point = _server.read_way_points() 
         # print("way_points ::::", way_point)
         if way_point == "SEND_DONE": 
             break
@@ -151,7 +151,8 @@ def train(angle_initial=Angle_initial, run_on=False):
         #                             way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
         #                            Angle_initial[0], Angle_initial[1])  
 
-        motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
+        move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005) 
+        # motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
 
     # send movement_done command 
     _server.send_movement_done() 
@@ -177,7 +178,7 @@ if __name__ == "__main__":
     # angle_initial = reset_and_calibration()  
     # print("angle_initial :", angle_initial)
 
-    impedance_params = np.array([14.0, 14.0, 0.4, 0.4])  
+    impedance_params = np.array([14.0, 14.0, 0.2, 0.2])  
     N_way_points = 16357  
 
     angle, point = get_observation(angle_initial=Angle_initial)   
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     # print("curr_angle :", angle)   
     # print("curr_point :", point)   
 
-    train(angle_initial=Angle_initial, run_on=True)     
+    # train(angle_initial=Angle_initial, run_on=True)     
 
     # eval(impedance_params = np.array([4.0, 4.0, 0.2, 0.2]))   
 
@@ -194,7 +195,7 @@ if __name__ == "__main__":
 
     # motor_control.get_demonstration(Angle_initial[0], Angle_initial[1]) 
 
-    # move_to_target_point(np.array([0.34, -0.]), impedance_params, dist_threshold=0.005)  
+    move_to_target_point(np.array([0.34, -0.25]), impedance_params, dist_threshold=0.005)  
 
     # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.13]), T=3.0) 
     # N = angle_list.shape[0]  
@@ -205,8 +206,8 @@ if __name__ == "__main__":
     # angle_2_list = way_points[:, 1]  
 
     # fig = plt.figure(figsize=(20, 8))  
-    # plt.subplot(1, 2, 1)
-    # plt.subplots_adjust(wspace=2, hspace=0)
+    # plt.subplot(1, 2, 1)  
+    # plt.subplots_adjust(wspace=2, hspace=0)  
     
     # plt.plot(angle_1_list, linewidth=linewidth)
     # # plt.xlim([0, 128])

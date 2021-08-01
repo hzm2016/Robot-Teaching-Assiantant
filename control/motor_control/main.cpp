@@ -225,10 +225,10 @@ double dist_threshold
     OutFileTorque << "torque_1" << "," << "torque_2" << "\n";    
 
     double torque_lower_bound = -1.5;    
-    double torque_upper_bound = 1.5;   
+    double torque_upper_bound = 1.5;    
     
-    double ctl_ratio_1 = -2000.0/32;   
-    double ctl_ratio_2 = 2000.0/32;   
+    // double ctl_ratio_1 = -2000.0/32;   
+    // double ctl_ratio_2 = 2000.0/32;   
 
     double theta_1_t = 0.0;   
     double theta_2_t = 0.0;   
@@ -248,12 +248,12 @@ double dist_threshold
     double torque_1_t = 0.0;  
     double torque_2_t = 0.0;  
 
-    double pos_1 = 0.0;  
+    double pos_1 = 0.0;      
     double pos_2 = 0.0;      
 
     double dist = 0.0; 
-    int initial_index = 0; 
-    int max_index = 10000; 
+    int initial_index = 0;    
+    int max_index = 10000;   
 
     /////////////////////////////////////////////////////
     /////  avoid large motion at starting points  ///////
@@ -609,7 +609,7 @@ double dist_threshold
     motor_1.begin();   
     motor_2.begin();   
 
-    printf("Move to target point start !!!!\n");   
+    // printf("Move to target point start !!!!\n");   
 
     ////////////////////////////////////////////////////////
     // One loop control demonstration
@@ -625,8 +625,8 @@ double dist_threshold
     double torque_lower_bound = -1.0;    
     double torque_upper_bound = 1.0;   
     
-    double ctl_ratio_1 = -2000.0/32;   
-    double ctl_ratio_2 = 2000.0/32;   
+    // double ctl_ratio_1 = -2000.0/32;   
+    // double ctl_ratio_2 = 2000.0/32;   
 
     double theta_1_t = 0.0;   
     double theta_2_t = 0.0;   
@@ -634,7 +634,6 @@ double dist_threshold
     double d_theta_1_t = 0.0;    
     double d_theta_2_t = 0.0;    
 
-    //// 
     double theta_1_e = 0.0;   
     double theta_2_e = 0.0;   
 
@@ -651,11 +650,11 @@ double dist_threshold
     double pos_2 = 0.0;      
  
     double dist = 1.0;   
-    int initial_index = 0;   
-    int max_index = 10000;   
+    // int initial_index = 0;   
+    // int max_index = 10000;   
 
-    py::buffer_info q_1_list_buf = q_1_target.request();
-    py::buffer_info q_2_list_buf = q_2_target.request(); 
+    py::buffer_info q_1_list_buf = q_1_target.request(); 
+    py::buffer_info q_2_list_buf = q_2_target.request();  
     double *q_1_list = (double *)q_1_list_buf.ptr;
     double *q_2_list = (double *)q_2_list_buf.ptr;  
 
@@ -668,7 +667,7 @@ double dist_threshold
 
     /////////////////////////////////////////////////////
     /////  avoid large motion at starting points  ///////
-    /////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////// 
     for(int index=0; index<5; index=index+1)  
     {
         pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t); 
@@ -721,7 +720,7 @@ double dist_threshold
         index = index + 1;  
     } 
 
-    printf("dist : %f\n", dist); 
+    printf("dist : %f\n", dist);  
 
     OutFileAngle.close();   
     OutFileTorque.close();       
@@ -729,7 +728,7 @@ double dist_threshold
     motor_1.pack_stop_cmd(2);   
     motor_2.pack_stop_cmd(1);   
 
-    printf("Move to target point done !!!! \n");   
+    // printf("Move to target point done !!!! \n");   
 
     return 1;  
 }

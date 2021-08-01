@@ -97,8 +97,8 @@ def path_planning(start_point, target_point, T=0.005):
         path planning
     """
     N = int(T/Ts)
-    print("start_point :", start_point[0])  
-    print("end_point :", start_point[1])  
+    # print("start_point :", start_point[0])  
+    # print("end_point :", start_point[1])  
     x_list = np.linspace(start_point[0], target_point[0], N)
     y_list = np.linspace(start_point[1], target_point[1], N)
     point = start_point
