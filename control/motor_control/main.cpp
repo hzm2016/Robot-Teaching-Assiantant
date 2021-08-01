@@ -12,6 +12,9 @@ using namespace std;
 #include <signal.h>  
 #include <cmath> 
 
+#include <pybind11/numpy.h>
+namespace py = pybind11;
+
 #define PI 3.1415926
 
 #define STRINGIFY(x) #x
@@ -316,7 +319,7 @@ double dist_threshold
 
 int move_to_target_point(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
-float q_1_target[], float q_2_target[], int N, 
+py::array_t<double> q_1_target, py::array_t<double> q_2_target, int N, 
 double theta_1_initial, double theta_2_initial,  
 double dist_threshold  
 )
@@ -324,7 +327,6 @@ double dist_threshold
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN
     //////////////////////////////////////////////////////// 
-
     CANDevice can0((char *) "can0");  
     can0.begin();   
     CANDevice can1((char *) "can1");  
@@ -340,7 +342,6 @@ double dist_threshold
     ////////////////////////////////////////////////////////
     // One loop control demonstration
     ////////////////////////////////////////////////////////
-
     string output_angle = "move_target_angle_list.txt";    
     ofstream OutFileAngle(output_angle);    
     OutFileAngle << "angle_1" << "," << "angle_2" << "\n";    
@@ -381,10 +382,13 @@ double dist_threshold
     int initial_index = 0;   
     int max_index = 10000;   
 
+    py::buffer_info q_1_list_buf = q_1_target.request(), q_2_list_buf = q_2_target.request();
+    double *q_1_list = (double *)q_1_list_buf.ptr, *q_2_list = (double *)q_2_list_buf.ptr; 
+
     for(int i=0; i < N; i = i + 1)  
     {
-        printf("theta_1_t: %f\n", q_1_target[i]);      
-        printf("theta_2_t: %f\n", q_2_target[i]);    
+        printf("theta_1_t: %f\n", q_1_list[i]);      
+        printf("theta_2_t: %f\n", q_2_list[i]);    
     }
 
     /////////////////////////////////////////////////////
