@@ -387,12 +387,12 @@ double dist_threshold
     double *q_1_list = (double *)q_1_list_buf.ptr;
     double *q_2_list = (double *)q_2_list_buf.ptr; 
 
-    for(int i=0; i < N; i = i + 1)  
-    {
-        printf("theta_1_t: %f\n", q_1_list[i]);      
-        printf("theta_2_t: %f\n", q_2_list[i]);  
-        // OutFileAngle << q_1_list[i] << "," << q_2_list[i] << "\n"; 
-    }
+    // for(int i=0; i < N; i = i + 1)  
+    // {
+    //     printf("theta_1_t: %f\n", q_1_list[i]);      
+    //     printf("theta_2_t: %f\n", q_2_list[i]);  
+    //     // OutFileAngle << q_1_list[i] << "," << q_2_list[i] << "\n"; 
+    // }
 
     /////////////////////////////////////////////////////
     /////  avoid large motion at starting points  ///////
@@ -414,13 +414,12 @@ double dist_threshold
     int index = 0; 
 
     // dist > dist_threshold && initial_index < max_index
-    while(run_on && (dist > dist_threshold))  
+    while(run_on && index<N)  
     {
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
 
         dist = sqrt(pow((theta_1_t - q_1_list[index]), 2) + pow((theta_2_t - q_2_list[index]), 2));    
-        printf("dist : %f\n", dist); 
         // printf("theta_1_t: %f\n", theta_1_t);     
         // printf("theta_2_t: %f\n", theta_2_t);    
 
@@ -450,6 +449,8 @@ double dist_threshold
         index = index + 1;  
     } 
 
+    printf("dist : %f\n", dist); 
+    
     OutFileAngle.close();   
     OutFileTorque.close();       
 
