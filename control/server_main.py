@@ -5,7 +5,9 @@ import os
 from motor_control import motor_control
 from path_planning.plot_path import * 
 from path_planning.path_generate import * 
-import ctypes
+import ctypes 
+
+np.set_printoptions(precision=5) 
 
 L_1 = 0.3 
 L_2 = 0.25  
@@ -17,6 +19,8 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32, -0.2377])  
 
+Angle_initial = np.array([-0.320222, 0.272599]) 
+
 
 def reset_and_calibration(): 
     print("Please make sure two links are at zero position !!!")
@@ -24,11 +28,9 @@ def reset_and_calibration():
     
     angle_initial[0] = motor_control.read_initial_angle_1() 
     angle_initial[1] = motor_control.read_initial_angle_2() 
-    print("theta_1_initial :::", angle_initial[0])
-    print("theta_2_initial :::", angle_initial[1])
-    
-    # theta_1_initial = -0.336998  
-    # theta_2_initial = 0.426342  
+    # print("theta_1_initial :::", angle_initial[0])
+    # print("theta_2_initial :::", angle_initial[1])
+     
     return angle_initial  
 
 
@@ -53,7 +55,7 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342])):
     return angle, point 
 
 
-def move_to_target_point(target_point, impedance_params, angle_initial, dist_threshold=0.05):  
+def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):  
     """
         move to target point  
     """ 
@@ -62,16 +64,16 @@ def move_to_target_point(target_point, impedance_params, angle_initial, dist_thr
     print("Curr_point (m) :", curr_point)  
     print("Initial dist (m) :", dist)  
 
-    angle_list = path_planning(curr_point, target_point, T=0.005) 
+    angle_list = path_planning(curr_point, target_point, T=3.0) 
     N = angle_list.shape[0]  
 
-    angle_array = ctypes.c_float * 5
-    angle_1_list = angle_array(-1.31575, -1.31585, -1.31594, -1.31601, -1.31605)
-    angle_2_list = angle_array(1.54802, 1.54307, 1.53811, 1.53312, 1.52811)
+    # angle_array = ctypes.c_float * 5
+    angle_1_list = angle_list[:, 0] 
+    angle_2_list = angle_list[:, 1]
 
     motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
         angle_1_list, angle_2_list, N,   
-        angle_initial[0], angle_initial[1],  
+        Angle_initial[0], Angle_initial[1],  
         dist_threshold   
     )
     # while dist > DIST_THREHOLD: 
@@ -160,22 +162,20 @@ if __name__ == "__main__":
 
     impedance_params = np.array([4.0, 4.0, 0.0, 0.0])  
     N_way_points = 16357
-    angle_initial = np.array([-0.346447, 0.421545]) 
 
-    angle, point = get_observation(angle_initial=np.array([-0.336998, 0.426342])) 
-    print("curr_angle :", angle) 
-    print("curr_point :", point) 
+    angle, point = get_observation(angle_initial=Angle_initial) 
+    # print("curr_angle :", angle) 
+    # print("curr_point :", point) 
 
     # # train(angle_initial)  
-
 
     # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
     #                                angle_initial[0], angle_initial[1], N_way_points) 
 
-    move_to_target_point(Initial_point, impedance_params, angle_initial, dist_threshold=0.05)  
+    # move_to_target_point(Initial_point, impedance_params, dist_threshold=0.05)   
 
-#     plot_torque_path(
-#         root_path='',
-#         file_angle_name='real_angle_list.txt', 
-#         file_torque_name='real_torque_list.txt' 
-# ) 
+    plot_torque_path(
+        root_path='',
+        file_angle_name='move_target_angle_list.txt', 
+        file_torque_name='move_target_angle_list.txt' 
+) 
