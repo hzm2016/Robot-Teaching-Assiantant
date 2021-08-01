@@ -720,7 +720,10 @@ double dist_threshold
         index = index + 1;  
     } 
 
+
     printf("dist : %f\n", dist);  
+
+    // printf("dist : %f\n", dist); 
 
     OutFileAngle.close();   
     OutFileTorque.close();       
