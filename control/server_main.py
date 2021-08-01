@@ -17,7 +17,7 @@ DIST_THREHOLD = 0.05
 # initial angle (rad) ::: 
 Initial_angle = np.array([-1.31, 1.527])  
 
-Initial_point = np.array([0.32, -0.2377])  
+Initial_point = np.array([0.32299, -0.25264])  
 
 Angle_initial = np.array([-0.320222, 0.272599]) 
 
@@ -64,12 +64,12 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
     print("Curr_point (m) :", curr_point)  
     print("Initial dist (m) :", dist)  
 
-    angle_list = path_planning(curr_point, target_point, T=3.0) 
+    angle_list = path_planning(curr_point, target_point, T=5.0) 
     N = angle_list.shape[0]  
 
     # angle_array = ctypes.c_float * 5
-    angle_1_list = angle_list[:, 0] 
-    angle_2_list = angle_list[:, 1]
+    angle_1_list = angle_list[:, 0].copy() 
+    angle_2_list = angle_list[:, 1].copy()
 
     motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
         angle_1_list, angle_2_list, N,   
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     impedance_params = np.array([4.0, 4.0, 0.0, 0.0])  
     N_way_points = 16357
 
-    # angle, point = get_observation(angle_initial=Angle_initial) 
+    angle, point = get_observation(angle_initial=Angle_initial) 
 
     # print("curr_angle :", angle) 
     # print("curr_point :", point) 
@@ -173,37 +173,37 @@ if __name__ == "__main__":
     # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
     #                                angle_initial[0], angle_initial[1], N_way_points) 
 
-    # move_to_target_point(Initial_point, impedance_params, dist_threshold=0.05)   
+    move_to_target_point(Initial_point, impedance_params, dist_threshold=0.1)   
 
-    angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.23]), T=3.0) 
-    N = angle_list.shape[0]  
+    # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.23]), T=3.0) 
+    # N = angle_list.shape[0]  
 
-    angle_1_list = angle_list[:, 0] 
-    angle_2_list = angle_list[:, 1]
+    # angle_1_list = angle_list[:, 0] 
+    # angle_2_list = angle_list[:, 1]
 
-    fig = plt.figure(figsize=(20, 8))
-    plt.subplot(1, 2, 1)
-    plt.subplots_adjust(wspace=2, hspace=0)
+    # fig = plt.figure(figsize=(20, 8))
+    # plt.subplot(1, 2, 1)
+    # plt.subplots_adjust(wspace=2, hspace=0)
     
-    plt.plot(angle_1_list, linewidth=linewidth)
-    # plt.xlim([0, 128])
-    # plt.ylim([0, 128])
-    plt.xlabel('time($t$)')
-    plt.ylabel('$q_1$(rad)')
-    # plt.axis('equal')
-    plt.tight_layout()
+    # plt.plot(angle_1_list, linewidth=linewidth)
+    # # plt.xlim([0, 128])
+    # # plt.ylim([0, 128])
+    # plt.xlabel('time($t$)')
+    # plt.ylabel('$q_1$(rad)')
+    # # plt.axis('equal')
+    # plt.tight_layout()
     
-    plt.subplot(1, 2, 2)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    # plt.subplot(1, 2, 2)
+    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
-    plt.plot(angle_2_list, linewidth=linewidth)
+    # plt.plot(angle_2_list, linewidth=linewidth)
     
-    # plt.xlim([0., 0.6])
-    # plt.ylim([0., 0.6])
-    plt.xlabel('time($t$)')
-    plt.ylabel('$q_2$(rad)')
+    # # plt.xlim([0., 0.6])
+    # # plt.ylim([0., 0.6])
+    # plt.xlabel('time($t$)')
+    # plt.ylabel('$q_2$(rad)')
 
-    plt.show()
+    # plt.show()
 
 #     plot_torque_path(
 #         root_path='',
