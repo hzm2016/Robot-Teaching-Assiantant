@@ -55,7 +55,7 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342])):
     return angle, point 
 
 
-def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):  
+def move_to_target_point(target_point, impedance_params, velocity=0.04):  
     """
         move to target point  
     """ 
@@ -64,13 +64,14 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
     # print("Curr_point (m) :", curr_point)  
     print("Initial dist (m) :", dist)  
 
-    angle_list, N = path_planning(curr_point, target_point, velocity=0.04) 
+    angle_list, N = path_planning(curr_point, target_point, velocity=velocity) 
     # N = angle_list.shape[0]  
 
     # angle_array = ctypes.c_float * 5
     angle_1_list = angle_list[:, 0].copy() 
     angle_2_list = angle_list[:, 1].copy() 
 
+    dist_threshold = 0.05
     motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
         angle_1_list, angle_2_list, N,   
         Angle_initial[0], Angle_initial[1],   
@@ -200,7 +201,7 @@ if __name__ == "__main__":
 
     # motor_control.get_demonstration(Angle_initial[0], Angle_initial[1]) 
 
-    move_to_target_point(np.array([0.34, -0.25]), impedance_params, dist_threshold=0.005)  
+    move_to_target_point(np.array([0.34, -0.25]), impedance_params, velocity=0.04)  
 
     # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.13]), T=3.0) 
     # N = angle_list.shape[0]  
