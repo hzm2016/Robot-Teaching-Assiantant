@@ -450,7 +450,7 @@ double dist_threshold
     } 
 
     printf("dist : %f\n", dist); 
-    
+
     OutFileAngle.close();   
     OutFileTorque.close();       
 
@@ -796,8 +796,8 @@ int Num_waypoints)
     // Impedance Parameters ::: input 
     ////////////////////////////////////////////////////////
 
-    double torque_lower_bound = -1.0;   
-    double torque_upper_bound = 1.0;   
+    double torque_lower_bound = -2.0;   
+    double torque_upper_bound = 2.0;   
     
     double ctl_ratio_1 = -2000.0/32;   
     double ctl_ratio_2 = 2000.0/32;   
