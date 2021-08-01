@@ -138,7 +138,7 @@ class Controller(object):
         velocity = 5
         return velocity
 
-    def interact_once(self, traj, impedance_params=[5, 5, 0.5, 0.5], velocity=10):
+    def interact_once(self, traj, impedance_params=[5.0, 5.0, 0.2, 0.2], velocity=10):
         """
             interact with robot once
         """
@@ -146,6 +146,7 @@ class Controller(object):
         angle_initial = self.task.wait_encoder_check()
         print("Angle_initial (rad) :", angle_initial)
 
+        # check the whole path
         way_points = generate_path(traj,
                                    center_shift=np.array([0.16, -WIDTH / 2]),
                                    velocity=velocity, Ts=0.001,
@@ -204,8 +205,9 @@ if __name__ == "__main__":
                            '/1_font_' + str(type) + '.txt')
     writing_controller = Controller(
         args, img_processor=None, impedance_level=0)
-    target_img = cv2.imread(root_path + '/1_font_1.png')
-    writing_controller.interact_once(path_data)
+    
+    # target_img = cv2.imread(root_path + '/1_font_1.png')
+    # writing_controller.interact_once(path_data)
     # writing_controller.interact(path_data, target_img)
 
     # a = np.array([(3, 4), (7, 8)])

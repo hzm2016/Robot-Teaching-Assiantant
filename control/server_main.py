@@ -87,20 +87,18 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
     # return done, final_dist  
 
 
-def train(angle_initial): 
+def train(angle_initial=Angle_initial, run_on=False): 
     _server = Server(5005) 
-    
-    run_on = False
     
     # ######################################################
     # ############## wait encoder and motor check ##########
     # ################### Position calibrate ###############
     # ######################################################
-    _server.wait_encoder_request() 
-    curr_angle, curr_point = get_observation(angle_initial) 
-    _server.send_encoder_check(angle_initial) 
+    _server.wait_encoder_request()  
+    curr_angle, curr_point = get_observation(angle_initial)  
+    _server.send_encoder_check(angle_initial)  
 
-    move_to_target_point(Initial_angle) 
+    # move_to_target_point(Initial_angle)  
 
     # ######################################################
     # ############## Wait way_points #######################
@@ -120,11 +118,11 @@ def train(angle_initial):
             break
         way_points.append(way_point)
         line_data = str(way_point[0]) + ',' + str(way_point[1]) + '\n'
-        data_file.writelines(line_data)
+        data_file.writelines(line_data) 
         # send_done = _server.wait_send_way_points_done()
-    way_points = np.array(way_points)
+    way_points = np.array(way_points) 
     N_way_points = way_points.shape[0] 
-    print("way_points :::", way_points.shape) 
+    # print("way_points :::", way_points.shape) 
     print("N_way_points :::", N_way_points) 
 
     # ######################################################
@@ -142,8 +140,14 @@ def train(angle_initial):
 
     # start move
     if run_on: 
-        motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
-                                   angle_initial[0], angle_initial[1], N_way_points)
+        # move to initial point
+        motor_control.move_to_target_point(way_points[0, :].copy(), impedance_params, dist_threshold=0.005)  
+
+        motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
+                                    way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
+                                   Angle_initial[0], Angle_initial[1])  
+
+        motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
 
     # send movement_done command 
     _server.send_movement_done() 
@@ -175,11 +179,11 @@ if __name__ == "__main__":
     angle, point = get_observation(angle_initial=Angle_initial)   
 
     # print("curr_angle :", angle)   
-    # print("curr_point :", point)  
+    # print("curr_point :", point)   
 
-    # # train(angle_initial)  
+    train(angle_initial=Angle_initial, run_on=False)   
 
-    # eval(impedance_params = np.array([4.0, 4.0, 0.2, 0.2]))  
+    # eval(impedance_params = np.array([4.0, 4.0, 0.2, 0.2]))   
 
     # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
     #                                Angle_initial[0], Angle_initial[1], N_way_points)  
