@@ -149,7 +149,16 @@ def train(angle_initial):
     _server.send_movement_done() 
 
 
-def eval():  
+def eval(impedance_params = np.array([14.0, 14.0, 0.4, 0.4])):  
+    
+    way_points = np.loadtxt('angle_list.txt')   
+    N_way_points = way_points.shape[0]   
+
+    print("N_way_points :", N_way_points)   
+
+    motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
+                                    way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
+                                   Angle_initial[0], Angle_initial[1])  
     
     pass 
 
