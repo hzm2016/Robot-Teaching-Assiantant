@@ -609,7 +609,7 @@ double dist_threshold
     motor_1.begin();   
     motor_2.begin();   
 
-    printf("Move to target point start !!!!\n");   
+    // printf("Move to target point start !!!!\n");   
 
     ////////////////////////////////////////////////////////
     // One loop control demonstration
@@ -721,7 +721,7 @@ double dist_threshold
         index = index + 1;  
     } 
 
-    printf("dist : %f\n", dist); 
+    // printf("dist : %f\n", dist); 
 
     OutFileAngle.close();   
     OutFileTorque.close();       
@@ -729,7 +729,7 @@ double dist_threshold
     motor_1.pack_stop_cmd(2);   
     motor_2.pack_stop_cmd(1);   
 
-    printf("Move to target point done !!!! \n");   
+    // printf("Move to target point done !!!! \n");   
 
     return 1;  
 }

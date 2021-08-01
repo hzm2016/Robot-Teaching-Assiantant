@@ -61,7 +61,7 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
     """ 
     curr_angle, curr_point = get_observation() 
     dist = np.linalg.norm((curr_point - target_point), ord=2) 
-    print("Curr_point (m) :", curr_point)  
+    # print("Curr_point (m) :", curr_point)  
     print("Initial dist (m) :", dist)  
 
     angle_list = path_planning(curr_point, target_point, T=3.0) 
@@ -73,7 +73,7 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
 
     motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
         angle_1_list, angle_2_list, N,   
-        Angle_initial[0], Angle_initial[1],  
+        Angle_initial[0], Angle_initial[1],   
         dist_threshold   
     )
     # while dist > DIST_THREHOLD: 
@@ -134,7 +134,7 @@ def train(angle_initial=Angle_initial, run_on=False):
     # while impedance_params is None:
     # read impedance parameters :::
     impedance_params = _server.read_params() 
-    print("impedance parameters :::", impedance_params) 
+    print("Input impedance parameters :::", impedance_params) 
     if impedance_params is not None: 
         pass
 
@@ -142,7 +142,8 @@ def train(angle_initial=Angle_initial, run_on=False):
     if run_on: 
 
         start_point = forward_ik(way_points[0, :].copy())
-        
+        print("Move to start point :::", start_point) 
+
         # move to initial point 
         move_to_target_point(start_point, impedance_params, dist_threshold=0.005) 
         # motor_control.move_to_target_point(way_points[0, :].copy(), impedance_params, dist_threshold=0.005)  
@@ -150,7 +151,7 @@ def train(angle_initial=Angle_initial, run_on=False):
         # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
         #                             way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
         #                            Angle_initial[0], Angle_initial[1])  
-
+        print("Move to initial point :::", Initial_point) 
         motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
 
     # send movement_done command 
