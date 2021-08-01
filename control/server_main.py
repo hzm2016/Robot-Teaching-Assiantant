@@ -19,7 +19,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.25264])  
 
-Angle_initial = np.array([-0.320222, 0.272599]) 
+Angle_initial = np.array([-0.343278, 0.424859]) 
 
 
 def reset_and_calibration(): 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # angle_initial = reset_and_calibration()  
     # print("angle_initial :", angle_initial)
 
-    impedance_params = np.array([8.0, 22.0, 0.2, 0.2])  
+    impedance_params = np.array([14.0, 14.0, 0.4, 0.4])  
     N_way_points = 16357  
 
     angle, point = get_observation(angle_initial=Angle_initial)  
@@ -170,12 +170,12 @@ if __name__ == "__main__":
 
     # # train(angle_initial)  
 
-    motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
-                                   Angle_initial[0], Angle_initial[1], N_way_points)  
+    # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
+    #                                Angle_initial[0], Angle_initial[1], N_way_points)  
 
     # motor_control.get_demonstration(Angle_initial[0], Angle_initial[1]) 
 
-    # move_to_target_point(np.array([0.34, -0.13]), impedance_params, dist_threshold=0.005)  
+    move_to_target_point(np.array([0.34, -0.]), impedance_params, dist_threshold=0.005)  
 
     # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.13]), T=3.0) 
     # N = angle_list.shape[0]  
