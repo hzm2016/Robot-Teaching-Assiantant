@@ -69,7 +69,7 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
 
     # angle_array = ctypes.c_float * 5
     angle_1_list = angle_list[:, 0].copy() 
-    angle_2_list = angle_list[:, 1].copy()
+    angle_2_list = angle_list[:, 1].copy() 
 
     motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
         angle_1_list, angle_2_list, N,   
@@ -140,14 +140,15 @@ def train(angle_initial=Angle_initial, run_on=False):
 
     # start move
     if run_on: 
-        # move to initial point
-        motor_control.move_to_target_point(way_points[0, :].copy(), impedance_params, dist_threshold=0.005)  
+        # move to initial point 
+        move_to_target_point(way_points[0, :].copy(), impedance_params, dist_threshold=0.005)
+        # motor_control.move_to_target_point(way_points[0, :].copy(), impedance_params, dist_threshold=0.005)  
 
-        motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-                                    way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
-                                   Angle_initial[0], Angle_initial[1])  
+        # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
+        #                             way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
+        #                            Angle_initial[0], Angle_initial[1])  
 
-        motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
+        # motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
 
     # send movement_done command 
     _server.send_movement_done() 
@@ -181,7 +182,7 @@ if __name__ == "__main__":
     # print("curr_angle :", angle)   
     # print("curr_point :", point)   
 
-    train(angle_initial=Angle_initial, run_on=False)   
+    train(angle_initial=Angle_initial, run_on=True)     
 
     # eval(impedance_params = np.array([4.0, 4.0, 0.2, 0.2]))   
 
