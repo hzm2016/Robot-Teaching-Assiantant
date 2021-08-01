@@ -45,7 +45,7 @@ class Controller(object):
     def __init__(self, args, img_processor=None, impedance_level=0) -> None:
         self.args = args
 
-        self.root_path = '..controller/data/'
+        self.root_path = '../control/data/'
         self.show_video = True
 
         # initial TCP connection :::
@@ -167,9 +167,9 @@ class Controller(object):
         run_done = self.task.get_movement_check()
 
         if run_done:
-            print("run_done", run_done)
+            # print("run_done", run_done)
             written_image, _ = capture_image(
-                root_path=self.root_path, font_name='written_image')
+                root_path=self.root_path + 'captured_images/', font_name='written_image')
 
     def interact(self, traj, target_img):
         written_image = None
@@ -203,11 +203,13 @@ if __name__ == "__main__":
     type = 1
     path_data = np.loadtxt(root_path + '/' + font_name +
                            '/1_font_' + str(type) + '.txt')
+    
     writing_controller = Controller(
         args, img_processor=None, impedance_level=0)
+    writing_controller.interact_once(path_data,
+                                     impedance_params=[5.0, 5.0, 0.2, 0.2], velocity=10)
     
     # target_img = cv2.imread(root_path + '/1_font_1.png')
-    # writing_controller.interact_once(path_data)
     # writing_controller.interact(path_data, target_img)
 
     # a = np.array([(3, 4), (7, 8)])

@@ -83,6 +83,15 @@ def IK(point):
     return angle
 
 
+def forward_ik(angle):
+    """ calculate point """
+    point = np.zeros_like(angle)
+    point[0] = L1 * math.cos(angle[0]) + L2 * math.cos(angle[0] + angle[1])
+    point[1] = L1 * math.sin(angle[0]) + L2 * math.sin(angle[0] + angle[1])
+    
+    return point
+
+
 def path_planning(start_point, target_point, T=0.005):
     """
         path planning

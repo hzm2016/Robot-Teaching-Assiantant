@@ -140,15 +140,18 @@ def train(angle_initial=Angle_initial, run_on=False):
 
     # start move
     if run_on: 
+
+        start_point = forward_ik(way_points[0, :].copy())
+        
         # move to initial point 
-        move_to_target_point(way_points[0, :].copy(), impedance_params, dist_threshold=0.005)
+        move_to_target_point(start_point, impedance_params, dist_threshold=0.005) 
         # motor_control.move_to_target_point(way_points[0, :].copy(), impedance_params, dist_threshold=0.005)  
 
         # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
         #                             way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
         #                            Angle_initial[0], Angle_initial[1])  
 
-        # motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
+        motor_control.move_to_target_point(Initial_point, impedance_params, dist_threshold=0.005)   
 
     # send movement_done command 
     _server.send_movement_done() 
