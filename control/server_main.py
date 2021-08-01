@@ -19,7 +19,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.25264])  
 
-Angle_initial = np.array([-0.343278, 0.424859]) 
+Angle_initial = np.array([-0.336096, 0.381336])  
 
 
 def reset_and_calibration(): 
@@ -151,7 +151,7 @@ def train(angle_initial):
 
 def eval(impedance_params = np.array([14.0, 14.0, 0.4, 0.4])):  
     
-    way_points = np.loadtxt('angle_list.txt')   
+    way_points = np.loadtxt('angle_list.txt', delimiter=',')   
     N_way_points = way_points.shape[0]   
 
     print("N_way_points :", N_way_points)   
@@ -159,7 +159,7 @@ def eval(impedance_params = np.array([14.0, 14.0, 0.4, 0.4])):
     motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
                                     way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
                                    Angle_initial[0], Angle_initial[1])  
-    
+
     pass 
 
 
@@ -172,27 +172,31 @@ if __name__ == "__main__":
     impedance_params = np.array([14.0, 14.0, 0.4, 0.4])  
     N_way_points = 16357  
 
-    angle, point = get_observation(angle_initial=Angle_initial)  
+    angle, point = get_observation(angle_initial=Angle_initial)   
 
     # print("curr_angle :", angle)   
     # print("curr_point :", point)  
 
     # # train(angle_initial)  
 
+    # eval(impedance_params = np.array([4.0, 4.0, 0.2, 0.2]))  
+
     # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
     #                                Angle_initial[0], Angle_initial[1], N_way_points)  
 
     # motor_control.get_demonstration(Angle_initial[0], Angle_initial[1]) 
 
-    move_to_target_point(np.array([0.34, -0.]), impedance_params, dist_threshold=0.005)  
+    # move_to_target_point(np.array([0.34, -0.]), impedance_params, dist_threshold=0.005)  
 
     # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.13]), T=3.0) 
     # N = angle_list.shape[0]  
 
-    # angle_1_list = angle_list[:, 0] 
-    # angle_2_list = angle_list[:, 1]
+    # way_points = np.loadtxt('real_angle_list.txt', delimiter=',', skiprows=1)   
 
-    # fig = plt.figure(figsize=(20, 8))
+    # angle_1_list = way_points[:, 0]  
+    # angle_2_list = way_points[:, 1]  
+
+    # fig = plt.figure(figsize=(20, 8))  
     # plt.subplot(1, 2, 1)
     # plt.subplots_adjust(wspace=2, hspace=0)
     

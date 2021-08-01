@@ -736,9 +736,9 @@ double dist_threshold
 
 
 int run_one_loop(double stiffness_1, double stiffness_2,  
-double damping_1, double damping_2, 
+double damping_1, double damping_2,  
 py::array_t<double> theta_1_target, py::array_t<double> theta_2_target, int Num_waypoints,  
-double theta_1_initial, double theta_2_initial
+double theta_1_initial, double theta_2_initial   
 )  
 {
     //////////////////////////////////////////////////////// 
@@ -796,8 +796,8 @@ double theta_1_initial, double theta_2_initial
     // Impedance Parameters ::: input 
     ////////////////////////////////////////////////////////
 
-    double torque_lower_bound = -3.0;   
-    double torque_upper_bound = 3.0;   
+    double torque_lower_bound = -2.0;   
+    double torque_upper_bound = 2.0;   
     
     double theta_1_t = 0.0;   
     double theta_2_t = 0.0;   
@@ -874,6 +874,7 @@ double theta_1_initial, double theta_2_initial
         pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);  
     }
 
+    run_on = 1; 
     while (run_on) 
     {
         for (int index = 0; index<Num_waypoints; index=index+1)
@@ -916,9 +917,6 @@ double theta_1_initial, double theta_2_initial
 
             pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
             pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
-
-            // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
-            // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);  
 
             ////////////////////////////////////////////////////////
             // Save Data
