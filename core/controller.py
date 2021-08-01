@@ -5,9 +5,9 @@ import cv2
 import argparse
 
 # task interface
-from control.vision_capture.main_functions import *
-from control.protocol.task_interface import *
-from control.path_planning.path_generate import *
+from control.protocol.task_interface import TCPTask
+from control.path_planning.path_generate import generate_path, WIDTH
+from control.vision_capture.main_functions import capture_image, show_video
 
 
 def draw_points(points, canvas_size=256):
@@ -86,15 +86,15 @@ class Controller(object):
         tgt_pts = np.squeeze(tgt_pts, axis=0)
         in_pts = np.squeeze(in_pts, axis=0)
 
-        tgt_pts_vis = draw_points(tgt_pts)
-        cv2.imwrite('tgt_pts_vis.jpg', tgt_pts_vis)
+        # tgt_pts_vis = draw_points(tgt_pts)
+        # cv2.imwrite('tgt_pts_vis.jpg', tgt_pts_vis)
 
-        in_pts_vis = draw_points(in_pts)
-        cv2.imwrite('in_pts_vis.jpg', in_pts_vis)
+        # in_pts_vis = draw_points(in_pts)
+        # cv2.imwrite('in_pts_vis.jpg', in_pts_vis)
 
         matching = self.key_point_matching(tgt_pts, in_pts)
         matching_vis = draw_matching(tgt_pts, in_pts, matching)
-        cv2.imwrite('matching_vis.jpg', matching_vis)
+        # cv2.imwrite('matching_vis.jpg', matching_vis)
 
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
@@ -128,11 +128,9 @@ class Controller(object):
 
         return matching
 
-    def update_period(self, ):
-        """ update period with user's input
+    def update_velocity(self, ):
+        """ update velocity with user's input
 
-        Raises:
-            NotImplementedError: [description]
         """
         velocity = 5
         return velocity
@@ -181,8 +179,8 @@ class Controller(object):
                 self.update_impedance(target_img, written_image)
             params = self.stiffness + self.damping
 
-            # update period
-            velocity = self.update_period()
+            # update velocity
+            velocity = self.update_velocity()
             
         return written_image
     
