@@ -163,7 +163,8 @@ if __name__ == "__main__":
     impedance_params = np.array([4.0, 4.0, 0.0, 0.0])  
     N_way_points = 16357
 
-    angle, point = get_observation(angle_initial=Angle_initial) 
+    # angle, point = get_observation(angle_initial=Angle_initial) 
+
     # print("curr_angle :", angle) 
     # print("curr_point :", point) 
 
@@ -174,8 +175,38 @@ if __name__ == "__main__":
 
     # move_to_target_point(Initial_point, impedance_params, dist_threshold=0.05)   
 
-    plot_torque_path(
-        root_path='',
-        file_angle_name='move_target_angle_list.txt', 
-        file_torque_name='move_target_angle_list.txt' 
-) 
+    angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.23]), T=3.0) 
+    N = angle_list.shape[0]  
+
+    angle_1_list = angle_list[:, 0] 
+    angle_2_list = angle_list[:, 1]
+
+    fig = plt.figure(figsize=(20, 8))
+    plt.subplot(1, 2, 1)
+    plt.subplots_adjust(wspace=2, hspace=0)
+    
+    plt.plot(angle_1_list, linewidth=linewidth)
+    # plt.xlim([0, 128])
+    # plt.ylim([0, 128])
+    plt.xlabel('time($t$)')
+    plt.ylabel('$q_1$(rad)')
+    # plt.axis('equal')
+    plt.tight_layout()
+    
+    plt.subplot(1, 2, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    plt.plot(angle_2_list, linewidth=linewidth)
+    
+    # plt.xlim([0., 0.6])
+    # plt.ylim([0., 0.6])
+    plt.xlabel('time($t$)')
+    plt.ylabel('$q_2$(rad)')
+
+    plt.show()
+
+#     plot_torque_path(
+#         root_path='',
+#         file_angle_name='move_target_angle_list.txt', 
+#         file_torque_name='move_target_angle_list.txt' 
+# ) 
