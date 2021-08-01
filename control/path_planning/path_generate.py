@@ -92,15 +92,19 @@ def forward_ik(angle):
     return point
 
 
-def path_planning(start_point, target_point, T=0.005):
+def path_planning(start_point, target_point, velocity=0.04):
     """
         path planning
     """
+    dist = np.linalg.norm((start_point - target_point), ord=2)
+    T = dist/velocity
     N = int(T/Ts)
+    
     # print("start_point :", start_point[0])  
     # print("end_point :", start_point[1])  
     x_list = np.linspace(start_point[0], target_point[0], N)
     y_list = np.linspace(start_point[1], target_point[1], N)
+    
     point = start_point
     angle_list = []
     for i in range(N):
@@ -109,13 +113,14 @@ def path_planning(start_point, target_point, T=0.005):
         angle = IK(point)
         angle_list.append(angle)  
         
-    return np.array(angle_list)  
+    return np.array(angle_list), N
     
 
 def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
-                  velocity=10, Ts=0.001, plot_show=False):
+                  velocity=0.04, Ts=0.001, plot_show=False):
     """
          generate trajectory from list
+         velocity ::: 0.04m/s
     """
     # calculate length of path
     dist = 0.0
@@ -125,10 +130,7 @@ def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
         dist += np.linalg.norm((point_2.copy() - point_1.copy()), ord=2)
     
     path_data = traj
-    period = dist/velocity
-    print("Distance (mm) :", dist)
-    print("Period (s) :", period)
-    N = np.array(period / Ts).astype(int)
+    
     # M = N//len(traj)
     # x_list = []
     # y_list = []
@@ -144,14 +146,19 @@ def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
     # # x_list = path(1, 2):(path(end, 2) - path(1, 2)) / (N - 1): path(end, 2)
     # y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
 
+    # transform to work space
+    ratio = IMAGE_WIDTH / WIDTH
+    
+    period = dist/ratio/velocity
+    print("Distance (mm) :", dist)
+    print("Period (s) :", period)
+    N = np.array(period / Ts).astype(int)
+    
     y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
     # x_list = path(1, 2):(path(end, 2) - path(1, 2)) / (N - 1): path(end, 2)
     x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
     # print("x_list :::", x_list)
     # print("y_list :::", y_list)
-
-    # transform to work space
-    ratio = IMAGE_WIDTH / WIDTH
 
     x_1_list = x_list/ratio + center_shift[0]
     x_2_list = y_list/ratio + center_shift[1]

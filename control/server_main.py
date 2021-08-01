@@ -64,8 +64,8 @@ def move_to_target_point(target_point, impedance_params, dist_threshold=0.05):
     # print("Curr_point (m) :", curr_point)  
     print("Initial dist (m) :", dist)  
 
-    angle_list = path_planning(curr_point, target_point, T=3.0) 
-    N = angle_list.shape[0]  
+    angle_list, N = path_planning(curr_point, target_point, velocity=0.04) 
+    # N = angle_list.shape[0]  
 
     # angle_array = ctypes.c_float * 5
     angle_1_list = angle_list[:, 0].copy() 

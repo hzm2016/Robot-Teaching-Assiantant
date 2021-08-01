@@ -156,7 +156,7 @@ class Controller(object):
         self.task.send_way_points(way_points)
 
         # self.task.send_way_points_done()
-
+        
         self.task.send_params_request()
         self.task.send_params(impedance_params)
 
@@ -201,13 +201,18 @@ if __name__ == "__main__":
     root_path = '../control/data/font_data'
     font_name = 'first'
     type = 1
-    path_data = np.loadtxt(root_path + '/' + font_name +
+    traj = np.loadtxt(root_path + '/' + font_name +
                            '/1_font_' + str(type) + '.txt')
+
+    generate_path(traj,
+                  center_shift=np.array([0.16, -WIDTH / 2]),
+                  velocity=0.04, Ts=0.001,
+                  plot_show=True)
     
-    writing_controller = Controller(
-        args, img_processor=None, impedance_level=0)
-    writing_controller.interact_once(path_data,
-                                     impedance_params=[5.0, 5.0, 0.2, 0.2], velocity=10)
+    # writing_controller = Controller(
+    #     args, img_processor=None, impedance_level=0)
+    # writing_controller.interact_once(path_data,
+    #                                  impedance_params=[12.0, 12.0, 0.2, 0.2], velocity=10)
     
     # target_img = cv2.imread(root_path + '/1_font_1.png')
     # writing_controller.interact(path_data, target_img)
