@@ -36,11 +36,13 @@ class TCPClientExample:
         while True:
             # secondly, wait for a reset request
             self._server.wait_reset()
+            
             # reset the environment
             self._server.reset_ack()
 
             # Then, wait for the client to ask for the context.
             self._server.wait_context_request()
+            
             # send the context
             self._server.send_context(np.random.normal(size=self._state_dim))
 
