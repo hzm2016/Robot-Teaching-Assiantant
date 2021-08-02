@@ -19,7 +19,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.25264])  
 
-Angle_initial = np.array([-0.315366, 0.475972])  
+Angle_initial = np.array([-0.350459, 0.522781])  
 
 
 def reset_and_calibration(): 
@@ -169,25 +169,23 @@ def train(angle_initial=Angle_initial, run_on=False):
     _server.send_movement_done() 
 
 
-def eval(impedance_params = np.array([14.0, 14.0, 0.4, 0.4])):  
+def eval(impedance_params = np.array([18.0, 10.0, 0.2, 0.1])):  
     """
         With zero impedance and get real-time traj
     """
-    # way_points = np.loadtxt('angle_list.txt', delimiter=',')   
-    # N_way_points = way_points.shape[0]   
+    way_points = np.loadtxt('angle_list.txt', delimiter=',')   
+    N_way_points = way_points.shape[0]   
 
-    # print("N_way_points :", N_way_points)   
+    print("N_way_points :", N_way_points)   
 
-    # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-    #                                 way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
-    #                                Angle_initial[0], Angle_initial[1])  
+    motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
+                                    way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
+                                    Angle_initial[0], Angle_initial[1])  
 
-    buff_size = 10000  
-    demo_data = np.zeros((buff_size, 2))   
-
-    result = motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data)  
-
-    print("result :", result) 
+    # buff_size = 10000  
+    # demo_data = np.zeros((buff_size, 2))   
+    # result = motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data)  
+    # print("result :", result) 
 
 
 if __name__ == "__main__":  
@@ -196,17 +194,17 @@ if __name__ == "__main__":
     # Angle_initial = reset_and_calibration()  
     # print("angle_initial :", Angle_initial)  
 
-    impedance_params = np.array([14.0, 14.0, 0.2, 0.2])  
+    impedance_params = np.array([28.0, 18.0, 0.8, 0.1])  
     N_way_points = 16357  
 
-    plot_real_2d_path(
-        root_path='',
-        file_name='demonstrated_angle_list.txt' 
-    )
+    # plot_real_2d_path(
+    #     root_path='',
+    #     file_name='demonstrated_angle_list.txt' 
+    # )
     
-    # angle, point = get_observation(angle_initial=Angle_initial)   
+    angle, point = get_observation(angle_initial=Angle_initial)   
 
-    # eval()  
+    eval()  
     
 
     # print("curr_angle :", angle)   
@@ -221,7 +219,7 @@ if __name__ == "__main__":
 
     # motor_control.get_demonstration(Angle_initial[0], Angle_initial[1]) 
 
-    # move_to_target_point(np.array([0.34, -0.25]), impedance_params, velocity=0.04)  
+    # move_to_target_point(np.array([0.34, 0.10]), impedance_params, velocity=0.05)  
 
     # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.13]), T=3.0) 
     # N = angle_list.shape[0]  

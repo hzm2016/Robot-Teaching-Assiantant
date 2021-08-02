@@ -246,8 +246,8 @@ double dist_threshold
     double torque_1 = 0.0;   
     double torque_2 = 0.0;   
 
-    double torque_1_t = 0.0;  
-    double torque_2_t = 0.0;  
+    double torque_1_t = 0.0;   
+    double torque_2_t = 0.0;   
 
     double pos_1 = 0.0;      
     double pos_2 = 0.0;      
@@ -649,8 +649,8 @@ double dist_threshold
     ofstream OutFileTorque(output_torque);    
     OutFileTorque << "torque_1" << "," << "torque_2" << "\n";    
 
-    double torque_lower_bound = -1.0;    
-    double torque_upper_bound = 1.0;   
+    double torque_lower_bound = -1.5;    
+    double torque_upper_bound = 1.5;   
     
     // double ctl_ratio_1 = -2000.0/32;   
     // double ctl_ratio_2 = 2000.0/32;   
@@ -680,9 +680,9 @@ double dist_threshold
     // int initial_index = 0;   
     // int max_index = 10000;   
 
-    py::buffer_info q_1_list_buf = q_1_target.request(); 
+    py::buffer_info q_1_list_buf = q_1_target.request();  
     py::buffer_info q_2_list_buf = q_2_target.request();  
-    double *q_1_list = (double *)q_1_list_buf.ptr;
+    double *q_1_list = (double *)q_1_list_buf.ptr; 
     double *q_2_list = (double *)q_2_list_buf.ptr;  
 
     // for(int i=0; i < N; i = i + 1)  
@@ -705,15 +705,15 @@ double dist_threshold
 
     // Catch a Ctrl-C event:
 	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
-
-    // Catch a Ctrl-C event: 
-    signal(SIGINT, sig_h);  
  
     int index = 0; 
 
     // dist > dist_threshold && initial_index < max_index
     while(run_on && index<N)  
     {
+        // Catch a Ctrl-C event: 
+        signal(SIGINT, sig_h);  
+
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
 
@@ -778,12 +778,6 @@ double theta_1_initial, double theta_2_initial
 
     double K_p_2 = stiffness_2;  
 	double K_d_2 = damping_2;  
-
-    ////////////////////////////////////////////////////////
-    // Initial offset angles ::: input  
-    //////////////////////////////////////////////////////// 
-    // double theta_1_initial = -0.294288;   
-    // double theta_2_initial = 0.402938;   
 
     ////////////////////////////////////////////////////////
     // Initial hardware ::: can device
@@ -855,9 +849,6 @@ double theta_1_initial, double theta_2_initial
     // Catch a Ctrl-C event:
 	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
 
-    // Catch a Ctrl-C event: 
-    signal(SIGINT, sig_h);  
-
     // for(int index=0; index<Num_waypoints; index=index+1) 
     // {
     //     theta_1_e = theta_1_list[index]; 
@@ -906,8 +897,12 @@ double theta_1_initial, double theta_2_initial
     run_on = 1; 
     while (run_on) 
     {
+        // Catch a Ctrl-C event: 
+        signal(SIGINT, sig_h); 
+
         for (int index = 0; index<Num_waypoints; index=index+1)
-        {
+        { 
+
             theta_1_e = theta_1_list[index];   
             theta_2_e = theta_2_list[index];   
 
