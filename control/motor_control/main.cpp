@@ -501,7 +501,7 @@ void load_path_data(double *theta_1_list, double *theta_2_list)
 }
 
 
-int get_demonstration(double theta_1_initial, double theta_2_initial, py::array_t<double> buff_size) 
+py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_initial, py::array_t<double> buff_size) 
 {
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN
@@ -556,17 +556,21 @@ int get_demonstration(double theta_1_initial, double theta_2_initial, py::array_
     // Catch a Ctrl-C event: 
     signal(SIGINT, sig_h);  
 
-    // allocate the output buffer
-	py::array_t<double> result = py::array_t<double>(buff_size.size); 
+    py::buffer_info buff_size_list = buff_size.request(); 
 
-    result.resize({buff_size.shape[0], buff_size.shape[1]}); 
+    // allocate the output buffer
+	py::array_t<double> result = py::array_t<double>(buff_size_list.size); 
+
+    result.resize({buff_size_list.shape[0], buff_size_list.shape[1]}); 
 
     // acquire buffer info 
-	py::buffer_info theta_list = result.request(); 
+	py::buffer_info result_buf = result.request(); 
+
+    double *theta_list = (double *)result_buf.ptr; 
 
     int index = 0; 
     int index_buff = 0; 
-
+    int buff_length = 10000; 
     while(run_on)  
     {
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
@@ -577,13 +581,23 @@ int get_demonstration(double theta_1_initial, double theta_2_initial, py::array_
 
         OutFileAngle << theta_1_t << "," << theta_2_t << "\n";  
 
-        index_buff = index%buff_size.shape[0]; 
-        theta_list[index_buff][0] = theta_1_t; 
-        theta_list[index_buff][1] = theta_2_t; 
+        index_buff = index%buff_length;  
+        // theta_list[index_buff][0] = theta_1_t;  
+        // theta_list[index_buff][1] = theta_2_t;  
 
         pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);   
         pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);   
 
+        theta_list[index_buff*result_buf.shape[1] + 0] = theta_1_t; 
+        theta_list[index_buff*result_buf.shape[1] + 1] = theta_2_t; 
+
+        // for(i=0; i<result_buf.shape[0]; i++)
+        // {
+        //     for(j=0; j<result_buf.shape[1]; j++)
+        //     {
+                
+        //     }
+        // }
         // OutFileTorque << torque_1_t << " " << torque_2_t << "\n";   
 
         // OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";   
@@ -593,7 +607,7 @@ int get_demonstration(double theta_1_initial, double theta_2_initial, py::array_
         index = index + 1;    
     }
 
-    return theta_list;  
+    return result;  
 }  
 
 

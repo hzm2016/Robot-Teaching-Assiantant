@@ -19,7 +19,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.25264])  
 
-Angle_initial = np.array([-0.336096, 0.381336])  
+Angle_initial = np.array([-0.315366, 0.475972])  
 
 
 def reset_and_calibration(): 
@@ -180,21 +180,21 @@ def eval(impedance_params = np.array([14.0, 14.0, 0.4, 0.4])):
     buff_size = 10000 
     demo_data = np.zeros((buff_size, 2)) 
 
-    motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data) 
+    result = motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data) 
 
-    pass 
+    print("result :", result)
 
 
 if __name__ == "__main__":  
 
     # """ calibrate position for each start up """ 
-    # angle_initial = reset_and_calibration()  
-    # print("angle_initial :", angle_initial)
+    angle_initial = reset_and_calibration()  
+    print("angle_initial :", angle_initial)  
 
     impedance_params = np.array([14.0, 14.0, 0.2, 0.2])  
     N_way_points = 16357  
     
-    angle, point = get_observation(angle_initial=Angle_initial)   
+    # angle, point = get_observation(angle_initial=Angle_initial)   
 
     eval()  
 
