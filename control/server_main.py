@@ -177,26 +177,32 @@ def eval(impedance_params = np.array([14.0, 14.0, 0.4, 0.4])):
     #                                 way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
     #                                Angle_initial[0], Angle_initial[1])  
 
-    buff_size = 10000 
-    demo_data = np.zeros((buff_size, 2)) 
+    buff_size = 10000  
+    demo_data = np.zeros((buff_size, 2))   
 
-    result = motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data) 
+    result = motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data)  
 
-    print("result :", result)
+    print("result :", result) 
 
 
 if __name__ == "__main__":  
 
     # """ calibrate position for each start up """ 
-    angle_initial = reset_and_calibration()  
-    print("angle_initial :", angle_initial)  
+    # Angle_initial = reset_and_calibration()  
+    # print("angle_initial :", Angle_initial)  
 
     impedance_params = np.array([14.0, 14.0, 0.2, 0.2])  
     N_way_points = 16357  
+
+    plot_real_2d_path(
+        root_path='',
+        file_name='demonstrated_angle_list.txt' 
+    )
     
     # angle, point = get_observation(angle_initial=Angle_initial)   
 
-    eval()  
+    # eval()  
+    
 
     # print("curr_angle :", angle)   
     # print("curr_point :", point)   
