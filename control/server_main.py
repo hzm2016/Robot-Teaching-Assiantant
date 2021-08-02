@@ -33,14 +33,19 @@ def reset_and_calibration():
      
     return angle_initial  
 
+def get_current_path():
+    
+
+    pass
+
 
 def get_observation(angle_initial=np.array([-0.336998, 0.426342])):
     """
-        obtain joint angles and cartesian state
+        obtain joint angles and cartesian state 
     """
-    # ######################################################
-    # ############## get current state #####################
-    # ######################################################
+    # ###################################################### 
+    # ############## get current state ##################### 
+    # ###################################################### 
     angle = np.zeros(action_dim)  
     point = np.zeros(action_dim)  
     
@@ -50,9 +55,9 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342])):
     
     point[0] = L_1 * math.cos(angle[0]) + L_2 * math.cos(angle[0] + angle[1])
     point[1] = L_1 * math.sin(angle[0]) + L_2 * math.sin(angle[0] + angle[1])
-    print("Position (m) :", point)
+    print("Position (m) :", point)  
     
-    return angle, point 
+    return angle, point   
 
 
 def move_to_target_point(target_point, impedance_params, velocity=0.04):  
@@ -81,11 +86,11 @@ def move_to_target_point(target_point, impedance_params, velocity=0.04):
     #     motor_control.move_to_target(target_point) 
     #     dist = np.linalg.norm((curr_point - target_point), ord=2)  
 
-    # curr_angle, curr_point = get_observation() 
+    # curr_angle, curr_point = get_observation()  
     # final_dist = np.linalg.norm((curr_point - target_point), ord=2) 
-    # print("Final dist (m) :", final_dist) 
-    # done = True
-    # return done, final_dist  
+    # print("Final dist (m) :", final_dist)  
+    # done = True  
+    # return done, final_dist   
 
 
 def train(angle_initial=Angle_initial, run_on=False): 

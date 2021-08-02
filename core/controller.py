@@ -130,7 +130,11 @@ class Controller(object):
         self.damping = [50, 50]
 
         return self.stiffness, self.damping
-
+    
+    def get_current_path(self):
+        
+        pass
+    
     def update_velocity(self, ):
         """ update velocity with user's input get from demonstration
             

@@ -11,6 +11,7 @@ using namespace std;
 #include <unistd.h> 
 #include <signal.h>  
 #include <cmath> 
+#include<stdio.h>
 
 #include <pybind11/numpy.h>
 namespace py = pybind11;
@@ -518,7 +519,7 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     Gcan motor_2(can0);   
     motor_1.begin();   
     motor_2.begin();   
-    printf("Hardware set well demonstration start !!!!\n");  
+    printf("Get demonstration start !!!!\n");  
 
     ////////////////////////////////////////////////////////
     // One loop control demonstration
@@ -551,10 +552,7 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
 
     // Catch a Ctrl-C event:  
     // pointer to signal handler
-	void  (*sig_h)(int) = sigint_1_step;   
-
-    // Catch a Ctrl-C event: 
-    signal(SIGINT, sig_h);  
+	void (*sig_h)(int) = sigint_1_step;   
 
     py::buffer_info buff_size_list = buff_size.request(); 
 
@@ -571,8 +569,15 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     int index = 0; 
     int index_buff = 0; 
     int buff_length = 10000; 
+
+    printf("Print enter for starting record !!!!\n");  
+    getchar(); 
+
     while(run_on)  
     {
+        // Catch a Ctrl-C event: 
+        signal(SIGINT, sig_h); 
+          
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
 
