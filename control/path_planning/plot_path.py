@@ -10,10 +10,19 @@ COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple'
           'darkgreen', 'tan', 'salmon', 'gold', 'lightpurple', 'darkred', 'darkblue']
 """ ================================================================================= """
 
-FONT_SIZE = 28
-linewidth = 4
+FONT_SIZE = 28 
+linewidth = 4 
+
+Length = [0.30, 0.15, 0.25, 0.125] 
+L_1 = Length[0] 
+L_2 = Length[2] 
+
+# writing space
+WIDTH = 0.370
+HEIGHT = 0.370
+
 # plt.rcParams['font.family'] = 'Times New Roman'
-# plt.rcParams['font.size'] = FONT_SIZE
+# plt.rcParams['font.size'] = FONT_SIZE 
 # sns.set_theme()
 params = {
 'axes.axisbelow': True,
@@ -45,12 +54,12 @@ params = {
  'ytick.major.size': 1.0,
  'ytick.minor.size': 0.0
  }
-# sns.axes_style(rc=params)
-sns.set(font_scale=2.5)
+# sns.axes_style(rc=params) 
+sns.set(font_scale=2.5) 
 
 
 def plot_real_trajectory(
-    root_path='./motor_control/bin/data/',
+    root_path='./motor_control/bin/data/',  
 ):
     """ Including angle, velocity and torque"""
     angle_list = np.loadtxt(root_path + 'angle_list.txt', skiprows=1),
@@ -142,11 +151,11 @@ def plot_real_2d_path(
     root_path='./motor_control/bin/data/',
     file_name=''
 ):
-    """ plot angle trajectory and cartesian path"""
-    FONT_SIZE = 28
-    linewidth = 4
-    # plt.rcParams['font.family'] = 'Times New Roman'
-    # plt.rcParams['font.size'] = FONT_SIZE
+    """ 
+        plot angle trajectory and cartesian path 
+    """
+    FONT_SIZE = 28 
+    linewidth = 4 
     
     angle_list_e = np.loadtxt(root_path + file_name, delimiter=',', skiprows=1)
 
@@ -159,21 +168,21 @@ def plot_real_2d_path(
     plt.subplots_adjust(wspace=2, hspace=0)
 
     plt.plot(angle_list_1_e, linewidth=linewidth, label='angle 1')
-    plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2')
+    plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2') 
 
     plt.xlabel('time($t$)', fontsize=FONT_SIZE)
     plt.ylabel('$rad', fontsize=FONT_SIZE)
     plt.legend()
 
     plt.subplot(1, 2, 2)
-    L_1 = 0.35
-    L_2 = 0.35
     x = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
     y = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
     
-    plt.plot(x, y, linewidth=linewidth)
-    plt.xlabel('x(m)', fontsize=FONT_SIZE)
-    plt.ylabel('y(m)', fontsize=FONT_SIZE)
+    plt.plot(x, y, linewidth=linewidth) 
+    plt.xlabel('x(m)', fontsize=FONT_SIZE)  
+    plt.ylabel('y(m)', fontsize=FONT_SIZE) 
+    plt.ylim([-WIDTH/2, WIDTH/2])
+    plt.xlim([0., 0.13 + WIDTH])
     # plt.legend()
 
     plt.show()

@@ -205,6 +205,7 @@ if __name__ == "__main__":
     traj = np.loadtxt(root_path + '/' + font_name +
                            '/1_font_' + str(type) + '.txt')
     print("traj :::", np.array(traj).shape)
+    
     # generate_path(traj,
     #               center_shift=np.array([0.16, -WIDTH / 2]),
     #               velocity=0.04, Ts=0.001,
