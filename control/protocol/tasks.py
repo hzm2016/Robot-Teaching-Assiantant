@@ -69,7 +69,7 @@ class Reacher2D(TaskInterface):
         mp = MovementPrimitive(self._space, MovementPrimitive.get_params_from_block(self._space, weights))
         duration = 1 if duration < 0 else duration
         trajectory = mp.get_full_trajectory(duration=duration, frequency=200)
-
+        
         vals = trajectory.get_dict_values()
 
         reward = -self._kinematics.get_loss(vals["j0"][-1], vals["j1"][-1], self._context)

@@ -203,12 +203,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    root_path = '../control/data/font_data'
-    font_name = 'first'
-    type = 1
-    traj = np.loadtxt(root_path + '/' + font_name +
-                           '/1_font_' + str(type) + '.txt')
-    print("traj :::", np.array(traj).shape)
+    # root_path = '../control/data/font_data'
+    # font_name = 'first'
+    # type = 1
+    # traj = np.loadtxt(root_path + '/' + font_name +
+    #                        '/1_font_' + str(type) + '.txt')
+    # print("traj :::", np.array(traj).shape)
     
     # generate_path(traj,
     #               center_shift=np.array([0.16, -WIDTH / 2]),
@@ -233,8 +233,8 @@ if __name__ == "__main__":
     # sample_stroke = cv2.imread(
     #     './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
 
-    # root_path = '../control/data/captured_images/'
-    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
+    root_path = '../control/data/captured_images/'
+    sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
     # cv2.imshow('', ori_img)
 
     # cv2.waitKey(0)
