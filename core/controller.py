@@ -62,6 +62,8 @@ class Controller(object):
         self.stiffness = np.zeros(self.action_dim)
         self.damping = np.zeros_like(self.stiffness)
 
+        self.scalar_distance = False
+
         pass
 
     def guide(self,):
@@ -71,7 +73,7 @@ class Controller(object):
             NotImplementedError: [description]
         """
         raise NotImplementedError
-    
+
     def key_point_matching(self, tgt_pts, in_pts):
 
         matching = hungarian_matching(tgt_pts, in_pts)
@@ -107,15 +109,20 @@ class Controller(object):
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
 
-        x_dis = sum(abs(tgt_pts[tgt_index][:, 0] -
-                    in_pts[in_index][:, 0])) / matching.shape[0]
-        y_dis = sum(abs(tgt_pts[tgt_index][:, 1] -
-                    in_pts[in_index][:, 1])) / matching.shape[0]
-        self.impedance_update_policy(x_dis, y_dis)
+        x_dis = abs(tgt_pts[tgt_index][:, 0] -
+                    in_pts[in_index][:, 0])
+        y_dis = abs(tgt_pts[tgt_index][:, 1] -
+                    in_pts[in_index][:, 1])
+
+        if self.scalar_distance:
+            x_dis = sum(x_dis) / matching.shape[0]
+            y_dis = sum(y_dis) / matching.shape[0]
+
+        self.impedance_update_policy(x_dis, y_dis,tgt_pts[tgt_index])
 
         return x_dis, y_dis
 
-    def impedance_update_policy(self, x_dis, y_dis):
+    def impedance_update_policy(self, x_dis, y_dis, corresponding_points):
         """ Linear update based on the displacement
 
         Args:
@@ -130,14 +137,14 @@ class Controller(object):
         self.damping = [50, 50]
 
         return self.stiffness, self.damping
-    
+
     def get_current_path(self):
-        
+
         pass
-    
+
     def update_velocity(self, ):
         """ update velocity with user's input get from demonstration
-            
+
             args: velocity: m/s
         """
         velocity = 0.04
@@ -161,7 +168,7 @@ class Controller(object):
         self.task.send_way_points(way_points)
 
         # self.task.send_way_points_done()
-        
+
         self.task.send_params_request()
         self.task.send_params(impedance_params)
 
@@ -203,44 +210,44 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    root_path = '../control/data/font_data'
-    font_name = 'first'
-    type = 1
-    traj = np.loadtxt(root_path + '/' + font_name +
-                           '/1_font_' + str(type) + '.txt')
-    print("traj :::", np.array(traj).shape)
-    
+    # root_path = '../control/data/font_data'
+    # font_name = 'first'
+    # type = 1
+    # traj = np.loadtxt(root_path + '/' + font_name +
+    #                   '/1_font_' + str(type) + '.txt')
+    # print("traj :::", np.array(traj).shape)
+
     # generate_path(traj,
     #               center_shift=np.array([0.16, -WIDTH / 2]),
     #               velocity=0.04, Ts=0.001,
     #               plot_show=True)
-    
+
     # writing_controller = Controller(
     #     args, img_processor=None, impedance_level=0)
     # writing_controller.interact_once(path_data,
     #                                  impedance_params=[12.0, 12.0, 0.2, 0.2], velocity=10)
-    
+
     # target_img = cv2.imread(root_path + '/1_font_1.png')
     # writing_controller.interact(path_data, target_img)
 
-    # a = np.array([(3, 4), (7, 8)])
-    # b = np.array([(1, 2), (3, 4), (5, 6)])
-    # from imgprocessor import Postprocessor
-    # c = Controller(Postprocessor(
-    #     {'CROPPING': [478, 418, 1586, 672],'ROTATE': 0, 'BINARIZE': 128, 'RESCALE': 0.8}))
-    #
-    # written_stroke = cv2.imread('./example/example_feedback.png')
-    # sample_stroke = cv2.imread(
-    #     './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
+    a = np.array([(3, 4), (7, 8)])
+    b = np.array([(1, 2), (3, 4), (5, 6)])
+    from imgprocessor import Postprocessor
+    c = Controller(Postprocessor(
+        {'ROTATE': 0, 'BINARIZE': 128}))
+    
+    written_stroke = cv2.imread('./example/example_feedback.png')
+    sample_stroke = cv2.imread(
+        './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
 
-    # root_path = '../control/data/captured_images/'
-    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
-    # cv2.imshow('', ori_img)
+    root_path = '../control/data/captured_images/'
+    sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
+    cv2.imshow('', ori_img)
 
-    # cv2.waitKey(0)
+    cv2.waitKey(0)
 
-    # show_video()
+    show_video()
 
-    # x_dis, y_dis = c.update_impedance(sample_stroke, written_stroke)
-    # print(x_dis, y_dis)
-    # matching = c.key_point_matching(a, b)
+    x_dis, y_dis = c.update_impedance(sample_stroke, written_stroke)
+    print(x_dis, y_dis)
+    matching = c.key_point_matching(a, b)
