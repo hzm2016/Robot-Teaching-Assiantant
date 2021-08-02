@@ -111,7 +111,7 @@ def path_planning(start_point, target_point, velocity=0.04):
         point[0] = x_list[i]
         point[1] = y_list[i]
         angle = IK(point)
-        angle_list.append(angle)  
+        angle_list.append(angle)
         
     return np.array(angle_list), N
     

@@ -71,6 +71,13 @@ class Controller(object):
             NotImplementedError: [description]
         """
         raise NotImplementedError
+    
+    def key_point_matching(self, tgt_pts, in_pts):
+
+        matching = hungarian_matching(tgt_pts, in_pts)
+        matching = np.array(matching)
+
+        return matching
 
     def update_impedance(self, target, input):
         """[summary]
@@ -124,21 +131,15 @@ class Controller(object):
 
         return self.stiffness, self.damping
 
-    def key_point_matching(self, tgt_pts, in_pts):
-
-        matching = hungarian_matching(tgt_pts, in_pts)
-        matching = np.array(matching)
-
-        return matching
-
     def update_velocity(self, ):
-        """ update velocity with user's input
-
+        """ update velocity with user's input get from demonstration
+            
+            args: velocity: m/s
         """
-        velocity = 5
+        velocity = 0.04
         return velocity
 
-    def interact_once(self, traj, impedance_params=[5.0, 5.0, 0.2, 0.2], velocity=10):
+    def interact_once(self, traj, impedance_params=[5.0, 5.0, 0.2, 0.2], velocity=0.04):
         """
             interact with robot once
         """
@@ -203,11 +204,11 @@ if __name__ == "__main__":
     type = 1
     traj = np.loadtxt(root_path + '/' + font_name +
                            '/1_font_' + str(type) + '.txt')
-
-    generate_path(traj,
-                  center_shift=np.array([0.16, -WIDTH / 2]),
-                  velocity=0.04, Ts=0.001,
-                  plot_show=True)
+    print("traj :::", np.array(traj).shape)
+    # generate_path(traj,
+    #               center_shift=np.array([0.16, -WIDTH / 2]),
+    #               velocity=0.04, Ts=0.001,
+    #               plot_show=True)
     
     # writing_controller = Controller(
     #     args, img_processor=None, impedance_level=0)

@@ -165,15 +165,22 @@ def train(angle_initial=Angle_initial, run_on=False):
 
 
 def eval(impedance_params = np.array([14.0, 14.0, 0.4, 0.4])):  
-    
-    way_points = np.loadtxt('angle_list.txt', delimiter=',')   
-    N_way_points = way_points.shape[0]   
+    """
+        With zero impedance and get real-time traj
+    """
+    # way_points = np.loadtxt('angle_list.txt', delimiter=',')   
+    # N_way_points = way_points.shape[0]   
 
-    print("N_way_points :", N_way_points)   
+    # print("N_way_points :", N_way_points)   
 
-    motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-                                    way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
-                                   Angle_initial[0], Angle_initial[1])  
+    # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
+    #                                 way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
+    #                                Angle_initial[0], Angle_initial[1])  
+
+    buff_size = 10000 
+    demo_data = np.zeros((buff_size, 2)) 
+
+    motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data) 
 
     pass 
 
@@ -186,8 +193,10 @@ if __name__ == "__main__":
 
     impedance_params = np.array([14.0, 14.0, 0.2, 0.2])  
     N_way_points = 16357  
-
+    
     angle, point = get_observation(angle_initial=Angle_initial)   
+
+    eval()  
 
     # print("curr_angle :", angle)   
     # print("curr_point :", point)   
@@ -201,7 +210,7 @@ if __name__ == "__main__":
 
     # motor_control.get_demonstration(Angle_initial[0], Angle_initial[1]) 
 
-    move_to_target_point(np.array([0.34, -0.25]), impedance_params, velocity=0.04)  
+    # move_to_target_point(np.array([0.34, -0.25]), impedance_params, velocity=0.04)  
 
     # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.13]), T=3.0) 
     # N = angle_list.shape[0]  

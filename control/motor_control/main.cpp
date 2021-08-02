@@ -467,94 +467,6 @@ double dist_threshold
 }
 
 
-int get_demonstration(double theta_1_initial, double theta_2_initial) 
-{
-    ////////////////////////////////////////////////////////
-    //// Initial Encoder and Motor CAN
-    ////////////////////////////////////////////////////////
-    // Gcan motor_1; 
-    // Gcan motor_2; 
-    // hardware_reset(&motor_1, &motor_2);  
-
-    CANDevice can0((char *) "can0");  
-    can0.begin();  
-    CANDevice can1((char *) "can1");  
-    can1.begin();  
-
-    // motor_1(can1);  
-    // motor_2(can0);  
-    Gcan motor_1(can1);   
-    Gcan motor_2(can0);   
-    motor_1.begin();   
-    motor_2.begin();    
-    printf("Hardware set well demonstration start !!!!\n");  
-
-    ////////////////////////////////////////////////////////
-    // One loop control demonstration
-    ////////////////////////////////////////////////////////
-
-    // string output_torque = root_path + "torque_list.txt"; 
-    // ofstream OutFileTorque(output_torque); 
-    // OutFileTorque << "torque_1" << " " << "torque_2" << "\n";  
-
-    string output_angle = "demonstrated_angle_list.txt";    
-    ofstream OutFileAngle(output_angle);    
-    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
-
-    double theta_1_t = 0.0;   
-    double theta_2_t = 0.0;   
-
-    double d_theta_1_t = 0.0;    
-    double d_theta_2_t = 0.0;    
-
-    double theta_1_e = 0.0;  
-    double theta_2_e = 0.0;  
-
-    double d_theta_1_e = 0.0;  
-    double d_theta_2_e = 0.0;  
-
-    double torque_1 = 0.0;  
-    double torque_2 = 0.0;  
-
-    double torque_1_t = 0.0;  
-    double torque_2_t = 0.0;  
-
-    double pos_1 = 0.0;  
-    double pos_2 = 0.0;   
-
-    run_on = 1; 
-
-    // Catch a Ctrl-C event:
-	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
-
-    // Catch a Ctrl-C event: 
-    signal(SIGINT, sig_h);  
-
-    while(run_on)
-    {
-        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
-        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
-
-        printf(" theta_1_t: %f\n", theta_1_t);  
-        printf(" theta_2_t: %f\n", theta_2_t);  
-
-        OutFileAngle << theta_1_t << "," << theta_2_t << "\n";  
-
-        pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);   
-        pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);   
-
-        // OutFileTorque << torque_1_t << " " << torque_2_t << "\n";   
-
-        // OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";   
-
-        // printf("d_theta_1_t: %f\n", d_theta_1_t);   
-        // printf("d_theta_2_t: %f\n", d_theta_2_t);   
-    }
-
-    return 1;  
-}  
-
-
 void load_path_data(double *theta_1_list, double *theta_2_list)
 {
     ////////////////////////////////////////////////////////
@@ -589,11 +501,107 @@ void load_path_data(double *theta_1_list, double *theta_2_list)
 }
 
 
+int get_demonstration(double theta_1_initial, double theta_2_initial, py::array_t<double> buff_size) 
+{
+    ////////////////////////////////////////////////////////
+    //// Initial Encoder and Motor CAN
+    ////////////////////////////////////////////////////////
+
+    CANDevice can0((char *) "can0");  
+    can0.begin();  
+    CANDevice can1((char *) "can1");  
+    can1.begin();  
+
+    // motor_1(can1);  
+    // motor_2(can0);  
+    Gcan motor_1(can1);   
+    Gcan motor_2(can0);   
+    motor_1.begin();   
+    motor_2.begin();   
+    printf("Hardware set well demonstration start !!!!\n");  
+
+    ////////////////////////////////////////////////////////
+    // One loop control demonstration
+    ////////////////////////////////////////////////////////
+
+    // string output_torque = root_path + "torque_list.txt";  
+    // ofstream OutFileTorque(output_torque);  
+    // OutFileTorque << "torque_1" << " " << "torque_2" << "\n";  
+
+    string output_angle = "demonstrated_angle_list.txt";    
+    ofstream OutFileAngle(output_angle);    
+    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
+
+    double theta_1_t = 0.0;   
+    double theta_2_t = 0.0;   
+
+    double d_theta_1_t = 0.0;    
+    double d_theta_2_t = 0.0;    
+
+    double torque_1 = 0.0;  
+    double torque_2 = 0.0;  
+
+    double torque_1_t = 0.0;  
+    double torque_2_t = 0.0;  
+
+    double pos_1 = 0.0;   
+    double pos_2 = 0.0;   
+
+    run_on = 1;   
+
+    // Catch a Ctrl-C event:  
+    // pointer to signal handler
+	void  (*sig_h)(int) = sigint_1_step;   
+
+    // Catch a Ctrl-C event: 
+    signal(SIGINT, sig_h);  
+
+    // allocate the output buffer
+	py::array_t<double> result = py::array_t<double>(buff_size.size); 
+
+    result.resize({buff_size.shape[0], buff_size.shape[1]}); 
+
+    // acquire buffer info 
+	py::buffer_info theta_list = result.request(); 
+
+    int index = 0; 
+    int index_buff = 0; 
+
+    while(run_on)  
+    {
+        theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
+        theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+
+        printf(" theta_1_t: %f\n", theta_1_t);  
+        printf(" theta_2_t: %f\n", theta_2_t);  
+
+        OutFileAngle << theta_1_t << "," << theta_2_t << "\n";  
+
+        index_buff = index%buff_size.shape[0]; 
+        theta_list[index_buff][0] = theta_1_t; 
+        theta_list[index_buff][1] = theta_2_t; 
+
+        pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);   
+
+        // OutFileTorque << torque_1_t << " " << torque_2_t << "\n";   
+
+        // OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";   
+
+        // printf("d_theta_1_t: %f\n", d_theta_1_t);   
+        // printf("d_theta_2_t: %f\n", d_theta_2_t);   
+        index = index + 1;    
+    }
+
+    return theta_list;  
+}  
+
+
 int move_to_target_point(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
 py::array_t<double> q_1_target, py::array_t<double> q_2_target, int N, 
 double theta_1_initial, double theta_2_initial,  
-double dist_threshold  
+double dist_threshold   
 )
 {
     ////////////////////////////////////////////////////////
