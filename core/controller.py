@@ -7,7 +7,7 @@ import argparse
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import generate_path, WIDTH
-from control.vision_capture.main_functions import capture_image, show_video
+#from control.vision_capture.main_functions import capture_image, show_video
 
 
 def draw_points(points, canvas_size=256):
@@ -49,7 +49,7 @@ class Controller(object):
         self.show_video = True
 
         # initial TCP connection :::
-        self.task = TCPTask('169.254.0.99', 5005)
+        # self.task = TCPTask('169.254.0.99', 5005)
 
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
@@ -90,11 +90,21 @@ class Controller(object):
         """
         if self.img_processor is not None:
             input = self.img_processor.process(input)
+
         tgt_pts, _ = skeletonize(~target)
         in_pts, _ = skeletonize(~input)
 
+        tgt_pts = np.array(tgt_pts)
+        if len(in_pts) > 1:
+            in_pts = np.array([in_pts[1]])
+        else:
+            in_pts = np.array(in_pts)
+
         tgt_pts = np.squeeze(tgt_pts, axis=0)
         in_pts = np.squeeze(in_pts, axis=0)
+
+        # tgt_pts_vis = draw_points(in_pts)
+        # cv2.imwrite('tgt_pts_vis.jpg', tgt_pts_vis)
 
         # tgt_pts_vis = draw_points(tgt_pts)
         # cv2.imwrite('tgt_pts_vis.jpg', tgt_pts_vis)
@@ -120,7 +130,7 @@ class Controller(object):
 
         self.impedance_update_policy(x_dis, y_dis,tgt_pts[tgt_index])
 
-        return x_dis, y_dis
+        return x_dis, y_dis, tgt_pts[tgt_index]
 
     def impedance_update_policy(self, x_dis, y_dis, corresponding_points):
         """ Linear update based on the displacement
@@ -234,20 +244,20 @@ if __name__ == "__main__":
     b = np.array([(1, 2), (3, 4), (5, 6)])
     from imgprocessor import Postprocessor
     c = Controller(Postprocessor(
+        {'ROTATE': 0, 'BINARIZE': 128}), img_processor=Postprocessor(
         {'ROTATE': 0, 'BINARIZE': 128}))
     
-    written_stroke = cv2.imread('./example/example_feedback.png')
-    sample_stroke = cv2.imread(
-        './example/example_traj.png', cv2.IMREAD_GRAYSCALE)
+    written_stroke = cv2.imread('./example/written_image.png')
+    sample_stroke = cv2.imread('./example/example_traj.png', cv2.IMREAD_GRAYSCALE)
 
-    root_path = '../control/data/captured_images/'
-    sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image')
+    # root_path = '../control/data/captured_images/'
+    # sample_stroke, ori_img = capture_image(roo#t_path=root_path, font_name='written_image')
     # cv2.imshow('', ori_img)
 
-    cv2.waitKey(0)
+    # cv2.waitKey(0)
 
-    show_video()
+    # show_video()
 
-    x_dis, y_dis = c.update_impedance(sample_stroke, written_stroke)
-    print(x_dis, y_dis)
+    x_dis, y_dis, tgt = c.update_impedance(sample_stroke, written_stroke)
+    print(x_dis, y_dis, tgt)
     matching = c.key_point_matching(a, b)
