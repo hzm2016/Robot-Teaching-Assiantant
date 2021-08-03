@@ -6,12 +6,19 @@ from tqdm import tqdm
 from PIL import Image
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
+<<<<<<< HEAD
 import argparse
 
 from ..nn.modules import Generator, Discriminator
 from ..utils import DataLoader, ReplayBuffer, to_cuda, Logger
 from ..datasets import ImageDataset
 from .basegan import GAN
+=======
+from nn.modules import Generator, Discriminator
+from utils import ReplayBuffer, to_cuda, Logger
+from datasets import ImageDataset
+from torch.utils.data import DataLoader
+>>>>>>> develop
 
 
 class CycleGAN(GAN):
@@ -20,6 +27,7 @@ class CycleGAN(GAN):
         super().__init__()
 
         self.args = args
+<<<<<<< HEAD
         if mode is 'inference':
             self.init_network_inference(args)
             self.cuda = args.get('CUDA')
@@ -27,6 +35,10 @@ class CycleGAN(GAN):
             self.init_network(args)
             self.cuda = args.cuda
         if mode is 'train':
+=======
+        self.init_networks(args)
+        if train:
+>>>>>>> develop
             self.init_all_optimizer(args)
             self.init_dataset(args)
             self.init_loss(args)
@@ -34,13 +46,7 @@ class CycleGAN(GAN):
         if self.cuda:
             self.to_cuda()
 
-    def load_network(self, key_pairs):
-
-        for key, value in key_pairs.items():
-            getattr(self, key).load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(value).items()})
-
-    def init_network(self, args):
+    def init_networks(self, args):
 
         self.G_A2B = Generator(args.get('INPUT_NC'), args.get('OUTPUT_NC'))
         self.G_B2A = Generator(args.get('OUTPUT_NC'), args.get('INPUT_NC'))
