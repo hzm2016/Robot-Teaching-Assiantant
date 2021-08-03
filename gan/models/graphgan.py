@@ -1,3 +1,4 @@
+from typing import runtime_checkable
 import torch
 import os
 import cv2
@@ -5,7 +6,8 @@ import torch.nn.functional as F
 import argparse
 import numpy as np
 
-from torch_geometric.nn import GATConv, GraphConv, global_max_pool, global_mean_pool, XConv
+from torch_geometric.nn import GATConv, GraphConv, global_max_pool, global_mean_pool, XConv, PointConv, radius_graph, fps, global_max_pool
+from torch.nn import Sequential as Seq, Linear as Lin, ReLU
 from sklearn.metrics import pairwise_distances
 from datasets import SequentialImageDataset
 from utils import ReplayBuffer, Logger, to_cuda
@@ -15,62 +17,188 @@ from basegan import GAN
 from tqdm import tqdm
 
 
-def visulize_points(points,name):
+def visulize_points(points, num, name):
 
-    img_canvas = np.full((128,128),255, np.uint8)
-    points = [points.astype(int)]
-    for l in points:
-        c = (0,0,0)
-        for i in range(0,len(l)-1):
-            cv2.line(img_canvas,(l[i][0],l[i][1]),(l[i+1][0],l[i+1][1]),c,2)
+    num = np.cumsum(num)
+    img_canvas = np.full((128, 128), 255, np.uint8)
+    points = points.astype(int)
+    for idx, value in enumerate(num):
 
-    cv2.imwrite(name,img_canvas)
+        if idx == 0:
+            st = 0
+        else:
+            st = num[idx - 1]
 
-class GraphGeneratorX(torch.nn.Module):
+        ed = num[idx]
 
-    def __init__(self, out_channels=16) -> None:
-        super(GraphGenerator, self).__init__()
-        self.conv1 = GraphConv(2, 8)
-        self.conv2 = GraphConv(8, out_channels)
+        sub_points = points[st:ed]
+        c = (0, 0, 0)
+        for i, _ in enumerate(sub_points[:-1]):
+            cv2.line(img_canvas, (sub_points[i][0], sub_points[i][1]),
+                     (sub_points[i+1][0], sub_points[i+1][1]), c, 2)
 
-        self.conv3 = GraphConv(2, out_channels)
-        self.conv4 = GraphConv(out_channels*3, 2)
+    cv2.imwrite(name, img_canvas)
 
-    def forward_prior(self, x, edge_index):
+    return img_canvas
 
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = F.elu(self.conv1(x, edge_index))
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv2(x, edge_index)
+
+class GraphGeneratorPointNet(torch.nn.Module):
+
+    def __init__(self, out_channels=2) -> None:
+        super(GraphGeneratorPointNet, self).__init__()
+
+        nn = Seq(Lin(2, 64), ReLU(), Lin(64, 64))
+        self.conv1 = PointConv(local_nn=nn)
+
+        nn = Seq(Lin(66, 128), ReLU(), Lin(128, 128))
+        self.conv2 = PointConv(local_nn=nn)
+
+        nn = Seq(Lin(130, 256), ReLU(), Lin(256, 256))
+        self.conv3 = PointConv(local_nn=nn)
+
+        self.lin1 = Lin(256, 256)
+        self.lin2 = Lin(256, 256)
+        self.lin3 = Lin(256, 128)
+
+        nn = Seq(Lin(258, 256), ReLU(), Lin(256, 256))
+        self.conv4 = PointConv(local_nn=nn)
+
+        nn = Seq(Lin(258, 128), ReLU(), Lin(128, 128))
+        self.conv5 = PointConv(local_nn=nn)
+        
+        self.lin6 = Lin(256, 128)
+        self.lin4 = Lin(128, 64)
+        self.lin5 = Lin(64, out_channels)
+
+    def forward_prior(self, pos, edge_index):
+
+        radius = 32
+        batch = torch.zeros(pos.shape[0]).long().cuda()
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv1(None, pos, edge_index))
+
+        radius = 64
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv2(x, pos, edge_index))
+
+        radius = 128
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv3(x, pos, edge_index))
+
+        x = global_max_pool(x, batch)
+
+        x = F.relu(self.lin3(x))
+        # x = F.relu(self.lin2(x))
+        # x = F.dropout(x, p=0.5, training=self.training)
+        # x = self.lin3(x)
+
         return x
 
-    def forward_output(self, x, edge_index, prior):
+    def forward_output(self, pos, edge_index, prior):
 
+        radius = 1
+        batch = torch.zeros(pos.shape[0]).long().cuda()
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv1(None, pos, edge_index))
+
+        radius = 1
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv2(x, pos, edge_index))
+
+        radius = 1
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv3(x, pos, edge_index))
+
+        x = F.relu(self.lin1(x))
+        x = F.relu(self.lin2(x))
+        x = F.dropout(x, p=0.2, training=self.training)
+        x = self.lin3(x)
+
+        radius = 1
         batch_size = x.shape[0]
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = F.elu(self.conv3(x, edge_index))
-
         x = torch.cat([x, prior.repeat(batch_size, 1)], dim=1)
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv4(x, edge_index)
 
-        return torch.sigmoid(x)
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv4(x, pos, edge_index))
+
+        radius = 1
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv5(x, pos, edge_index))
+
+        x = F.relu(self.lin4(x))
+        x = self.lin5(x)
+
+        return x
+
+    def forward_output_single(self, x):
+        
+        x = F.relu(self.lin6(x)) 
+        x = F.relu(self.lin4(x))
+        x = self.lin5(x)
+
+        return x
 
     def forward(self, o, m, c, edge_index_o, edge_index_m, edge_index_c):
 
-        dummy_batch = torch.zeros(1).long().cuda()
+        o_feature = self.forward_prior(o, edge_index_o)
+        m_feature = self.forward_prior(m, edge_index_m)
 
-        o = self.forward_prior(o, edge_index_o)
-        o_feature = global_max_pool(o, dummy_batch)
+        # prior_feature = torch.cat([o_feature, m_feature], dim=1)
+        prior_feature = o_feature - m_feature
+        generated_result = self.forward_output(c, edge_index_c, prior_feature)
+        # generated_result = self.forward_output_single(prior_feature)
+        
+        return generated_result + c, generated_result
 
-        m = self.forward_prior(m, edge_index_m)
-        m_feature = global_max_pool(m, dummy_batch)
 
-        prior_feature = torch.cat([o_feature, m_feature], dim=1)
+class GraphDiscriminatorPointNet(torch.nn.Module):
 
-        generate_result = self.forward_output(c, edge_index_c, prior_feature)
+    def __init__(self, cls_num=1) -> None:
+        super(GraphDiscriminatorPointNet, self).__init__()
 
-        return generate_result + c
+        nn = Seq(Lin(2, 64), ReLU(), Lin(64, 64))
+        self.conv1 = PointConv(local_nn=nn)
+
+        nn = Seq(Lin(66, 128), ReLU(), Lin(128, 128))
+        self.conv2 = PointConv(local_nn=nn)
+
+        nn = Seq(Lin(130, 256), ReLU(), Lin(256, 256))
+        self.conv3 = PointConv(local_nn=nn)
+
+        self.lin1 = Lin(256, 256)
+        self.lin2 = Lin(256, 256)
+        self.lin3 = Lin(256, cls_num)
+
+    def forward(self, pos, edge_index):
+
+        radius = 1
+        batch = torch.zeros(pos.shape[0]).long().cuda()
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv1(None, pos, edge_index))
+
+        # idx = fps(pos, batch, ratio=0.5)
+        # x, pos, batch = x[idx], pos[idx], batch[idx]
+
+        radius = 1
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv2(x, pos, edge_index))
+
+        # idx = fps(pos, batch, ratio=0.25)
+        # x, pos, batch = x[idx], pos[idx], batch[idx]
+
+        radius = 1
+        edge_index = radius_graph(pos, r=radius, batch=batch)
+        x = F.relu(self.conv3(x, pos, edge_index))
+
+        x = global_max_pool(x, batch)
+
+        x = F.relu(self.lin1(x))
+        x = F.relu(self.lin2(x))
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = self.lin3(x)
+
+        return x
+
 
 class GraphGenerator(torch.nn.Module):
 
@@ -116,7 +244,7 @@ class GraphGenerator(torch.nn.Module):
 
         generate_result = self.forward_output(c, edge_index_c, prior_feature)
 
-        return generate_result + c
+        return generate_result + c, c
 
 
 class GraphDiscriminator(torch.nn.Module):
@@ -139,11 +267,12 @@ class GraphDiscriminator(torch.nn.Module):
 
         batch = torch.zeros(1).long().cuda()
         x = global_max_pool(x, batch)
+
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
 
         x = F.dropout(x, p=0.2, training=self.training)
-        x = self.lin3(x)
+        x = F.relu(self.lin3(x))
 
         return x
         # return F.log_softmax(x, dim=-1)
@@ -151,12 +280,12 @@ class GraphDiscriminator(torch.nn.Module):
 
 class GraphGAN(GAN):
 
-    def __init__(self, args, train=True) -> None:
+    def __init__(self, args, mode='train') -> None:
         super().__init__()
         self.cuda = args.cuda
         self.args = args
         self.init_networks(args)
-        if train:
+        if mode == 'train':
             self.init_all_optimizer(args)
             self.init_dataset(args)
             self.init_loss(args)
@@ -171,11 +300,8 @@ class GraphGAN(GAN):
 
     def init_networks(self, args, out_channels=32):
 
-        self.G = GraphGenerator()
-        self.D = GraphDiscriminator()
-
-        self.G.train()
-        self.D.train()
+        self.G = GraphGeneratorPointNet()
+        self.D = GraphDiscriminatorPointNet()
 
     def init_all_optimizer(self, args):
 
@@ -188,7 +314,7 @@ class GraphGAN(GAN):
 
     def init_loss(self, args):
 
-        self.criterion_GAN = torch.nn.MSELoss()
+        self.criterion_GAN = torch.nn.MSELoss() 
         self.criterion_DIS = torch.nn.MSELoss()
 
         self.fake_buffer = ReplayBuffer()
@@ -199,25 +325,31 @@ class GraphGAN(GAN):
                                      batch_size=args.batchSize, shuffle=True, num_workers=args.n_cpu)
 
     def generator_process(self, o_points, m_points, c_points,
-                          edge_index_o, edge_index_m, edge_index_c, target_real):
+                          edge_index_o, edge_index_m, edge_index_c, target_real, l_points=None):
 
         self.optimizer_G.zero_grad()
-        fake_c = self.G(o_points, m_points, c_points,
-                        edge_index_o, edge_index_m, edge_index_c)
+        fake_c, shift = self.G(o_points, m_points, c_points,
+                               edge_index_o, edge_index_m, edge_index_c)
 
-        fake_batch = torch.cat([m_points, c_points], dim=0)
+        fake_batch = torch.cat([m_points, fake_c], dim=0)
 
-        fake_edge = pairwise_distances(fake_batch.cpu().numpy()) < 0.1
+        fake_edge = pairwise_distances(fake_batch.detach().cpu().numpy()) < 0.1
         fake_edge = torch.from_numpy(fake_edge.astype(int)).long().cuda()
         fake_edge = fake_edge.nonzero().t()
 
         pred_fake = self.D(fake_batch, fake_edge)
-        loss_GAN = self.criterion_GAN(pred_fake, target_real) + self.criterion_DIS(fake_c, c_points)
+        loss_REC = self.criterion_DIS(fake_c, c_points) * 128
+        if l_points is not None:
+            loss_GAN = self.criterion_GAN(fake_c, l_points) * 128
+        else:
+            loss_GAN = self.criterion_GAN(pred_fake, target_real)
 
-        loss_GAN.backward(retain_graph=True)
+        loss_G = loss_GAN  # + loss_REC * 0.1
+
+        loss_G.backward()
         self.optimizer_G.step()
 
-        return fake_batch, loss_GAN
+        return fake_batch, loss_G, loss_REC
 
     def discriminator_process(self, fake_batch, real_batch, target_real, target_fake):
 
@@ -227,26 +359,29 @@ class GraphGAN(GAN):
         real_edge = torch.from_numpy(real_edge.astype(int)).long().cuda()
         real_edge = real_edge.nonzero().t()
 
-        fake_edge = pairwise_distances(fake_batch.cpu().numpy()) < 0.1
+        fake_edge = pairwise_distances(fake_batch.detach().cpu().numpy()) < 0.1
         fake_edge = torch.from_numpy(fake_edge.astype(int)).long().cuda()
         fake_edge = fake_edge.nonzero().t()
 
-        pred_real = self.D(real_batch,real_edge)
+        pred_real = self.D(real_batch, real_edge)
         loss_D_real = self.criterion_GAN(pred_real, target_real)
 
-        # fake = self.fake_buffer.push_and_pop(fake_batch)
+        fake = self.fake_buffer.push_and_pop(fake_batch)
         pred_fake = self.D(fake_batch.detach(), fake_edge)
         loss_D_fake = self.criterion_GAN(pred_fake, target_fake)
 
         loss_D = (loss_D_real + loss_D_fake)*0.5
-        
+
         loss_D.backward()
 
         self.optimizer_D.step()
 
-        return loss_D
+        return loss_D, loss_D_real, loss_D_fake
 
-    def train(self,args):
+    def train(self, args):
+
+        self.G.train()
+        self.D.train()
 
         Tensor = torch.cuda.FloatTensor if self.cuda else torch.Tensor
         frequency = self.args.frequency
@@ -260,7 +395,8 @@ class GraphGAN(GAN):
                 o_points = batch['o_points'].float().squeeze(0)
                 m_points = batch['m_points'].float().squeeze(0)
                 c_points = batch['c_points'].float().squeeze(0)
-                real_batch = torch.cat([o_points, c_points],dim=0)
+                l_points = batch['l_points'].float().squeeze(0)
+                real_batch = torch.cat([o_points, c_points], dim=0)
 
                 edge_index_o = batch['edge_index_o']
                 edge_index_m = batch['edge_index_m']
@@ -270,25 +406,18 @@ class GraphGAN(GAN):
                 edge_index_m = edge_index_m[0].nonzero().t()
                 edge_index_c = edge_index_c[0].nonzero().t()
 
-                target_real = Tensor(1).fill_(1.0).unsqueeze(-1)
-                target_fake = Tensor(1).fill_(0.0).unsqueeze(-1)
+                target_real = Tensor(1).fill_(1.).unsqueeze(-1)
+                target_fake = Tensor(1).fill_(0.).unsqueeze(-1)
+                # target_real = torch.tensor([1]).cuda()
+                # target_fake = torch.tensor([0]).cuda()
 
-                fake_batch, loss_G = self.generator_process(
-                    o_points, m_points, c_points, edge_index_o, edge_index_m, edge_index_c,target_real)
+                fake_batch, loss_G, loss_REC = self.generator_process(
+                    o_points, m_points, c_points, edge_index_o, edge_index_m, edge_index_c, target_real, l_points)
 
-                loss_D = self.discriminator_process(
-                     fake_batch, real_batch, target_real, target_fake)
+                loss_D, loss_D_real, loss_D_fake = self.discriminator_process(
+                    fake_batch, real_batch, target_real, target_fake)
 
-            #     A = batch['A']
-            #     B = batch['B']
-            #     target_real = Tensor(A.shape[0]).fill_(1.0).unsqueeze(-1)
-            #     target_fake = Tensor(A.shape[0]).fill_(0.0).unsqueeze(-1)
-
-            #     loss_G, fake_A, fake_B = self.generator_process(
-            #         A, B, target_real)
-            #     loss_D = self.discriminator_process(
-            #         A, B, fake_A, fake_B,  target_real, target_fake)
-                self.logger.log({'loss_G': loss_G, 'loss_D': loss_D},
+                self.logger.log({'loss_G': loss_G, 'loss_REC': loss_REC, 'loss_D': loss_D, 'loss_D_real': loss_D_real, 'loss_D_fake': loss_D_fake},
                                 images=None)
 
             if epoch % frequency == (frequency - 1):
@@ -299,7 +428,7 @@ class GraphGAN(GAN):
             self.D_scheduler.step()
 
     def test(self, args):
-        
+
         self.G.eval()
         self.D.eval()
 
@@ -308,31 +437,48 @@ class GraphGAN(GAN):
 
         os.makedirs(self.args.output_dir + '/fake', exist_ok=True)
         os.makedirs(self.args.output_dir + '/real', exist_ok=True)
+        os.makedirs(self.args.output_dir + '/comb', exist_ok=True)
 
         for i, batch in tqdm(enumerate(test_dataloader)):
-                if self.cuda:
-                    batch = to_cuda(batch)
+            if self.cuda:
+                batch = to_cuda(batch)
 
-                o_points = batch['o_points'].float().squeeze(0)
-                m_points = batch['m_points'].float().squeeze(0)
-                c_points = batch['c_points'].float().squeeze(0)
+            o_points = batch['o_points'].float().squeeze(0)
+            m_points = batch['m_points'].float().squeeze(0)
+            c_points = batch['c_points'].float().squeeze(0)
+            num = batch['num'].cpu().numpy()
 
-                edge_index_o = batch['edge_index_o']
-                edge_index_m = batch['edge_index_m']
-                edge_index_c = batch['edge_index_c']
+            edge_index_o = batch['edge_index_o']
+            edge_index_m = batch['edge_index_m']
+            edge_index_c = batch['edge_index_c']
 
-                edge_index_o = edge_index_o[0].nonzero().t()
-                edge_index_m = edge_index_m[0].nonzero().t()
-                edge_index_c = edge_index_c[0].nonzero().t()
-                
-                fake_c = self.G(o_points, m_points, c_points,
-                        edge_index_o, edge_index_m, edge_index_c)
+            edge_index_o = edge_index_o[0].nonzero().t()
+            edge_index_m = edge_index_m[0].nonzero().t()
+            edge_index_c = edge_index_c[0].nonzero().t()
 
-                fake_c = fake_c.detach().cpu().numpy() * 128
-                c_points = c_points.cpu().numpy() * 128
-                import pdb; pdb.set_trace()
-                visulize_points(fake_c, self.args.output_dir + '/fake/%04d.png' % (i+1))
-                visulize_points(c_points, self.args.output_dir + '/real/%04d.png' % (i+1))
+            fake_c, shift = self.G(o_points, m_points, c_points,
+                                   edge_index_o, edge_index_m, edge_index_c)
+
+            fake = torch.cat([m_points, fake_c], dim=0)
+            fake = fake.detach().cpu().numpy() * 128
+
+            real = torch.cat([o_points, c_points], dim=0)
+            real = real.cpu().numpy() * 128
+
+
+
+            fake = visulize_points(fake, num, self.args.output_dir +
+                            '/fake/%04d.png' % (i+1))
+            real = visulize_points(real, num, self.args.output_dir +
+                            '/real/%04d.png' % (i+1))
+            
+            comb = np.zeros((128, 256))
+            comb[:128,:128] = real
+            comb[:128,128:] = fake
+
+            cv2.imwrite( self.args.output_dir +
+                            '/comb/%04d.png' % (i+1), comb)
+
 
 if __name__ == '__main__':
 
@@ -340,15 +486,15 @@ if __name__ == '__main__':
     parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
     parser.add_argument('--model', type=str,
                         default='CycleGAN', help='type of models')
-    parser.add_argument('--n_epochs', type=int, default=200,
+    parser.add_argument('--n_epochs', type=int, default=20,
                         help='number of epochs of training')
     parser.add_argument('--batchSize', type=int, default=1,
                         help='size of the batches')
     parser.add_argument('--dataroot', type=str, default='data/seq/',
                         help='root directory of the dataset')
-    parser.add_argument('--lr', type=float, default=0.0005,
+    parser.add_argument('--lr', type=float, default=0.001,
                         help='initial learning rate')
-    parser.add_argument('--decay_epoch', type=int, default=100,
+    parser.add_argument('--decay_epoch', type=int, default=10,
                         help='epoch to start linearly decaying the learning rate to 0')
     parser.add_argument('--size', type=int, default=128,
                         help='size of the font_data crop (squared assumed)')
@@ -375,10 +521,10 @@ if __name__ == '__main__':
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
     model = GraphGAN(args)
-    # model.train(args)
 
     key_pairs = {
         'G': '/home/cunjun/Robot-Teaching-Assiantant/gan/graphgan/G_19.pth'
     }
-
+    # model.train(args)
+    model.load_networks(key_pairs)
     model.test(args)
