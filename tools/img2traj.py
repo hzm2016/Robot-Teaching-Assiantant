@@ -40,7 +40,7 @@ def _extract_points(img):
 
 if __name__ == "__main__":
 
-    file_path = '/home/cunjun/Robot-Teaching-Assiantant/gan/data/seq/train/imgs_full'
+    file_path = '/home/cunjun/Robot-Teaching-Assiantant/gan/data/seq/train/imgs_part'
     width, height = 128, 128
     offset = 3.0
     show_animation = True
@@ -58,23 +58,30 @@ if __name__ == "__main__":
         thickness = 1
         cv2.circle(image, center_coordinates, radius, color, thickness)
     elif os.path.isdir(file_path):
-        pls_lst = []        
-        os.makedirs(file_path.replace('imgs_full', 'imgs_full_ske'),exist_ok=True)
+        pls_lst = []     
+        max_length = 0   
+        os.makedirs(file_path.replace('imgs_part', 'imgs_part_points'),exist_ok=True)
         for folder_name in tqdm.tqdm(sorted(glob.glob(file_path + '/*'))):
-            os.makedirs(folder_name.replace('imgs_full', 'imgs_full_ske'),exist_ok=True)
+            os.makedirs(folder_name.replace('imgs_part', 'imgs_part_points'),exist_ok=True)
             for file_name in sorted(glob.glob(folder_name+'/*.jpg')):
                 prefix = file_name[:-4] 
-                # log_name = prefix + '.txt'
-                # out_file = open(log_name, 'w')
+                log_name = prefix + '.txt'
+                # out_file = open(log_name.replace('imgs_part', 'imgs_part_points'),'w')
                 image = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
                 points, images = _extract_points(image)
-                inverse = ~images
-                if inverse.sum() == 0:
-                    print(file_name + ' is empty')
-                    shutil.copy(file_name, file_name.replace('imgs_full', 'imgs_full_ske'))
-                else:
-                    cv2.imwrite(file_name.replace('imgs_full', 'imgs_full_ske'), images)
-
+                if len(points) == 0:
+                    points = [[[0,0]]]
+                points = np.array(points[0])
+                if len(points) > max_length:
+                    max_length = len(points) 
+                    print(max_length)
+                # np.savetxt(out_file, points)
+                # inverse = ~images
+                # if inverse.sum() == 0:
+                #     print(file_name + ' is empty')
+                #     shutil.copy(file_name, file_name.replace('imgs_part', 'imgs_part_points'))
+                # else:
+                #     cv2.imwrite(file_name.replace('imgs_part', 'imgs_part_points'), images)
     else:
         image = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
         points, image = _extract_points(image)
