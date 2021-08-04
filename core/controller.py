@@ -1,5 +1,5 @@
 from tools import skeletonize
-from utils import hungarian_matching
+from .utils import hungarian_matching
 import numpy as np
 import cv2
 import argparse
