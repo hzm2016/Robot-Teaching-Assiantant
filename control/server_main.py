@@ -171,6 +171,8 @@ def train(angle_initial=Angle_initial, run_on=False):
 
     # send movement_done command 
     _server.send_movement_done() 
+    
+    _server.close()
 
 
 def eval(impedance_params = np.array([28.0, 20.0, 0.2, 0.1])):  

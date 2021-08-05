@@ -106,6 +106,9 @@ class TCPTask():
     def read_context(self):
         return self._conn.send_context_request()
     
+    def close(self):
+        self._conn.close()
+    
 
 class TCPServerExample:
     """

@@ -7,7 +7,7 @@ import argparse
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import generate_path, WIDTH
-#from control.vision_capture.main_functions import capture_image, show_video
+from control.vision_capture.main_functions import capture_image, show_video
 
 
 def draw_points(points, canvas_size=256):
@@ -49,7 +49,7 @@ class Controller(object):
         self.show_video = True
 
         # initial TCP connection :::
-        # self.task = TCPTask('169.254.0.99', 5005)
+        self.task = TCPTask('169.254.0.99', 5005)
 
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
@@ -191,8 +191,9 @@ class Controller(object):
         if run_done:
             # print("run_done", run_done)
             written_image, _ = capture_image(
-                root_path=self.root_path + 'captured_images/', font_name='written_image')
-
+                root_path=self.root_path + 'captured_images/', font_name='written_image_test')
+        self.task.close()
+        
     def interact(self, traj, target_img):
         written_image = None
         num_episodes = 5
@@ -220,44 +221,45 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # root_path = '../control/data/font_data'
-    # font_name = 'first'
-    # type = 1
-    # traj = np.loadtxt(root_path + '/' + font_name +
-    #                        '/1_font_' + str(type) + '.txt')
-    # print("traj :::", np.array(traj).shape)
+    root_path = '../control/data/font_data'
+    font_name = 'first'
+    type = 1
+    traj = np.loadtxt(root_path + '/' + font_name +
+                           '/1_font_' + str(type) + '.txt')
+    print("traj :::", np.array(traj).shape)
     
     # generate_path(traj,
     #               center_shift=np.array([0.16, -WIDTH / 2]),
     #               velocity=0.04, Ts=0.001,
     #               plot_show=True)
 
-    # writing_controller = Controller(
-    #     args, img_processor=None, impedance_level=0)
-    # writing_controller.interact_once(path_data,
-    #                                  impedance_params=[12.0, 12.0, 0.2, 0.2], velocity=10)
+    writing_controller = Controller(
+        args, img_processor=None, impedance_level=0)
+
+    writing_controller.interact_once(
+        traj, impedance_params=[20.0, 20.0, 0.2, 0.1], velocity=0.03)
 
     # target_img = cv2.imread(root_path + '/1_font_1.png')
     # writing_controller.interact(path_data, target_img)
 
-    a = np.array([(3, 4), (7, 8)])
-    b = np.array([(1, 2), (3, 4), (5, 6)])
-    from imgprocessor import Postprocessor
-    c = Controller(Postprocessor(
-        {'ROTATE': 0, 'BINARIZE': 128}), img_processor=Postprocessor(
-        {'ROTATE': 0, 'BINARIZE': 128}))
-    
-    written_stroke = cv2.imread('./example/written_image.png')
-    sample_stroke = cv2.imread('./example/example_traj.png', cv2.IMREAD_GRAYSCALE)
+    # a = np.array([(3, 4), (7, 8)])
+    # b = np.array([(1, 2), (3, 4), (5, 6)])
+    # from imgprocessor import Postprocessor
+    # c = Controller(Postprocessor(
+    #     {'ROTATE': 0, 'BINARIZE': 128}), img_processor=Postprocessor(
+    #     {'ROTATE': 0, 'BINARIZE': 128}))
+    #
+    # written_stroke = cv2.imread('./example/written_image.png')
+    # sample_stroke = cv2.imread('./example/example_traj.png', cv2.IMREAD_GRAYSCALE)
 
     # root_path = '../control/data/captured_images/'
-    # sample_stroke, ori_img = capture_image(roo#t_path=root_path, font_name='written_image')
+    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image_test')
     # cv2.imshow('', ori_img)
 
     # cv2.waitKey(0)
 
     # show_video()
 
-    x_dis, y_dis, tgt = c.update_impedance(sample_stroke, written_stroke)
-    print(x_dis, y_dis, tgt)
-    matching = c.key_point_matching(a, b)
+    # x_dis, y_dis, tgt = c.update_impedance(sample_stroke, written_stroke)
+    # print(x_dis, y_dis, tgt)
+    # matching = c.key_point_matching(a, b)
