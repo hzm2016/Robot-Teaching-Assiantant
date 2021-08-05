@@ -794,13 +794,11 @@ double theta_1_initial, double theta_2_initial, int num_episodes
     motor_1.begin();   
     motor_2.begin();   
 
-    std::cout << "Enable Motors Done!!!" << std::endl;   
+    std::cout << "Run One Loop !!!" << std::endl;   
 
     ////////////////////////////////////////////////////////
     // Define file to store data
     ////////////////////////////////////////////////////////
-
-    // string root_path = "home/zhimin/code/8_nus/robotic-teaching/control/motor_control"; 
     string root_path = "";  
 
     string output_torque = root_path + "real_torque_list.txt";  

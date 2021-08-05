@@ -165,7 +165,7 @@ def plot_real_2d_path(
     fig = plt.figure(figsize=(20, 8))
     
     plt.subplot(1, 2, 1)
-    plt.subplots_adjust(wspace=2, hspace=0)
+    plt.subplots_adjust(wspace=0, hspace=0)
 
     plt.plot(angle_list_1_e, linewidth=linewidth, label='angle 1')
     plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2') 
