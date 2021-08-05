@@ -123,7 +123,7 @@ def train(angle_initial=Angle_initial, run_on=False):
         # print("way_points ::::", way_point)
         if way_point == "SEND_DONE": 
             break
-        way_points.append(way_point)
+        way_points.append(way_point.copy())
         line_data = str(way_point[0]) + ',' + str(way_point[1]) + '\n'
         data_file.writelines(line_data) 
         # send_done = _server.wait_send_way_points_done()
@@ -151,8 +151,12 @@ def train(angle_initial=Angle_initial, run_on=False):
     # start move
     if run_on: 
 
-        start_point = forward_ik(way_points[0, :].copy())
-        print("Move to start point :::", start_point) 
+        # start_point = forward_ik(way_points[0, :].copy())
+        # print("Move to start point :::", start_point) 
+        initial_angle = np.zeros(2)
+        initial_angle[0] = way_points[0, 0]
+        initial_angle[1] = way_points[0, 1]
+        start_point = forward_ik(initial_angle) 
         move_impedance_params=np.array([20.0, 16.0, 0.1, 0.1])
 
         move_to_target_point(start_point, move_impedance_params, velocity=0.03)  
@@ -214,7 +218,7 @@ if __name__ == "__main__":
     
     # angle, point = get_observation(angle_initial=Angle_initial)   
 
-    eval()  
+    # eval()  
 
     train()
     
@@ -236,7 +240,7 @@ if __name__ == "__main__":
     # angle_list = path_planning(np.array([0.34, -0.0]), np.array([0.34, -0.13]), T=3.0) 
     # N = angle_list.shape[0]  
 
-    # way_points = np.loadtxt('real_angle_list.txt', delimiter=',', skiprows=1)   
+    # way_points = np.loadtxt('angle_list.txt', delimiter=',', skiprows=1)   
 
     # angle_1_list = way_points[:, 0]  
     # angle_2_list = way_points[:, 1]  
