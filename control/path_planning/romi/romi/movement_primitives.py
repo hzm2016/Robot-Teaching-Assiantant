@@ -20,6 +20,7 @@ class MovementSpace:
         """
         self.n_features = len(centers)
         self.n_dim = len(group.refs)
+        
         self.n_params = self.n_features * self.n_dim
         self.group = group
         self.centers = centers
@@ -117,7 +118,8 @@ class MovementPrimitive(Movement):
         ctr_time, z, n_points = MovementPrimitive.get_timing(frequency, duration)
         phi = self.movement_space.phi(z)
         y = np.array([np.matmul(phi, self.params[ref]) for ref in self.movement_space.group.refs]).T
-        return NamedTrajectoryBase(self.movement_space.group.refs, np.array([ctr_time] * n_points), y)
+        return NamedTrajectoryBase(self.movement_space.group.refs,
+                                   np.array([ctr_time] * n_points), y)
 
     def get_full_trajectory_from_z(self, z, ctr_time=0.1):
         phi = self.movement_space.phi(z)
