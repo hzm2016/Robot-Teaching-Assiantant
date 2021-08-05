@@ -35,7 +35,7 @@ class NamedTrajectoryBase:
     """
         A trajectory is a ordered sequence of NamedPoints with the duration of the transition between one point and the following.
     """
-
+    
     def __init__(self, refs, durations, values):
         """
             refs: list of M references
@@ -58,7 +58,7 @@ class NamedTrajectoryBase:
             :rtype: None
         """
         ret = {
-           'refs': self.refs,
+            'refs': self.refs,
             'duration': self.duration,
             'values': self.values
         }

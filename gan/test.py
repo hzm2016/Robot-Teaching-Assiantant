@@ -14,7 +14,7 @@ def main(args):
     }
 
     model = eval(args.model)(args, train=False)
-    model.load_network(key_pairs)
+    model.load_networks(key_pairs)
     model.test()
 
 

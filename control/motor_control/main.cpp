@@ -767,7 +767,7 @@ double dist_threshold
 int run_one_loop(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
 py::array_t<double> theta_1_target, py::array_t<double> theta_2_target, int Num_waypoints,  
-double theta_1_initial, double theta_2_initial   
+double theta_1_initial, double theta_2_initial, int num_episodes
 )  
 {
     //////////////////////////////////////////////////////// 
@@ -794,13 +794,11 @@ double theta_1_initial, double theta_2_initial
     motor_1.begin();   
     motor_2.begin();   
 
-    std::cout << "Enable Motors Done!!!" << std::endl;   
+    std::cout << "Run One Loop !!!" << std::endl;   
 
     ////////////////////////////////////////////////////////
     // Define file to store data
     ////////////////////////////////////////////////////////
-
-    // string root_path = "home/zhimin/code/8_nus/robotic-teaching/control/motor_control"; 
     string root_path = "";  
 
     string output_torque = root_path + "real_torque_list.txt";  
@@ -895,7 +893,7 @@ double theta_1_initial, double theta_2_initial
     }
 
     run_on = 1; 
-    while (run_on) 
+    for (int epi=0; epi < num_episodes; epi=epi+1)
     {
         // Catch a Ctrl-C event: 
         signal(SIGINT, sig_h); 
@@ -950,7 +948,25 @@ double theta_1_initial, double theta_2_initial
             OutFileTorque << torque_1_o << "," << torque_2_o << "\n";   
 
             OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n"; 
+            
+            if (run_on==0)
+            {
+                break; 
+            } 
+            else
+            {
+
+            }
         }
+        if (run_on==0)
+        {
+            break; 
+        } 
+        else
+        {
+
+        }
+        printf("Episode: %f\n", epi);    
     }    
     // for(int index=0; index<Num_waypoints; index=index+1)  
     // {
