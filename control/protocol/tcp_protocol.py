@@ -141,6 +141,9 @@ class Server(HyperSocket):
     
     def wait_send_way_points_done(self):
         return self._wait_cmd("SEND DONE")
+    
+    def close(self):
+        self.socket.close()
 
 
 class Client(HyperSocket):
