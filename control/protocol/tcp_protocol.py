@@ -61,8 +61,8 @@ class Server(HyperSocket):
     def __init__(self, port: int):
         self._port = port
 
-        socket_init = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket = socket_init.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.socket = socket_init.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(("", port))
         self.socket.listen()
 
@@ -152,8 +152,9 @@ class Client(HyperSocket):
     def __init__(self, ip: str, port: int):
         self._port = port
 
-        socket_init = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket = socket_init.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # socket_init = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.socket = socket_init.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # print(socket)
         self.socket.connect((ip, port))
 
