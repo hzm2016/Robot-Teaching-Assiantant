@@ -3,7 +3,7 @@
 import argparse
 import os
 import torch
-from models import *
+from models import CycleGAN
 
 def main(args):
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
                         help='number of epochs of training')
     parser.add_argument('--batchSize', type=int, default=8,
                         help='size of the batches')
-    parser.add_argument('--dataroot', type=str, default='data/lantingkai/',
+    parser.add_argument('--dataroot', type=str, default='./gan/data/lantingkai/',
                         help='root directory of the dataset')
     parser.add_argument('--lr', type=float, default=0.0005,
                         help='initial learning rate')

@@ -1,4 +1,5 @@
 from typing import runtime_checkable
+import pandas as pd
 import torch
 import os
 import cv2
@@ -15,6 +16,8 @@ from torch.utils.data import DataLoader
 from torch.nn import Linear
 from basegan import GAN
 from tqdm import tqdm
+from scipy.spatial.distance import cdist
+from scipy.optimize import linear_sum_assignment
 
 
 def visulize_points(points, num, name):
@@ -37,7 +40,12 @@ def visulize_points(points, num, name):
             cv2.line(img_canvas, (sub_points[i][0], sub_points[i][1]),
                      (sub_points[i+1][0], sub_points[i+1][1]), c, 2)
 
-    cv2.imwrite(name, img_canvas)
+    sub_points = points[ed:]
+    c = (0, 0, 0)
+    for i, _ in enumerate(sub_points[:-1]):
+        cv2.line(img_canvas, (sub_points[i][0], sub_points[i][1]),
+                    (sub_points[i+1][0], sub_points[i+1][1]), c, 2)
+    # cv2.imwrite(name, img_canvas)
 
     return img_canvas
 
@@ -72,25 +80,22 @@ class GraphGeneratorPointNet(torch.nn.Module):
 
     def forward_prior(self, pos, edge_index):
 
-        radius = 32
+        radius = 0.2
         batch = torch.zeros(pos.shape[0]).long().cuda()
         edge_index = radius_graph(pos, r=radius, batch=batch)
         x = F.relu(self.conv1(None, pos, edge_index))
 
-        radius = 64
+        radius = 0.4
         edge_index = radius_graph(pos, r=radius, batch=batch)
         x = F.relu(self.conv2(x, pos, edge_index))
 
-        radius = 128
+        radius = 0.6
         edge_index = radius_graph(pos, r=radius, batch=batch)
         x = F.relu(self.conv3(x, pos, edge_index))
 
-        x = global_max_pool(x, batch)
+        x = global_mean_pool(x, batch)
 
         x = F.relu(self.lin3(x))
-        # x = F.relu(self.lin2(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
-        # x = self.lin3(x)
 
         return x
 
@@ -143,10 +148,10 @@ class GraphGeneratorPointNet(torch.nn.Module):
         o_feature = self.forward_prior(o, edge_index_o)
         m_feature = self.forward_prior(m, edge_index_m)
 
-        # prior_feature = torch.cat([o_feature, m_feature], dim=1)
-        prior_feature = o_feature - m_feature
-        generated_result = self.forward_output(c, edge_index_c, prior_feature)
-        # generated_result = self.forward_output_single(prior_feature)
+        prior_feature = torch.cat([o_feature, m_feature], dim=1)
+        # prior_feature = o_feature - m_feature
+        # generated_result = self.forward_output(c, edge_index_c, prior_feature)
+        generated_result = self.forward_output_single(prior_feature)
         
         return generated_result + c, generated_result
 
@@ -194,7 +199,7 @@ class GraphDiscriminatorPointNet(torch.nn.Module):
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
-        x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin3(x)
 
         return x
@@ -315,7 +320,8 @@ class GraphGAN(GAN):
     def init_loss(self, args):
 
         self.criterion_GAN = torch.nn.MSELoss() 
-        self.criterion_DIS = torch.nn.MSELoss()
+        self.criterion_DIS = torch.nn.MSELoss(reduction='mean')
+        self.criterion_REC = torch.nn.MSELoss()
 
         self.fake_buffer = ReplayBuffer()
 
@@ -325,7 +331,7 @@ class GraphGAN(GAN):
                                      batch_size=args.batchSize, shuffle=True, num_workers=args.n_cpu)
 
     def generator_process(self, o_points, m_points, c_points,
-                          edge_index_o, edge_index_m, edge_index_c, target_real, l_points=None):
+                          edge_index_o, edge_index_m, edge_index_c, target_real, dist_dis=None, l_points=None):
 
         self.optimizer_G.zero_grad()
         fake_c, shift = self.G(o_points, m_points, c_points,
@@ -337,14 +343,20 @@ class GraphGAN(GAN):
         fake_edge = torch.from_numpy(fake_edge.astype(int)).long().cuda()
         fake_edge = fake_edge.nonzero().t()
 
-        pred_fake = self.D(fake_batch, fake_edge)
-        loss_REC = self.criterion_DIS(fake_c, c_points) * 128
         if l_points is not None:
-            loss_GAN = self.criterion_GAN(fake_c, l_points) * 128
-        else:
+            loss_DIS = self.criterion_DIS(fake_c, l_points) * 128
+            loss_G = loss_DIS  
+        elif dist_dis is not None:
+            loss_DIS = self.criterion_DIS(shift, dist_dis.repeat(shift.shape[0],1)) * 128
+            pred_fake = self.D(fake_batch, fake_edge)
             loss_GAN = self.criterion_GAN(pred_fake, target_real)
+            loss_G = loss_GAN + loss_DIS
+        else:
+            pred_fake = self.D(fake_batch, fake_edge)
+            loss_GAN = self.criterion_GAN(pred_fake, target_real)
+            loss_G = loss_GAN
 
-        loss_G = loss_GAN  # + loss_REC * 0.1
+        loss_REC = self.criterion_REC(fake_c, c_points) * 128
 
         loss_G.backward()
         self.optimizer_G.step()
@@ -395,7 +407,8 @@ class GraphGAN(GAN):
                 o_points = batch['o_points'].float().squeeze(0)
                 m_points = batch['m_points'].float().squeeze(0)
                 c_points = batch['c_points'].float().squeeze(0)
-                l_points = batch['l_points'].float().squeeze(0)
+                l_points = batch['l_points'].float().squeeze(0) if 'l_points' in batch.keys() else None
+                dist_dis = batch['dist_dis']
                 real_batch = torch.cat([o_points, c_points], dim=0)
 
                 edge_index_o = batch['edge_index_o']
@@ -412,7 +425,7 @@ class GraphGAN(GAN):
                 # target_fake = torch.tensor([0]).cuda()
 
                 fake_batch, loss_G, loss_REC = self.generator_process(
-                    o_points, m_points, c_points, edge_index_o, edge_index_m, edge_index_c, target_real, l_points)
+                    o_points, m_points, c_points, edge_index_o, edge_index_m, edge_index_c, target_real, dist_dis, l_points)
 
                 loss_D, loss_D_real, loss_D_fake = self.discriminator_process(
                     fake_batch, real_batch, target_real, target_fake)
@@ -433,7 +446,7 @@ class GraphGAN(GAN):
         self.D.eval()
 
         test_dataloader = DataLoader(SequentialImageDataset(args.dataroot),
-                                     batch_size=args.batchSize, shuffle=True, num_workers=args.n_cpu)
+                                     batch_size=args.batchSize, shuffle=False, num_workers=args.n_cpu)
 
         os.makedirs(self.args.output_dir + '/fake', exist_ok=True)
         os.makedirs(self.args.output_dir + '/real', exist_ok=True)
@@ -446,7 +459,9 @@ class GraphGAN(GAN):
             o_points = batch['o_points'].float().squeeze(0)
             m_points = batch['m_points'].float().squeeze(0)
             c_points = batch['c_points'].float().squeeze(0)
+            l_points = batch['l_points'].float().squeeze(0)
             num = batch['num'].cpu().numpy()
+            m_num = batch['m_num'].cpu().numpy()
 
             edge_index_o = batch['edge_index_o']
             edge_index_m = batch['edge_index_m']
@@ -465,9 +480,7 @@ class GraphGAN(GAN):
             real = torch.cat([o_points, c_points], dim=0)
             real = real.cpu().numpy() * 128
 
-
-
-            fake = visulize_points(fake, num, self.args.output_dir +
+            fake = visulize_points(fake, m_num, self.args.output_dir +
                             '/fake/%04d.png' % (i+1))
             real = visulize_points(real, num, self.args.output_dir +
                             '/real/%04d.png' % (i+1))
@@ -476,7 +489,7 @@ class GraphGAN(GAN):
             comb[:128,:128] = real
             comb[:128,128:] = fake
 
-            cv2.imwrite( self.args.output_dir +
+            cv2.imwrite(self.args.output_dir +
                             '/comb/%04d.png' % (i+1), comb)
 
 
@@ -486,7 +499,7 @@ if __name__ == '__main__':
     parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
     parser.add_argument('--model', type=str,
                         default='CycleGAN', help='type of models')
-    parser.add_argument('--n_epochs', type=int, default=20,
+    parser.add_argument('--n_epochs', type=int, default=200,
                         help='number of epochs of training')
     parser.add_argument('--batchSize', type=int, default=1,
                         help='size of the batches')
@@ -494,10 +507,8 @@ if __name__ == '__main__':
                         help='root directory of the dataset')
     parser.add_argument('--lr', type=float, default=0.001,
                         help='initial learning rate')
-    parser.add_argument('--decay_epoch', type=int, default=10,
+    parser.add_argument('--decay_epoch', type=int, default=100,
                         help='epoch to start linearly decaying the learning rate to 0')
-    parser.add_argument('--size', type=int, default=128,
-                        help='size of the font_data crop (squared assumed)')
     parser.add_argument('--input_nc', type=int, default=1,
                         help='number of channels of input font_data')
     parser.add_argument('--output_nc', type=int, default=1,
@@ -508,10 +519,6 @@ if __name__ == '__main__':
                         help='number of cpu threads to use during batch generation')
     parser.add_argument('--frequency', type=int, default=20,
                         help='frequency of saving trained model')
-    parser.add_argument('--sequential', action='store_true',
-                        help='if the dataset have a sequence')
-    parser.add_argument('--ske', action='store_true',
-                        help='if the dataset have a skeleton input')
     parser.add_argument('--output_dir', type=str,
                         default='./output', help='place to output result')
     args = parser.parse_args()
@@ -523,8 +530,8 @@ if __name__ == '__main__':
     model = GraphGAN(args)
 
     key_pairs = {
-        'G': '/home/cunjun/Robot-Teaching-Assiantant/gan/graphgan/G_19.pth'
+        'G': '/home/cunjun/Robot-Teaching-Assiantant/gan/graphgan/G_59.pth'
     }
-    # model.train(args)
-    model.load_networks(key_pairs)
+    model.train(args)
+    # model.load_networks(key_pairs)
     model.test(args)
