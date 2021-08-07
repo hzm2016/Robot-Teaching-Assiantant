@@ -1,5 +1,5 @@
 from tools import skeletonize
-from utils import hungarian_matching
+from .utils import hungarian_matching
 import numpy as np
 import cv2
 import argparse
@@ -49,7 +49,7 @@ class Controller(object):
         self.show_video = True
 
         # initial TCP connection :::
-        self.task = TCPTask('169.254.0.99', 5005)
+        # self.task = TCPTask('169.254.0.99', 5005)
 
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
@@ -165,30 +165,37 @@ class Controller(object):
             interact with robot once
         """
         # check motor and encode well before experiments
+        print('+' * 30, 'Hardware check', '+' * 50)
         angle_initial = self.task.wait_encoder_check()
-        print("Angle_initial (rad) :", angle_initial)
+        # print("Angle_initial (rad) :", angle_initial)
 
         # check the whole path
+        print('+' * 30, 'Check Path', '+' * 50)
         way_points = generate_path(traj,
                                    center_shift=np.array([0.16, -WIDTH / 2]),
                                    velocity=velocity, Ts=0.001,
                                    plot_show=False)
 
+        print('+' * 30, 'Start Send Waypoints !', '+' * 50)
         self.task.send_way_points_request()
         self.task.send_way_points(way_points)
 
         # self.task.send_way_points_done()
-
+        print('+' * 30, 'Start Send Impedance Parameters !', '+' * 50)
         self.task.send_params_request()
+        print("Stiffness :", impedance_params[:2])
+        print("Damping :", impedance_params[2:])
         self.task.send_params(impedance_params)
 
         if self.args.show_video:
             show_video()
 
+        print('+' * 50, 'Start Move !', '+' * 50)
         # video record for trail :::
         run_done = self.task.get_movement_check()
 
         if run_done:
+            print('+' * 50, 'Start Capture Image !', '+' * 50)
             # print("run_done", run_done)
             written_image, _ = capture_image(
                 root_path=self.root_path + 'captured_images/', font_name='written_image_test')
@@ -237,7 +244,7 @@ if __name__ == "__main__":
         args, img_processor=None, impedance_level=0)
 
     writing_controller.interact_once(
-        traj, impedance_params=[20.0, 20.0, 0.2, 0.1], velocity=0.03)
+        traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.03)
 
     # target_img = cv2.imread(root_path + '/1_font_1.png')
     # writing_controller.interact(path_data, target_img)
@@ -255,7 +262,7 @@ if __name__ == "__main__":
     # root_path = '../control/data/captured_images/'
     # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image_test')
     # cv2.imshow('', ori_img)
-
+    #
     # cv2.waitKey(0)
 
     # show_video()

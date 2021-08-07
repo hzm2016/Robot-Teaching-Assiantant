@@ -7,7 +7,8 @@ import cv2
 import torchvision.transforms as transforms
 import numpy as np
 
-from tools import skeletonize, stroke2img
+from tools import skeletonize, stroke2img, svg2img
+from tqdm import tqdm
 from .learner import Learner
 from .controller import Controller
 from .utils import load_class
@@ -73,6 +74,17 @@ class Executor(object):
                            ]
         self.pre_process = transforms.Compose(pre_process)
 
+        assert 'GRAPHICS_TXT' in args.keys(), 'Please provide a graphic list'
+        graphic_list = args.get('GRAPHICS_TXT')
+        input_lines = open(graphic_list, 'r').readlines()
+        self.char_list = {}
+        logging.info('Loading character list')
+
+        for line in tqdm(input_lines):
+            char_info = eval(line)
+            char = char_info['character']
+            self.char_list[char] = char_info
+
     def __init_network(self, args):
 
         self.gan = load_class(self.gan_type)(
@@ -117,15 +129,18 @@ class Executor(object):
         return cv2.imread('./example/example_feedback.png')
         # raise NotImplementedError
 
-    def sample_stroke(self, stroke, written_stroke=None):
-        """ For future development, decompose one character into several strokes
+    def sample_character(self, stroke, written_character=None):
+        """ For future development, decompose one character into several characters
         """
-        if written_stroke is None:
+        if written_character is None:
             return stroke2img(self.font_type, stroke, self.font_size)
         else:
             source_image = np.array(stroke2img(
                 self.font_type, stroke, self.font_size))
-            return self.__generate_written_traj(written_stroke, source_image)
+            return self.__generate_written_traj(written_character, source_image)
+
+    def stylization(self, img, written_img = None):
+        pass
 
     def __reset_learner(self,):
         """ Reset learner model
@@ -167,49 +182,72 @@ class Executor(object):
 
     def pipeline(self,):
         """ Full pipeline
-        Obtain target stroke -> generate target stroke's trajectory -> Interact with learner -> Get learner output
+        Obtain target character -> generate target character's trajectory -> Interact with learner -> Get learner output
         """
 
         while True:
 
-            stroke = input('Please provide a stroke you want to learn: ')
+            character = input('Please provide a character you want to learn: ')
             written_image = None
 
-            if stroke is ' ':
+            if len(character) > 1:
+                logging.warning('Please input once character only')
+                continue
+            
+            if character is ' ':
                 break
 
+            if character in self.char_list:
+                logging.info('We find the character for you')
+            else:
+                logging.warning('Sorry, the character is not supported, please try annother one')
+                break
+            
+            char_info = self.char_list[character]
+            strokes = char_info['strokes']
+
+            img_list = []
+            for stroke in strokes:
+                img_list.append(svg2img(stroke))
+
             while not self.learner.satisfied:
+                
+                
+                # character_img = self.sample_character(character, written_image)
+                # character_img = np.array(character_img)
+                img_ske_list = []
+                traj_list = []
 
-                stroke_img = self.sample_stroke(stroke, written_image)
-
-                if stroke_img is None:
-                    logging.warning(
-                        'Provided stroke cannot be found in this font, please provide another one')
-                    break
-
-                stroke_img = np.array(stroke_img)
-                traj, traj_img = skeletonize(~stroke_img)
-
-                # if written_image is not None:
-                #     cv2.imshow('',stroke_img)
-                #     cv2.waitKey(0)
-                #     cv2.imwrite('./new.png', stroke_img)
-                #     cv2.imshow('',traj_img)
-                #     cv2.waitKey(0)
-                #     cv2.imwrite('./new_traj.png', traj_img)
+                for img in img_list:
+                    traj, traj_img = skeletonize(~img)
+                    img_ske_list.append(traj_img)
+                    # cv2.imshow('',img)
+                    # cv2.waitKey(0)
 
                 if self.save_traj:
-                    save_traj_name = self.__save_stroke_traj(stroke, traj)
+                    save_traj_name = self.__save_stroke_traj(character, traj)
                     cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
-                    logging.info('{} traj stored'.format(stroke))
+                    logging.info('{} traj stored'.format(character))
 
                 if self.generation_only:
-
                     break
 
-                written_image = self.controller.interact(traj, stroke_img)
+                written_image = self.controller.interact(traj, img_ske_list)
 
         self.__quit()
 
         # cv2.imshow('',stroke_img)
         # cv2.waitKey(0)
+
+        # if character_img is None:
+        #     logging.warning(
+        #         'Provided character cannot be found in this font, please provide another one')
+        #     break
+
+        # if written_image is not None:
+        #     cv2.imshow('',stroke_img)
+        #     cv2.waitKey(0)
+        #     cv2.imwrite('./new.png', stroke_img)
+        #     cv2.imshow('',traj_img)
+        #     cv2.waitKey(0)
+        #     cv2.imwrite('./new_traj.png', traj_img)
