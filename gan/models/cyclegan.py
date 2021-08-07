@@ -6,9 +6,9 @@ from tqdm import tqdm
 from PIL import Image
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
-from ..nn.modules import Generator, Discriminator
-from ..utils import ReplayBuffer, to_cuda, Logger
-from ..datasets import ImageDataset
+from gan.nn.modules import Generator, Discriminator
+from gan.utils import ReplayBuffer, to_cuda, Logger
+from gan.datasets import ImageDataset
 from .basegan import GAN
 from torch.utils.data import DataLoader
 
@@ -19,11 +19,11 @@ class CycleGAN(GAN):
         super().__init__()
 
         self.args = args
-        if mode is 'inference':
+        if mode == 'inference':
             self.init_network_inference(args)
             self.cuda = args.get('CUDA')
         else:
-            self.init_network(args)
+            self.init_networks(args)
             self.cuda = args.cuda
             self.init_all_optimizer(args)
             self.init_dataset(args)
@@ -34,11 +34,11 @@ class CycleGAN(GAN):
 
     def init_networks(self, args):
 
-        self.G_A2B = Generator(args.get('INPUT_NC'), args.get('OUTPUT_NC'))
-        self.G_B2A = Generator(args.get('OUTPUT_NC'), args.get('INPUT_NC'))
+        self.G_A2B = Generator(args.input_nc, args.output_nc)
+        self.G_B2A = Generator(args.output_nc, args.input_nc)
 
-        self.D_A = Discriminator(args.get('INPUT_NC'))
-        self.D_B = Discriminator(args.get('OUTPUT_NC'))
+        self.D_A = Discriminator(args.input_nc)
+        self.D_B = Discriminator(args.output_nc)
 
     def init_network_inference(self, args):
 
