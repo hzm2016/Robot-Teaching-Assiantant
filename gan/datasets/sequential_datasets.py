@@ -10,7 +10,9 @@ from sklearn.metrics import pairwise_distances
 from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
-
+from scipy.stats import wasserstein_distance
+from scipy.spatial.distance import cdist
+from scipy.optimize import linear_sum_assignment
 
 class SequentialImageDataset(Dataset):
     def __init__(self, root, unaligned=False, mode='train'):
@@ -23,7 +25,7 @@ class SequentialImageDataset(Dataset):
         self._form_dataset(img_dirs_part_points)
 
     @staticmethod
-    def rotate(points, angle=30):
+    def rotate(points, angle=15):
 
         x_mean = points[:, 0].mean()
         y_mean = points[:, 1].mean()
@@ -38,7 +40,7 @@ class SequentialImageDataset(Dataset):
 
         o = np.atleast_2d(origin)
         p = np.atleast_2d(points)
-        return np.clip(np.squeeze((R @ (p.T-o.T) + o.T).T), 0, 127)
+        return np.squeeze((R @ (p.T-o.T) + o.T).T)
 
     @staticmethod
     def scale(points, range=0.3):
@@ -69,12 +71,27 @@ class SequentialImageDataset(Dataset):
 
         return n_points
 
-    def cut(self, points):
+    def cut(self, points, ratio=0.1):
 
-        raise NotImplementedError
+        if points.shape[0] < 5:
+            return points
+            
+        if random.uniform(0, 1) > 0.5:
+            rt_points = points[int(ratio * points.shape[0]):]
+        else:
+            rt_points = points[:-int(ratio * points.shape[0])]
 
-    def drop(self, points):
-        raise NotImplementedError
+        return rt_points
+
+    def drop(self, points, ratio=0.1):
+        
+        if points.shape[0] < 5:
+            return points
+
+        index = random.sample(range(points.shape[0]), int(
+            points.shape[0] * (1-ratio)))
+
+        return points[sorted(index)]
 
     def _rank_file_accd_num(self, all_files):
 
@@ -91,9 +108,9 @@ class SequentialImageDataset(Dataset):
 
     def aug_points(self, points):
 
-        func_list = [self.rotate, self.shift, self.scale]
-        func_index = random.randint(0, 2)
-        # func_index =
+        func_list = [self.rotate, self.shift, self.scale, self.drop, self.cut]
+        func_index = random.randint(0, 4)
+
         m_points = func_list[func_index](points)
 
         return m_points
@@ -101,11 +118,10 @@ class SequentialImageDataset(Dataset):
     def group_aug_points(self, points):
 
         func_list = [self.rotate, self.shift, self.scale]
-        func_index = random.randint(0, 1)
-        func_index = 2
-        for func_index in range(3):
-            points = func_list[func_index](points)
+        func_index = random.randint(1, 1)
 
+        # for func_index in range(3):
+        points = func_list[func_index](points)
         return points
 
     def form_train_sample(self, file_list):
@@ -113,12 +129,17 @@ class SequentialImageDataset(Dataset):
         points_list = []
         modified_points_list = []
         num_list = []
+        modified_num_list = []
+        self.determinstic = True
 
         for file_name in file_list[:-1]:
             points = np.loadtxt(file_name)
             points_list.append(points)
             num_list.append(points.shape[0])
-            # modified_points_list.append(self.aug_points(points))
+            if not self.determinstic:
+                aug_points = self.aug_points(points)
+                modified_num_list.append(aug_points.shape[0])
+                modified_points_list.append(aug_points)
 
         cur_points = np.loadtxt(file_list[-1])
         edge_index_c = pairwise_distances(cur_points) < 12.8
@@ -129,35 +150,55 @@ class SequentialImageDataset(Dataset):
         edge_index_ori = edge_index_ori.astype(int)
 
         # For deterministic model
-        modified_points_list = self.group_aug_points(
-            np.concatenate([points_list, cur_points]))
-        last_index = cur_points.shape[0]
-        label_points = modified_points_list[-last_index:, :]
-        modified_points_list = modified_points_list[:-last_index, :]
+        c_points = copy.deepcopy(cur_points)
+        if self.determinstic:
+            modified_points_list = self.group_aug_points(
+                np.concatenate([points_list, c_points]))
+            last_index = c_points.shape[0]
+            label_points = modified_points_list[-last_index:, :]
+            modified_points_list = modified_points_list[:-last_index, :]
+        else:
+            modified_points_list = np.concatenate(modified_points_list)
 
-        # modified_points_list = np.concatenate(modified_points_list)
         edge_index_modified = pairwise_distances(modified_points_list) < 12.8
         edge_index_modified = edge_index_modified.astype(int)
 
         num_list = np.array(num_list)
+        if len(modified_num_list) > 0:
+            modified_num_list = np.array(modified_num_list)
+        else:
+            modified_num_list = np.array(num_list)
+
+        dist_dis_x = wasserstein_distance(modified_points_list[:,0], points_list[:,0])
+        dist_dis_y = wasserstein_distance(modified_points_list[:,1], points_list[:,1])
 
         # print(modified_points_list- points_list)
         if self.normalize:
             modified_points_list = modified_points_list / 128.0
             points_list = points_list / 128.0
             cur_points = cur_points / 128.0
-            # label_points = label_points / 128.0
+            dist_dis_x = dist_dis_x / 128.0
+            dist_dis_y = dist_dis_y / 128.0
+        
 
-        return {
+        rt_dict = {
             'm_points': torch.from_numpy(modified_points_list),
             'o_points': torch.from_numpy(points_list),
             'c_points': torch.from_numpy(cur_points),
-            # 'l_points': torch.from_numpy(label_points),
             'edge_index_o': torch.from_numpy(edge_index_ori),
             'edge_index_m': torch.from_numpy(edge_index_modified),
             'edge_index_c': torch.from_numpy(edge_index_c),
+            'dist_dis': torch.Tensor([dist_dis_x,dist_dis_y]),
             'num': num_list,
+            'm_num': modified_num_list
         }
+
+        if self.determinstic and self.normalize:
+            rt_dict.update({'l_points': torch.from_numpy(label_points/128.0)})
+        elif self.determinstic:
+            rt_dict.update({'l_points': torch.from_numpy(label_points)})
+
+        return rt_dict
 
     def _form_dataset(self, path):
 
@@ -169,12 +210,12 @@ class SequentialImageDataset(Dataset):
                 continue
             for idx, txt_name in enumerate(self._rank_file_accd_num(glob.glob(folder_name + '/*.txt'))):
                 file_list.append(txt_name)
-                if idx < 3:
+                if idx < 8:
                     continue
-                self.data_list.append(self.form_train_sample(file_list))
+                self.data_list.append(file_list)
 
     def __getitem__(self, index):
-        return self.data_list[index]
+        return self.form_train_sample(self.data_list[index])
 
     def __len__(self):
         return len(self.data_list)
