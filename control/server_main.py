@@ -20,7 +20,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.315483, 0.455823])  
+Angle_initial = np.array([-0.373224, 0.401833])   
 
 
 def reset_and_calibration(): 
@@ -117,8 +117,10 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     # receive way points
     way_points = [] 
 
-    os.remove(r'angle_list.txt')
-    data_file = open('angle_list.txt', 'w') 
+    if Load_path:
+        os.remove(r'angle_list.txt')
+        data_file = open('angle_list.txt', 'w') 
+    
     way_point = None
     while way_point != "SEND_DONE":
         way_point = _server.read_way_points() 
@@ -126,8 +128,11 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
         if way_point == "SEND_DONE": 
             break
         way_points.append(way_point.copy())
+        
         line_data = str(way_point[0]) + ',' + str(way_point[1]) + '\n'
-        data_file.writelines(line_data) 
+        
+        if Load_path:
+            data_file.writelines(line_data) 
         # send_done = _server.wait_send_way_points_done()
 
     way_points = np.array(way_points) 
@@ -135,29 +140,33 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     # print("way_points :::", way_points.shape) 
     print("N_way_points :::", N_way_points) 
     print("+"*50) 
+
     # ######################################################
     # ############## Wait impedance parameters  ############
     # ######################################################
-    _server.wait_params_request()
+    _server.wait_params_request() 
 
     # impedance_params = None
-    # while impedance_params is None:
+    # while impedance_params is None:  
     # read impedance parameters :::
-    impedance_params = _server.read_params() 
-    print("Input impedance parameters :::", np.array(impedance_params)) 
+    impedance_params = _server.read_params()  
+    impedance_params = np.array(impedance_params.copy())  
+    print("Input impedance parameters :::", np.array(impedance_params))  
     print("+"*50)
-    if impedance_params is not None: 
-        pass
+    if impedance_params is np.NaN: 
+        exit()
 
+    time.sleep(2.0) 
+    impedance_params = np.array([35.0, 24.0, 0.0, 0.0])
+    
     # start move
-    if run_on: 
-        
-        if Load_path:
-            # start_point = forward_ik(way_points[0, :].copy())
-            # print("Move to start point :::", start_point) 
-            way_points = np.loadtxt('angle_list.txt', delimiter=',')   
-            N_way_points = way_points.shape[0]  
+    if not Load_path:
+        # start_point = forward_ik(way_points[0, :].copy())
+        # print("Move to start point :::", start_point) 
+        way_points = np.loadtxt('angle_list.txt', delimiter=',')   
+        N_way_points = way_points.shape[0]  
 
+    if run_on: 
         initial_angle = np.zeros(2)
         initial_angle[0] = way_points[0, 0]
         initial_angle[1] = way_points[0, 1]
@@ -177,10 +186,10 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     # send movement_done command 
     _server.send_movement_done() 
     
-    _server.close()
+    _server.close() 
 
 
-def eval(impedance_params = np.array([35.0, 20.0, 0.4, 0.1])):  
+def eval(impedance_params = np.array([35.0, 24.0, 0.4, 0.1])):  
     """
         With zero impedance and get real-time traj
     """
@@ -207,11 +216,15 @@ def eval(impedance_params = np.array([35.0, 20.0, 0.4, 0.1])):
     # demo_data = np.zeros((buff_size, 2))   
     # result = motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], demo_data)  
     # print("result :", result) 
-    print("*" * 50)
-    print("Eval once done !!!")
+    print("*" * 50) 
+    print("Eval once done !!!") 
 
 
 if __name__ == "__main__":  
+
+    # motor_control.read_angle_3(0.0) 
+
+    motor_control.set_position(0.0, np.int32(20)) 
 
     # """ calibrate position for each start up """ 
     # Angle_initial = reset_and_calibration()   
@@ -222,8 +235,16 @@ if __name__ == "__main__":
 
     # eval()  
 
-    train() 
+    # train() 
+    # train(run_on=True, Load_path=True)  
     
+    # plot_torque_path(
+    #     root_path='',
+    #     file_angle_name='angle_list.txt', 
+    #     file_torque_name='real_angle_list.txt' 
+    # )
+
+    #################################################################################
     # plot_real_2d_path(
     #     root_path='',
     #     file_name='demonstrated_angle_list.txt' 
@@ -232,9 +253,7 @@ if __name__ == "__main__":
     # print("curr_angle :", angle)   
     # print("curr_point :", point)   
 
-    # train(angle_initial=Angle_initial, run_on=True)     
-
-    # eval(impedance_params = np.array([4.0, 4.0, 0.2, 0.2]))   
+    # train(angle_initial=Angle_initial, run_on=True)        
 
     # motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
     #                                Angle_initial[0], Angle_initial[1], N_way_points)  
@@ -274,9 +293,3 @@ if __name__ == "__main__":
     # plt.ylabel('$q_2$(rad)')
 
     # plt.show()
-
-    plot_torque_path(
-        root_path='', 
-        file_angle_name='real_angle_list.txt', 
-        file_torque_name='real_torque_list.txt' 
-) 
