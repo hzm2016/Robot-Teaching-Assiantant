@@ -200,7 +200,7 @@ class Executor(object):
             if character in self.char_list:
                 logging.info('We find the character for you')
             else:
-                logging.warning('Sorry, the character is not supported, please try annother one')
+                logging.warning('Sorry, the character is not supported, please try another one')
                 break
             
             char_info = self.char_list[character]
@@ -211,8 +211,7 @@ class Executor(object):
                 img_list.append(svg2img(stroke))
 
             while not self.learner.satisfied:
-                
-                
+            
                 # character_img = self.sample_character(character, written_image)
                 # character_img = np.array(character_img)
                 img_ske_list = []
@@ -221,7 +220,8 @@ class Executor(object):
                 for img in img_list:
                     traj, traj_img = skeletonize(~img)
                     img_ske_list.append(traj_img)
-                    # cv2.imshow('',img)
+                    traj_list.append(traj_list)
+                    # cv2.imshow('',traj_img)
                     # cv2.waitKey(0)
 
                 if self.save_traj:
