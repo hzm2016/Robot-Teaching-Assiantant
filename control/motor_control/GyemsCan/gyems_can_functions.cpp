@@ -87,7 +87,8 @@ double Gcan::read_sensor(int nodeID)
 
     //printf( "CAN messages are available to read.\n");
     channel_name.read(rframe); 
-    
+    // printf("channel_name :", rframe); 
+
     unpack_multi_turn_angle(&rframe, &multi_turn_position); 
     return double(multi_turn_position * 3.14/180/600); 
 }
@@ -95,6 +96,7 @@ double Gcan::read_sensor(int nodeID)
 double Gcan::read_single_turn(int nodeID)
 {
     read_single_turn_angle(nodeID);
+    // printf( "CAN messages are available to read.\n");
 
     int i=0;
     while (!channel_name.available()){
@@ -129,7 +131,7 @@ double Gcan::set_torque(int nodeID, int16_t iqControl, double* speed_back, doubl
 
     *speed_back = speed * 3.14/180/6; 
     *torque_back = torque * 17.5/800; 
-    printf("position : %f\n", position * 3.14/180); 
+    // printf("position : %f\n", position * 3.14/180); 
 
     return 0.0; 
 }
@@ -480,7 +482,7 @@ void Gcan::read_single_turn_angle(int nodeID){
      msg.data[6] = 0;  
      msg.data[7] = 0;   
      
-    channel_name.write(msg);
+    channel_name.write(msg); 
 }
 
 // return the inner angle value without reduction ratio
@@ -489,7 +491,7 @@ void Gcan::unpack_single_turn_angle(struct can_frame* msg, uint16_t* pangle){
     double inner_actual_single_turn_angle = double(*pangle) / 100.0;  
     
     #ifdef DEBUG   
-    printf("Position angle %f \n", inner_actual_single_turn_angle);
+    // printf("Position angle %f \n", inner_actual_single_turn_angle); 
     #endif 
 }
 
