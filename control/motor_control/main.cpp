@@ -157,6 +157,89 @@ double read_angle_2(double theta_2_initial, double theta_1_t)
     return theta_2;   
 }
 
+double read_angle_3(double theta_2_initial)    
+{
+    ////////////////////////////////////////////
+    // Read motor angle 3 
+    ////////////////////////////////////////////
+    printf("reset can 3 !!!\n");
+
+    CANDevice can0((char *) "can3");   
+    can0.begin();   
+
+    Gcan motor_3(can0);   
+    motor_3.begin();   
+    printf("reset can 3 !!!\n"); 
+
+    // double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
+    // printf("Motor 2 position: %f\n", theta_2);   
+    // double theta_3 = motor_3.read_sensor(1);  
+    // printf("Motor 3 position: %f\n", theta_3);   
+
+    double d_theta_1_t;  
+    double torque_1_t;  
+    double theta_3_t; 
+
+    theta_3_t = motor_3.read_single_turn(1);  
+    printf("Motor 3 position: %f\n", theta_3_t);  
+
+    // int32_t angle = theta_3_t + 10; 
+    // uint16_t max_speed = 20; 
+    // motor_3.pack_position_2_cmd(1, angle, max_speed); 
+
+    // motor_3.read_encoder(1); 
+    // motor_3.readcan(); 
+    // motor_3.set_torque(1, 0, &d_theta_1_t, &torque_1_t); 
+    motor_3.pack_stop_cmd(1); 
+
+    return theta_3_t;   
+}
+
+double set_position(double theta_2_initial, int32_t angle)   
+{
+    ////////////////////////////////////////////
+    // Read motor angle 3 
+    ////////////////////////////////////////////
+    CANDevice can0((char *) "can3");   
+    can0.begin();   
+
+    Gcan motor_3(can0);   
+    motor_3.begin();  
+
+    double d_theta_1_t;   
+    double torque_1_t;   
+    double theta_3_t;   
+
+    theta_3_t = motor_3.read_single_turn(1);  
+    printf("Motor 3 position: %f\n", theta_3_t);   
+
+    // int32_t angle = theta_3_t + 10; 
+    uint16_t max_speed = 20; 
+    int32_t angle_fixed = 2000; 
+
+    // motor_3.pack_position_2_cmd(1, angle_fixed, max_speed); 
+    // motor_3.pack_position_1_cmd(1, angle_fixed); 
+
+    // motor_3.read_encoder(1); 
+    // motor_3.readcan(); 
+
+    run_on = 1;  
+    // Catch a Ctrl-C event:
+	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
+
+    while(run_on) 
+    {
+        // Catch a Ctrl-C event: 
+        signal(SIGINT, sig_h);  
+
+        motor_3.set_torque(1, 50, &d_theta_1_t, &torque_1_t); 
+    }
+    
+    motor_3.pack_stop_cmd(1); 
+
+    return theta_3_t;   
+}
+
 double read_link_angle_1(double q_1_initial)   
 {
     ////////////////////////////////////////////  
@@ -966,7 +1049,7 @@ double theta_1_initial, double theta_2_initial, int num_episodes
         {
 
         }
-        printf("Episode: %f\n", epi);    
+        printf("Episode: %\n", epi);    
     }    
     // for(int index=0; index<Num_waypoints; index=index+1)  
     // {
@@ -1102,12 +1185,6 @@ PYBIND11_MODULE(motor_control, m) {
            subtract
     )pbdoc";
 
-    // m.def("add", &add, R"pbdoc(
-    //     Add two numbers
-
-    //     Some other explanation about the add function.
-    // )pbdoc"); 
-
     m.def("subtract", [](int i, int j) { return i - j; }, R"pbdoc(
         Subtract two numbers
 
@@ -1138,6 +1215,20 @@ PYBIND11_MODULE(motor_control, m) {
     m.def(
         "read_angle_2", &read_angle_2, R"pbdoc( 
         read angle 2
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
+
+    m.def(
+        "read_angle_3", &read_angle_3, R"pbdoc( 
+        read angle 3
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
+
+    m.def(
+        "set_position", &set_position, R"pbdoc( 
+        set_position
 
         Some other explanation about the add function. 
     )pbdoc"); 

@@ -37,6 +37,7 @@ public:
 
     double read_sensor(int nodeID); 
     double set_torque(int nodeID, int16_t iqControl, double* speed, double* torque); 
+    double read_single_turn(int nodeID);  
 
     void pack_torque_cmd(int nodeID, int16_t iqControl); 
     void pack_speed_cmd(int nodeID, int32_t speed); 
@@ -83,7 +84,8 @@ private:
     int16_t voltage,torque,speed,phase_ai, phase_bi,phase_ci;
     uint16_t position,raw_position,encoderoffset;
     int32_t accel_data;
-    int64_t multi_turn_position;
+    int64_t multi_turn_position; 
+    uint16_t single_turn_position; 
     PIDconstant pid;
 };
 
