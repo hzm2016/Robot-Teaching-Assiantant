@@ -879,6 +879,84 @@ double dist_threshold
 }
 
 
+int rotate_to_target(
+    double stiffness, double damping,  
+    double theta_target,  
+    double theta_initial,   
+    double dist_threshold   
+)
+{
+    ////////////////////////////////////////////////////////
+    //// Initial Encoder and Motor CAN
+    //////////////////////////////////////////////////////// 
+    CANDevice can3((char *) "can3");   
+    can3.begin();   
+
+    Gcan motor_3(can3);   
+    motor_3.begin();  
+
+    printf("Rotate to target point !!!!\n");   
+
+    double torque_lower_bound = -1.0;      
+    double torque_upper_bound = 1.0;      
+
+    double ctl_ratio = 2000.0/32;   
+
+    double theta_t = 0.0;   
+
+    double d_theta_t = 0.0;    
+
+    double theta_e = 0.0;  
+
+    double d_theta_e = 0.0;   
+
+    double torque = 0.0;  
+
+    double torque_t = 0.0;   
+
+    double pos_1 = 0.0;         
+
+    double dist = 0.0; 
+    int initial_index = 0;    
+    int max_index = 10000;   
+    
+
+    /////////////////////////////////////////////////////
+    /////  avoid large motion at starting points  ///////
+    /////////////////////////////////////////////////////
+    run_on = 1; 
+
+    // Catch a Ctrl-C event:
+	void  (*sig_h)(int) = sigint_1_step;   
+
+    // Catch a Ctrl-C event:  
+    signal(SIGINT, sig_h);   
+ 
+    // dist > dist_threshold && initial_index < max_index
+    while(run_on)  
+    {
+        theta_t = motor_3.read_single_turn(1) - theta_initial;    
+
+        dist = sqrt(pow((theta_t - theta_target), 2));   
+        // printf(" theta_t: %f\n", theta_t);    
+
+        /////////////////////////////////////////////////////
+        // calculate torque control command 
+        ///////////////////////////////////////////////////// 
+        torque = clip(-1 * stiffness * (theta_target - theta_t) - damping * (d_theta_e - d_theta_t), torque_lower_bound, torque_upper_bound) * ctl_ratio;   
+
+        pos_1 = motor_3.set_torque(1, torque, &d_theta_t, &torque_t);   
+
+    }
+
+    printf("Rotate to target point !!!! \n");   
+
+    motor_3.pack_stop_cmd(1);   
+
+    return 1;  
+}
+
+
 int run_one_loop(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
 py::array_t<double> theta_1_target, py::array_t<double> theta_2_target, int Num_waypoints,  
@@ -1261,6 +1339,13 @@ PYBIND11_MODULE(motor_control, m) {
     m.def(
         "set_position", &set_position, R"pbdoc( 
         set_position
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
+
+    m.def(
+        "rotate_to_target", &rotate_to_target, R"pbdoc( 
+        rotate_to_target 
 
         Some other explanation about the add function. 
     )pbdoc"); 

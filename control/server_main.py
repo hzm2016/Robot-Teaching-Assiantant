@@ -20,14 +20,15 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.344673, 0.446810, 0.379417])   
+Angle_initial = np.array([-0.364036, 0.455271, 0.419713])   
 
-Move_Impedance_Params = np.array([20.0, 16.0, 0.1, 0.1])  
+# impedance params : 
+Move_Impedance_Params = np.array([35.0, 30.0, 2.0, 0.1])  
 
 
 def reset_and_calibration(): 
     print("Please make sure two links are at zero position !!!")
-    angle_initial = np.zeros(3)
+    angle_initial = np.zeros(3) 
     
     angle_initial[0] = motor_control.read_initial_angle_1() 
     angle_initial[1] = motor_control.read_initial_angle_2() 
@@ -94,15 +95,6 @@ def move_to_target_point(target_point, impedance_params, velocity=0.04):
     # print("Final dist (m) :", final_dist)  
     # done = True  
     # return done, final_dist  
-
-
-def set_pen_up():  
-    """ pull pen up """ 
-    motor_control.set_position(0.0, np.int32(200))  
-
-def set_pen_down():  
-    """ pull pen down """ 
-    motor_control.set_position(0.0, np.int32(200))  
 
 
 def train(angle_initial=Angle_initial, run_on=True, Load_path=False): 
@@ -199,6 +191,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     
     _server.close() 
 
+
 def write_word(word_path, 
     impedance_params=np.array([35.0, 25.0, 0.4, 0.1])): 
     
@@ -226,7 +219,7 @@ def write_stroke(stroke_points=None,
     print("Write stroke !!!")  
     way_points = stroke_points
     Num_way_points = way_points.shape[0]  
-    print("Num_way_points :", Num_way_points) 
+    print("Num_way_points :", Num_way_points)  
 
     initial_angle = np.zeros(2) 
     initial_angle[0] = way_points[0, 0] 
@@ -249,7 +242,7 @@ def write_stroke(stroke_points=None,
     move_to_target_point(target_point, Move_Impedance_Params, velocity=0.05) 
 
     print("*" * 50) 
-    print("Write stroke once done !!!") 
+    print("Write stroke once done !!!")  
     
 
 def eval(impedance_params = np.array([35.0, 25.0, 0.4, 0.1])):   
@@ -262,9 +255,9 @@ def eval(impedance_params = np.array([35.0, 25.0, 0.4, 0.1])):
     N_way_points = way_points.shape[0]   
     # print("N_way_points :", N_way_points) 
  
-    initial_angle = np.zeros(2) 
-    initial_angle[0] = way_points[0, 0]
-    initial_angle[1] = way_points[0, 1]
+    initial_angle = np.zeros(2)  
+    initial_angle[0] = way_points[0, 0]  
+    initial_angle[1] = way_points[0, 1]  
     start_point = forward_ik(initial_angle)  
 
     # move to target point
@@ -286,6 +279,22 @@ def eval(impedance_params = np.array([35.0, 25.0, 0.4, 0.1])):
     print("Eval one stroke once done !!!") 
 
 
+def set_pen_up():  
+    """ 
+        pull pen up 
+    """ 
+    up_angle = np.int32(200) 
+    motor_control.set_position(0.0, up_angle)   
+
+
+def set_pen_down():  
+    """ 
+        pull pen down 
+    """ 
+    down_angle = np.int32(0)  
+    motor_control.set_position(0.0, down_angle)  
+
+
 if __name__ == "__main__":  
 
     # motor_control.read_angle_3(0.0) 
@@ -293,16 +302,21 @@ if __name__ == "__main__":
 
     # motor_control.set_position(0.0, np.int32(200)) 
 
-    # """ calibrate position for each start up """ 
+    """ calibrate position for each start up """ 
     # Angle_initial = reset_and_calibration() 
+
     # motor_control.read_initial_angle_2() 
 
     # impedance_params = np.array([35.0, 35.0, 2.0, 0.2])  
     # move_to_target_point(np.array([0.34, -0.03]), impedance_params, velocity=0.05)  
 
-    # angle, point = get_observation(angle_initial=Angle_initial)  
+    angle, point = get_observation(angle_initial=Angle_initial)  
 
-    eval()  
+    # impedance_params = np.array([5, 5, 2, 2])  
+    # motor_control.rotate_to_target(impedance_params[0], impedance_params[2], 2.3, Angle_initial[2], 0.05) 
+    # motor_control
+
+    # eval()  
 
     # train() 
     # train(run_on=True, Load_path=True)  
