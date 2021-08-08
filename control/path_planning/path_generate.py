@@ -246,7 +246,7 @@ def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
         plt.ylim([0, 128])
         plt.xlabel('$x_1$')
         plt.ylabel('$x_2$')
-        # plt.axis('equal')
+        # plt.axis('equal') 
         plt.tight_layout()
     
         plt.subplot(1, 3, 2)
