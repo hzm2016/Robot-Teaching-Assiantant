@@ -1,5 +1,6 @@
 import numpy as np
 np.set_printoptions(precision=5)
+np.set_printoptions(suppress=True)
 import matplotlib.pyplot as plt
 import math
 import seaborn as sns
@@ -272,8 +273,8 @@ def generate_path(traj, inter_type=1,
     
         # angle_2_list_e.append(np.round(angle_2, 5).copy())
         
-        angle_1_list_e.append(np.round(angle[0], 5).copy())
-        angle_2_list_e.append(np.round(angle[1], 5).copy())
+        angle_1_list_e.append(np.round(angle[0].copy(), 5))
+        angle_2_list_e.append(np.round(angle[1].copy(), 5))
 
     max_angle_1 = np.max(angle_1_list_e)
     max_angle_2 = np.max(angle_2_list_e)
@@ -297,7 +298,7 @@ def generate_path(traj, inter_type=1,
         plot_path(period, traj, image_points, task_points, way_points)
         
     if save_path:
-        np.savetxt('../control/angle_list_' + str(stroke_name) + '.txt', way_points)
+        np.savetxt('../control/angle_list_' + str(stroke_name) + '.txt', way_points, fmt='%.05f')
 
     return way_points
 

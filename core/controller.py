@@ -232,7 +232,7 @@ if __name__ == "__main__":
     type = 1
     
     # for str_index in range():
-    str_index = 4
+    str_index = 0
     traj = np.loadtxt(root_path + '/' + folder_name + '/' +
                            font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
     
