@@ -77,7 +77,7 @@ flycheck_*.el
 # Images
 *.jpg
 *.jpeg
-#*.png
+./*.png
 *.svg
 
 

@@ -7,7 +7,7 @@ import argparse
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import generate_path, WIDTH
-from control.vision_capture.main_functions import capture_image, show_video
+# from control.vision_capture.main_functions import capture_image, show_video
 
 
 def draw_points(points, canvas_size=256):
@@ -63,8 +63,6 @@ class Controller(object):
         self.damping = np.zeros_like(self.stiffness)
 
         self.scalar_distance = False
-
-        pass
 
     def guide(self,):
         """[summary]
@@ -201,7 +199,7 @@ class Controller(object):
                 root_path=self.root_path + 'captured_images/', font_name='written_image_test')
         self.task.close()
         
-    def interact(self, traj, target_img):
+    def interact(self, target_img):
         written_image = None
         num_episodes = 5
         run_done = False
