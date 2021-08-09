@@ -214,11 +214,6 @@ class Executor(object):
             
                 # character_img = self.sample_character(character, written_image)
                 # character_img = np.array(character_img)
-
-                if self.save_traj:
-                    save_traj_name = self.__save_stroke_traj(character, traj_list)
-                    cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
-                    logging.info('{} traj stored'.format(character))
                     
                 if self.save_traj:
                     img_ske_list = []
@@ -234,6 +229,11 @@ class Executor(object):
                         cv2.imwrite(save_traj_name.replace('txt', 'png'), img_ske_list[idx])
 
                     logging.info('{} traj stored'.format(character))
+                
+                # if self.save_traj:
+                #     save_traj_name = self.__save_stroke_traj(character, traj_list)
+                #     cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
+                #     logging.info('{} traj stored'.format(character))
 
                 if self.generation_only:
                     break

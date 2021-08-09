@@ -1,5 +1,5 @@
 from tools import skeletonize
-from .utils import hungarian_matching
+from utils import hungarian_matching
 import numpy as np
 import cv2
 import argparse
@@ -227,22 +227,28 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root_path = '../control/data/font_data'
-    font_name = 'first'
+    folder_name = 'tian'
+    font_name = '田'
     type = 1
-    traj = np.loadtxt(root_path + '/' + font_name +
-                           '/1_font_' + str(type) + '.txt')
-    print("traj :::", np.array(traj).shape)
     
-    # generate_path(traj,
-    #               center_shift=np.array([0.16, -WIDTH / 2]),
-    #               velocity=0.04, Ts=0.001,
-    #               plot_show=True)
+    # for str_index in range():
+    str_index = 1
+    traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+                           font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+    
+    generate_path(traj[36:],
+                  inter_type=1,
+                  center_shift=np.array([0.16, -WIDTH / 2]),
+                  velocity=0.04,
+                  Ts=0.001,
+                  plot_show=True,
+                  save_path=True)
 
-    writing_controller = Controller(
-        args, img_processor=None, impedance_level=0)
-
-    writing_controller.interact_once(
-        traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.03)
+    # writing_controller = Controller(
+    #     args, img_processor=None, impedance_level=0)
+    #
+    # writing_controller.interact_once(
+    #     traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.03)
 
     # target_img = cv2.imread(root_path + '/1_font_1.png')
     # writing_controller.interact(path_data, target_img)

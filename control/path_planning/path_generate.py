@@ -4,6 +4,8 @@ import math
 import seaborn as sns
 import copy
 
+sns.set_theme()
+
 # writing space
 WIDTH = 0.370
 HEIGHT = 0.370
@@ -114,12 +116,62 @@ def path_planning(start_point, target_point, velocity=0.04):
         angle_list.append(angle)
         
     return np.array(angle_list), N
+
+
+def plot_path(period, traj, image_points, task_points, angle_list, fig_name='Stroke Path'):
+    """
+        check the planned path
+    """
+    t_list = np.linspace(0.0, 2 * period, angle_list.shape[0])
+    
+    fig = plt.figure(figsize=(15, 4))
+    
+    plt.title(fig_name)
+    
+    plt.subplot(1, 3, 1)
+    plt.subplots_adjust(wspace=2, hspace=0)
+    
+    plt.plot(traj[:, 1], traj[:, 0], marker='o', linewidth=linewidth)
+    plt.plot(image_points[:, 0], image_points[:, 1], linewidth=linewidth - 2)
+    
+    plt.xlim([0, 128])
+    plt.ylim([0, 128])
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    # plt.axis('equal')
+    plt.tight_layout()
+    
+    plt.subplot(1, 3, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    plt.plot(task_points[:, 0], task_points[:, 1], linewidth=linewidth + 2, color='r')
+    # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
+    plt.scatter(task_points[0, 0], task_points[0, 1], s=100, c='b', marker='o')
+    # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
+    # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlabel('$x_1$(m)')
+    plt.ylabel('$x_2$(m)')
+    
+    plt.subplot(1, 3, 3)
+    plt.plot(t_list, angle_list[:, 0], linewidth=linewidth, label='$q_1$')
+    # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+    plt.plot(t_list, angle_list[:, 1], linewidth=linewidth, label='$q_2$')
+    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    
+    plt.xlabel('Time (s)')
+    plt.ylabel('One-loop Angle (rad)')
+    plt.legend()
+    
+    plt.show()
     
 
-def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
-                  velocity=0.04, Ts=0.001, plot_show=False):
+def generate_path(traj, inter_type=1,
+                  center_shift=np.array([-WIDTH/2, 0.23]),
+                  velocity=0.04, Ts=0.001, plot_show=False, save_path=False):
     """
-         generate trajectory from list
+         generate stroke trajectory from list
          velocity ::: 0.04m/s
     """
     # calculate length of path
@@ -154,11 +206,17 @@ def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
     print("Period (s) :", period)
     N = np.array(period / Ts).astype(int)
     
-    y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
-    # x_list = path(1, 2):(path(end, 2) - path(1, 2)) / (N - 1): path(end, 2)
-    x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
+    if inter_type==1:
+        y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
+        x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
+    elif inter_type==2:
+        x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
+        y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
+    else:
+        print("Please check the given stroke path !!!")
     # print("x_list :::", x_list)
     # print("y_list :::", y_list)
+    image_points = np.vstack((x_list, y_list)).transpose()
 
     x_1_list = x_list/ratio + center_shift[0]
     x_2_list = y_list/ratio + center_shift[1]
@@ -167,57 +225,55 @@ def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
     x_1_list = np.hstack([x_1_list, x_1_list[::-1]])
     x_2_list = np.hstack([x_2_list, x_2_list[::-1]])
 
+    task_points = np.vstack((x_1_list, x_2_list)).transpose()
+
     # print("x_1_list :::", x_1_list)
     # print("x_2_list :::", x_2_list)
 
     angle_1_list_e = []
     angle_2_list_e = []
 
-    angle_vel_1_list_e = []
-    angle_vel_2_list_e = []
-
-    x_inner = []
-    y_inner = []
     for t in range(1, 2 * N):
         x1 = x_1_list[t]
         x2 = x_2_list[t]
-    
-        # Inverse kinematics
-        L = x1 ** 2 + x2 ** 2
-    
-        gamma = math.atan2(x2, x1)
-    
-        cos_belta = (L1 ** 2 + L - L2 ** 2) / (2 * L1 * np.sqrt(L))
-    
-        if cos_belta > 1:
-            angle_1 = gamma
-        elif cos_belta < -1:
-            angle_1 = gamma - np.pi
-        else:
-            angle_1 = gamma - math.acos(cos_belta)
-        x_inner.append(L1 * math.cos(angle_1))
-        y_inner.append(L1 * math.sin(angle_1))
         
-        angle_1_list_e.append(np.round(angle_1, 5).copy())
+        point = np.array([x1, x2])
+        
+        angle = IK(point)
+        
+        # # Inverse kinematics
+        # L = x1 ** 2 + x2 ** 2
+        #
+        # gamma = math.atan2(x2, x1)
+        #
+        # cos_belta = (L1 ** 2 + L - L2 ** 2) / (2 * L1 * np.sqrt(L))
+        #
+        # if cos_belta > 1:
+        #     angle_1 = gamma
+        # elif cos_belta < -1:
+        #     angle_1 = gamma - np.pi
+        # else:
+        #     angle_1 = gamma - math.acos(cos_belta)
+            
+        # x_inner.append(L1 * math.cos(angle_1))
+        # y_inner.append(L1 * math.sin(angle_1))
+        
+        # angle_1_list_e.append(np.round(angle_1, 5).copy())
     
-        cos_alpha = (L1 ** 2 - L + L2 ** 2) / (2 * L1 * L2)
+        # cos_alpha = (L1 ** 2 - L + L2 ** 2) / (2 * L1 * L2)
+        #
+        # if cos_alpha > 1:
+        #     angle_2 = np.pi
+        # elif cos_alpha < -1:
+        #     angle_2 = 0
+        # else:
+        #     angle_2 = np.pi - math.acos(cos_alpha)
     
-        if cos_alpha > 1:
-            angle_2 = np.pi
-        elif cos_alpha < -1:
-            angle_2 = 0
-        else:
-            angle_2 = np.pi - math.acos(cos_alpha)
-    
-        angle_2_list_e.append(np.round(angle_2, 5).copy())
-    
-        if t == 1:
-            angle_vel_1_list_e.append(0.0)
-            angle_vel_2_list_e.append(0.0)
-        else:
-            angle_vel_1_list_e.append((angle_1_list_e[t - 1] - angle_1_list_e[t - 2]) / 0.001)
-            angle_vel_2_list_e.append((angle_2_list_e[t - 1] - angle_2_list_e[t - 2]) / 0.001)
-    
+        # angle_2_list_e.append(np.round(angle_2, 5).copy())
+        
+        angle_1_list_e.append(np.round(angle[0], 5).copy())
+        angle_2_list_e.append(np.round(angle[1], 5).copy())
+
     max_angle_1 = np.max(angle_1_list_e)
     max_angle_2 = np.max(angle_2_list_e)
     print("Max angle 1 (rad) :", max_angle_1)
@@ -226,56 +282,22 @@ def generate_path(traj, center_shift=np.array([-WIDTH/2, 0.23]),
         print("!!!!!! angle 1 is out of range !!!!!")
         print("max angle 1 :::", max_angle_1)
         exit()
+
     if max_angle_2 < ANGLE_2_RANGE[0] or max_angle_2 > ANGLE_2_RANGE[1]:
         print("!!!!!! angle 1 is out of range !!!!!")
         print("max angle 2 :::", max_angle_2)
         exit()
 
-    if plot_show:
-        sns.set_theme()
-        t_list = np.linspace(0.0, 2 * period, len(x_1_list))
-        
-        fig = plt.figure(figsize=(15, 4))
-        plt.subplot(1, 3, 1)
-        plt.subplots_adjust(wspace=2, hspace=0)
-    
-        plt.plot(path_data[:, 1], path_data[:, 0], marker='o', linewidth=linewidth)
-        plt.plot(x_list, y_list, linewidth=linewidth - 2)
-        
-        plt.xlim([0, 128])
-        plt.ylim([0, 128])
-        plt.xlabel('$x_1$')
-        plt.ylabel('$x_2$')
-        # plt.axis('equal') 
-        plt.tight_layout()
-    
-        plt.subplot(1, 3, 2)
-        plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-        plt.plot(x_1_list, x_2_list, linewidth=linewidth + 2, color='r')
-        # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
-        plt.scatter(x_1_list[0], x_2_list[0], s=100, c='b', marker='o')
-        # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
-        # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
-        plt.ylim([-WIDTH/2, WIDTH/2])
-        plt.xlim([0., 0.13 + WIDTH])
-        plt.xlabel('$x_1$(m)')
-        plt.ylabel('$x_2$(m)')
-    
-        plt.subplot(1, 3, 3)
-        plt.plot(t_list[1:], angle_1_list_e, linewidth=linewidth, label='$q_1$')
-        plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
-        plt.plot(t_list[1:], angle_2_list_e, linewidth=linewidth, label='$q_2$')
-        plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
-    
-        plt.xlabel('Time (s)')
-        plt.ylabel('One-loop Angle (rad)')
-        plt.legend()
-    
-        plt.show()
-
     way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
-    print("way_points :::", way_points.shape)
+    print('+' * 50)
+    print("Check success with way_points :", way_points.shape)
+    
+    if plot_show:
+        plot_path(period, traj, image_points, task_points, way_points)
+        
+    if save_path:
+        np.savetxt('../control/angle_list_test.txt', way_points)
+
     return way_points
 
 
