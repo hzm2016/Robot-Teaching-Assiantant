@@ -225,8 +225,10 @@ def generate_path(traj, inter_type=1,
     print("y_list :", y_list)
     
     # inverse
-    x_1_list = np.hstack([x_1_list, x_1_list[::-1]])
-    x_2_list = np.hstack([x_2_list, x_2_list[::-1]])
+    # x_1_list = np.hstack([x_1_list, x_1_list[::-1]])
+    # x_2_list = np.hstack([x_2_list, x_2_list[::-1]])
+    # x_1_list = np.hstack([x_1_list])
+    # x_2_list = np.hstack([x_2_list])
 
     task_points = np.vstack((x_1_list, x_2_list)).transpose()
 
@@ -236,7 +238,7 @@ def generate_path(traj, inter_type=1,
     angle_1_list_e = []
     angle_2_list_e = []
 
-    for t in range(1, 2 * N):
+    for t in range(1, N):
         x1 = x_1_list[t]
         x2 = x_2_list[t]
         
@@ -299,7 +301,7 @@ def generate_path(traj, inter_type=1,
         plot_path(period, traj, image_points, task_points, way_points)
         
     if save_path:
-        np.savetxt('../control/angle_list_' + str(stroke_name) + '.txt', way_points, fmt='%.05f')
+        np.savetxt('../control/angle_list_' + stroke_name + '.txt', way_points, fmt='%.05f')
 
     return way_points
 

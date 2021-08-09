@@ -243,7 +243,7 @@ if __name__ == "__main__":
                   Ts=0.001,
                   plot_show=True,
                   save_path=True,
-                  stroke_name=str_index
+                  stroke_name=str(str_index)
                   )
 
     # writing_controller = Controller(
