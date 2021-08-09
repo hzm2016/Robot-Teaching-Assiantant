@@ -194,7 +194,7 @@ class Executor(object):
                 logging.warning('Please input once character only')
                 continue
             
-            if character is ' ':
+            if character == ' ':
                 break
 
             if character in self.char_list:
@@ -214,25 +214,31 @@ class Executor(object):
             
                 # character_img = self.sample_character(character, written_image)
                 # character_img = np.array(character_img)
-                img_ske_list = []
-                traj_list = []
 
-                for img in img_list:
-                    traj, traj_img = skeletonize(~img)
-                    img_ske_list.append(traj_img)
-                    traj_list.append(traj_list)
-                    # cv2.imshow('',traj_img)
-                    # cv2.waitKey(0)
+                if self.save_traj:
+                    save_traj_name = self.__save_stroke_traj(character, traj_list)
+                    cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
+                    logging.info('{} traj stored'.format(character))
+                    
+                if self.save_traj:
+                    img_ske_list = []
+                    traj_list = []
 
-                    if self.save_traj:
-                        save_traj_name = self.__save_stroke_traj(character, traj_list)
-                        cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
-                        logging.info('{} traj stored'.format(character))
+                    for img in img_list:
+                        traj, traj_img = skeletonize(~img)
+                        img_ske_list.append(traj_img)
+                        traj_list.append(traj)
+                    
+                    for idx, traj in enumerate(traj_list):
+                        save_traj_name = self.__save_stroke_traj(character+'_'+ str(idx), traj)
+                        cv2.imwrite(save_traj_name.replace('txt', 'png'), img_ske_list[idx])
+
+                    logging.info('{} traj stored'.format(character))
 
                 if self.generation_only:
                     break
 
-                written_image = self.controller.interact(traj, img_ske_list)
+                written_image = self.controller.interact(traj_list, img_ske_list)
 
         self.__quit()
 
