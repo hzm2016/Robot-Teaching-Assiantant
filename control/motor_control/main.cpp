@@ -194,7 +194,7 @@ double read_angle_3(double theta_3_initial)
     double theta_3_t; 
 
     theta_3_t = motor_3.read_single_turn(1) - theta_3_initial;   
-    // printf("Motor 3 position: %f\n", theta_3_t);  
+    printf("Motor 3 rad: %f, deg %f\n", theta_3_t, theta_3_t * 180/3.14);  
 
     // int32_t angle = theta_3_t + 10; 
     // uint16_t max_speed = 20; 
@@ -208,7 +208,7 @@ double read_angle_3(double theta_3_initial)
     return theta_3_t;   
 }
 
-double set_position(double theta_2_initial, int32_t angle)   
+double set_position(double theta_3_initial, int32_t angle)   
 {
     ////////////////////////////////////////////
     // Read motor angle 3 
@@ -222,7 +222,7 @@ double set_position(double theta_2_initial, int32_t angle)
     double theta_3_t;   
 
     theta_3_t = motor_3.read_single_turn(1);  
-    printf("Motor 3 position: %f\n", theta_3_t);   
+    printf("Motor 3 position: %f\n", theta_3_t/3.14*180);   
 
     // int32_t angle = theta_3_t + 10; 
     uint16_t max_speed = 20; 
@@ -886,7 +886,8 @@ int rotate_to_target(
     double stiffness, double damping,  
     double theta_target,  
     double theta_initial,   
-    double dist_threshold   
+    double dist_threshold,    
+    int32_t torque_cmd
 )
 {
     ////////////////////////////////////////////////////////
@@ -917,18 +918,19 @@ int rotate_to_target(
 
     double torque_t = 0.0;   
 
-    double pos_1 = 0.0;         
+    double pos_1 = 0.0;  
+    double curr_t = 0.0;        
 
     double dist = 0.0;  
 
-    string output_angle = root_path + "real_angle_list.txt";   
+    string output_angle = "real_angle_list.txt";   
     ofstream OutFileAngle(output_angle);   
-    OutFileAngle << "angle_1" << "\n";   
+    OutFileAngle << "angle_1" << "," <<  "torque_1" << "\n";   
 
     /////////////////////////////////////////////////////
     /////  avoid large motion at starting points  ///////
     /////////////////////////////////////////////////////
-    run_on = 1; 
+    run_on = 1;  
 
     // Catch a Ctrl-C event: 
 	void  (*sig_h)(int) = sigint_1_step;    
@@ -945,7 +947,6 @@ int rotate_to_target(
         ////////////////////////////////////////////////////////
         // Save Data
         ////////////////////////////////////////////////////////
-        OutFileAngle << theta_t << "\n";  
 
         dist = sqrt(pow((theta_t - theta_target), 2));    
 
@@ -953,8 +954,11 @@ int rotate_to_target(
         // calculate torque control command 
         ///////////////////////////////////////////////////// 
         torque = clip(-1 * stiffness * (theta_target - theta_t) - damping * (d_theta_e - d_theta_t), torque_lower_bound, torque_upper_bound) * ctl_ratio;   
+        curr_t = -1 * stiffness * (theta_target - theta_t) - damping * (d_theta_e - d_theta_t); 
 
-        pos_1 = motor_3.set_torque(1, 0.0, &d_theta_t, &torque_t);   
+        pos_1 = motor_3.set_torque(1, torque, &d_theta_t, &torque_t);   
+
+        OutFileAngle << theta_t << "," << curr_t << "\n";  
 
     }
 
