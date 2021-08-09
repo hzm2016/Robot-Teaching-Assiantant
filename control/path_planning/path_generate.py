@@ -216,13 +216,14 @@ def generate_path(traj, inter_type=1,
         y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
     else:
         print("Please check the given stroke path !!!")
-    # print("x_list :::", x_list)
-    # print("y_list :::", y_list)
+    
     image_points = np.vstack((x_list, y_list)).transpose()
 
     x_1_list = x_list/ratio + center_shift[0]
     x_2_list = y_list/ratio + center_shift[1]
-
+    print("x_list :", x_list)
+    print("y_list :", y_list)
+    
     # inverse
     x_1_list = np.hstack([x_1_list, x_1_list[::-1]])
     x_2_list = np.hstack([x_2_list, x_2_list[::-1]])
