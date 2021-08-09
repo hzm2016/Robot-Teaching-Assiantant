@@ -232,12 +232,12 @@ if __name__ == "__main__":
     type = 1
     
     # for str_index in range():
-    str_index = 0
+    str_index = 1
     traj = np.loadtxt(root_path + '/' + folder_name + '/' +
                            font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
     
-    generate_path(traj,
-                  inter_type=1,
+    generate_path(traj[:36],
+                  inter_type=2,
                   center_shift=np.array([0.16, -WIDTH / 2]),
                   velocity=0.04,
                   Ts=0.001,
