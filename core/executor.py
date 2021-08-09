@@ -224,10 +224,10 @@ class Executor(object):
                     # cv2.imshow('',traj_img)
                     # cv2.waitKey(0)
 
-                if self.save_traj:
-                    save_traj_name = self.__save_stroke_traj(character, traj)
-                    cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
-                    logging.info('{} traj stored'.format(character))
+                    if self.save_traj:
+                        save_traj_name = self.__save_stroke_traj(character, traj_list)
+                        cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
+                        logging.info('{} traj stored'.format(character))
 
                 if self.generation_only:
                     break
