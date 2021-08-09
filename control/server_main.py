@@ -221,10 +221,10 @@ def write_stroke(stroke_points=None,
     Num_way_points = way_points.shape[0]  
     print("Num_way_points :", Num_way_points)  
 
-    initial_angle = np.zeros(2) 
-    initial_angle[0] = way_points[0, 0] 
-    initial_angle[1] = way_points[0, 1]  
-    start_point = forward_ik(initial_angle)   
+    initial_angle = np.zeros(2)  
+    initial_angle[0] = way_points[0, 0]  
+    initial_angle[1] = way_points[0, 1]   
+    start_point = forward_ik(initial_angle)    
 
     # move to target point
     set_pen_up()  
@@ -246,11 +246,10 @@ def write_stroke(stroke_points=None,
     
 
 def eval(impedance_params = np.array([35.0, 25.0, 0.4, 0.1])):   
-    """
+    """ 
         Write one stroke with given impedance 
-    """
-    
-    print("Load stroke path !!!")
+    """ 
+    print("Load stroke path !!!") 
     way_points = np.loadtxt('angle_list.txt', delimiter=',')    
     N_way_points = way_points.shape[0]   
     # print("N_way_points :", N_way_points) 
@@ -289,16 +288,16 @@ def set_pen_up():
 
 def set_pen_down():  
     """ 
-        pull pen down 
+        pull pen down  
     """ 
-    down_angle = np.int32(0)  
-    motor_control.set_position(0.0, down_angle)  
+    down_angle = np.int32(0)   
+    motor_control.set_position(0.0, down_angle)   
 
 
 if __name__ == "__main__":  
 
     # motor_control.read_angle_3(0.0) 
-    # motor_control.motor_3_stop()
+    # motor_control.motor_3_stop()   
 
     # motor_control.set_position(0.0, np.int32(200)) 
 

@@ -251,6 +251,7 @@ double set_position(double theta_2_initial, int32_t angle)
     return theta_3_t;   
 }
 
+
 int motor_3_stop()
 {
     ////////////////////////////////////////////
@@ -289,6 +290,7 @@ double read_link_angle_1(double q_1_initial)
     return q_1;  
 } 
 
+
 double read_link_angle_2(double q_2_initial)   
 {
     ////////////////////////////////////////////   
@@ -305,6 +307,7 @@ double read_link_angle_2(double q_2_initial)
 
     return q_2;  
 }  
+
 
 int move_to_target(double stiffness, double damping,  
 double q_1_target[], double q_2_target[], int N,   
@@ -916,41 +919,47 @@ int rotate_to_target(
 
     double pos_1 = 0.0;         
 
-    double dist = 0.0; 
-    int initial_index = 0;    
-    int max_index = 10000;   
-    
+    double dist = 0.0;  
+
+    string output_angle = root_path + "real_angle_list.txt";   
+    ofstream OutFileAngle(output_angle);   
+    OutFileAngle << "angle_1" << "\n";   
 
     /////////////////////////////////////////////////////
     /////  avoid large motion at starting points  ///////
     /////////////////////////////////////////////////////
     run_on = 1; 
 
-    // Catch a Ctrl-C event:
-	void  (*sig_h)(int) = sigint_1_step;   
+    // Catch a Ctrl-C event: 
+	void  (*sig_h)(int) = sigint_1_step;    
 
     // Catch a Ctrl-C event:  
-    signal(SIGINT, sig_h);   
+    signal(SIGINT, sig_h);    
  
     // dist > dist_threshold && initial_index < max_index
     while(run_on)  
     {
         theta_t = motor_3.read_single_turn(1) - theta_initial;    
+        printf("theta_t: %f\n", theta_t);   
 
-        dist = sqrt(pow((theta_t - theta_target), 2));   
-        // printf(" theta_t: %f\n", theta_t);    
+        ////////////////////////////////////////////////////////
+        // Save Data
+        ////////////////////////////////////////////////////////
+        OutFileAngle << theta_t << "\n";  
+
+        dist = sqrt(pow((theta_t - theta_target), 2));    
 
         /////////////////////////////////////////////////////
         // calculate torque control command 
         ///////////////////////////////////////////////////// 
         torque = clip(-1 * stiffness * (theta_target - theta_t) - damping * (d_theta_e - d_theta_t), torque_lower_bound, torque_upper_bound) * ctl_ratio;   
 
-        pos_1 = motor_3.set_torque(1, torque, &d_theta_t, &torque_t);   
+        pos_1 = motor_3.set_torque(1, 0.0, &d_theta_t, &torque_t);   
 
     }
 
     printf("Rotate to target point !!!! \n");   
-
+    OutFileAngle.close(); 
     motor_3.pack_stop_cmd(1);   
 
     return 1;  
