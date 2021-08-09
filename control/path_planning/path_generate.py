@@ -1,4 +1,5 @@
 import numpy as np
+np.set_printoptions(precision=5)
 import matplotlib.pyplot as plt
 import math
 import seaborn as sns
@@ -169,7 +170,7 @@ def plot_path(period, traj, image_points, task_points, angle_list, fig_name='Str
 
 def generate_path(traj, inter_type=1,
                   center_shift=np.array([-WIDTH/2, 0.23]),
-                  velocity=0.04, Ts=0.001, plot_show=False, save_path=False):
+                  velocity=0.04, Ts=0.001, plot_show=False, save_path=False, stroke_name=0):
     """
          generate stroke trajectory from list
          velocity ::: 0.04m/s
@@ -202,8 +203,8 @@ def generate_path(traj, inter_type=1,
     ratio = IMAGE_WIDTH / WIDTH
     
     period = dist/ratio/velocity
-    print("Distance (mm) :", dist)
-    print("Period (s) :", period)
+    print("Distance (mm) :", np.array(dist))
+    print("Period (s) :", np.array(period))
     N = np.array(period / Ts).astype(int)
     
     if inter_type==1:
@@ -296,7 +297,7 @@ def generate_path(traj, inter_type=1,
         plot_path(period, traj, image_points, task_points, way_points)
         
     if save_path:
-        np.savetxt('../control/angle_list_test.txt', way_points)
+        np.savetxt('../control/angle_list_' + str(stroke_name) + '.txt', way_points)
 
     return way_points
 

@@ -232,17 +232,19 @@ if __name__ == "__main__":
     type = 1
     
     # for str_index in range():
-    str_index = 1
+    str_index = 4
     traj = np.loadtxt(root_path + '/' + folder_name + '/' +
                            font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
     
-    generate_path(traj[36:],
+    generate_path(traj,
                   inter_type=1,
                   center_shift=np.array([0.16, -WIDTH / 2]),
                   velocity=0.04,
                   Ts=0.001,
                   plot_show=True,
-                  save_path=True)
+                  save_path=True,
+                  stroke_name=str_index
+                  )
 
     # writing_controller = Controller(
     #     args, img_processor=None, impedance_level=0)
