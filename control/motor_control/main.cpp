@@ -222,7 +222,7 @@ double set_position(double theta_3_initial, int32_t angle)
     double theta_3_t;   
 
     theta_3_t = motor_3.read_single_turn(1);  
-    printf("Motor 3 position: %f\n", theta_3_t/3.14*180);   
+    // printf("Motor 3 position: %f\n", theta_3_t/3.14*180);   
 
     // int32_t angle = theta_3_t + 10; 
     uint16_t max_speed = 20; 
@@ -1172,7 +1172,7 @@ double theta_1_initial, double theta_2_initial, int num_episodes
         {
 
         }
-        printf("Episode: %\n", epi);    
+        // printf("Episode: %\n", epi);    
     }    
     // for(int index=0; index<Num_waypoints; index=index+1)  
     // {

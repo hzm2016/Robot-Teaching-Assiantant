@@ -20,7 +20,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.356041, 0.505918, 0.385173])   
+Angle_initial = np.array([-0.344382, 0.449892, 0.308069])   
 
 # impedance params : 
 Move_Impedance_Params = np.array([35.0, 30.0, 2.0, 0.1])  
@@ -196,7 +196,9 @@ def write_word(word_path,
     impedance_params=np.array([35.0, 25.0, 0.4, 0.1])): 
     
     for index in range(len(word_path)):  
-        print("Stroke %d"%index)  
+        print("*" * 50)
+        print("*" * 50)
+        print("Write Stroke %d : "%index)  
         stroke_points_index = word_path[index]  
 
         if index < (len(word_path) - 1):  
@@ -222,10 +224,10 @@ def write_stroke(stroke_points=None,
     impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
     target_point=Initial_point): 
 
-    print("Write stroke !!!")  
+    # print("Write stroke !!!")  
     way_points = stroke_points  
     Num_way_points = way_points.shape[0]  
-    print("Num_way_points :", Num_way_points)  
+    # print("Num_way_points :", Num_way_points)  
 
     initial_angle = np.zeros(2)  
     initial_angle[0] = way_points[0, 0]  
@@ -250,8 +252,8 @@ def write_stroke(stroke_points=None,
 
     move_to_target_point(target_point, Move_Impedance_Params, velocity=0.05)  
 
-    print("*" * 50)  
     print("Write stroke once done !!!")  
+    print("*" * 50)  
     
 
 def eval(impedance_params = np.array([35.0, 30.0, 0.4, 0.1])):   
@@ -333,10 +335,20 @@ if __name__ == "__main__":
     print("N_way_points :", N_way_points)  
     word_path.append(way_points.copy()) 
 
+    way_points = np.loadtxt('angle_list_3.txt', delimiter=' ')    
+    N_way_points = way_points.shape[0]   
+    print("N_way_points :", N_way_points)  
+    word_path.append(way_points.copy()) 
+
+    way_points = np.loadtxt('angle_list_4.txt', delimiter=' ')    
+    N_way_points = way_points.shape[0]   
+    print("N_way_points :", N_way_points)  
+    word_path.append(way_points.copy()) 
+
     # print(word_path[1]) 
 
-    # write_word(word_path, 
-    # impedance_params=np.array([35.0, 30.0, 0.4, 0.1])) 
+    write_word(word_path, 
+    impedance_params=np.array([35.0, 30.0, 0.4, 0.1])) 
 
     # write_stroke(stroke_points=way_points, 
     # impedance_params=np.array([35.0, 30.0, 0.4, 0.1]), 
@@ -356,7 +368,7 @@ if __name__ == "__main__":
     # motor_control.set_position(0.0, np.int32(1700)) 
     # motor_control.motor_3_stop() 
 
-    """ calibrate position for each start up """ 
+    # """ calibrate position for each start up """ 
     # Angle_initial = reset_and_calibration() 
 
     # motor_control.read_initial_angle_2() 
@@ -364,7 +376,7 @@ if __name__ == "__main__":
     # impedance_params = np.array([35.0, 10, 2.0, 0.1])  
     # move_to_target_point(np.array([0.34, -0.13]), impedance_params, velocity=0.05)  
 
-    angle, point = get_observation(angle_initial=Angle_initial)   
+    # angle, point = get_observation(angle_initial=Angle_initial)   
 
     # impedance_params = np.array([0.1, 0.1, 0, 0])  
     # motor_control.rotate_to_target(impedance_params[0], impedance_params[2], 3.14, 0.0, 0.05, 10)  
