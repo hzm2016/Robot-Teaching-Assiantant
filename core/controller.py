@@ -6,7 +6,7 @@ import argparse
 
 # task interface
 from control.protocol.task_interface import TCPTask
-from control.path_planning.path_generate import generate_path, WIDTH
+from control.path_planning.path_generate import *
 # from control.vision_capture.main_functions import capture_image, show_video
 
 
@@ -236,16 +236,38 @@ if __name__ == "__main__":
     traj = np.loadtxt(root_path + '/' + folder_name + '/' +
                            font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
     
-    generate_path(traj,
-                  inter_type=1,
-                  center_shift=np.array([0.16, -WIDTH / 2]),
-                  velocity=0.04,
-                  Ts=0.001,
-                  plot_show=True,
-                  save_path=True,
-                  stroke_name=str(str_index)
-                  )
+    # generate_path(traj,
+    #               inter_type=1,
+    #               center_shift=np.array([0.16, -WIDTH / 2]),
+    #               velocity=0.04,
+    #               Ts=0.001,
+    #               plot_show=True,
+    #               save_path=True,
+    #               stroke_name=str(str_index)
+    #               )
 
+    way_points = np.loadtxt('../control/angle_list_1_1.txt', delimiter=' ')
+    N_way_points = way_points.shape[0]
+    # print("N_way_points :", N_way_points)
+    # word_path.append(way_points.copy())
+    angle_point_1 = way_points[-1, :]
+    end_point = forward_ik(angle_point_1)
+    
+    way_points_2 = np.loadtxt('../control/angle_list_1_2.txt', delimiter=' ')
+    # N_way_points = way_points_2.shape[0]
+    # print("N_way_points :", N_way_points)
+    # word_path.append(way_points.copy())
+    angle_point_2 = way_points_2[0, :]
+    start_point = forward_ik(angle_point_2)
+    
+    angle_list, N = path_planning(end_point, start_point, velocity=0.04)
+    print("angle", angle_list.shape)
+    
+    angle_list_1 = np.vstack([way_points, way_points_2, angle_list])
+    print(angle_list_1.shape)
+
+    np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
+    
     # writing_controller = Controller(
     #     args, img_processor=None, impedance_level=0)
     #

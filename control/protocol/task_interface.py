@@ -17,9 +17,9 @@ class TaskInterface:
 
     def __init__(self):
         """
-        Initialize the environment. Specify the number of feature of the movement.
-        We assume "ClassicSpace" for the rbf of the movement, as specified in romi library.
-        :param n_features:
+            Initialize the environment. Specify the number of feature of the movement.
+            We assume "ClassicSpace" for the rbf of the movement, as specified in romi library.
+            :param n_features:
         """
         pass
 

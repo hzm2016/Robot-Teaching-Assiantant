@@ -348,7 +348,7 @@ if __name__ == "__main__":
     # print(word_path[1]) 
 
     write_word(word_path, 
-    impedance_params=np.array([35.0, 30.0, 0.4, 0.1])) 
+    impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))
 
     # write_stroke(stroke_points=way_points, 
     # impedance_params=np.array([35.0, 30.0, 0.4, 0.1]), 
