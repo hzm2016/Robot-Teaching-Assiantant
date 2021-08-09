@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
     way_points = np.loadtxt('angle_list_1_2.txt', delimiter=' ')    
     N_way_points = way_points.shape[0]   
-    print("N_way_points :", N_way_points)  
+    print("N_way_points :", N_way_points)
     word_path.append(way_points.copy()) 
 
     way_points = np.loadtxt('angle_list_2.txt', delimiter=' ')    

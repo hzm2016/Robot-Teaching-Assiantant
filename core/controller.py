@@ -263,9 +263,15 @@ if __name__ == "__main__":
     angle_list, N = path_planning(end_point, start_point, velocity=0.04)
     print("angle", angle_list.shape)
     
-    angle_list_1 = np.vstack([way_points, way_points_2, angle_list])
+    angle_list_1 = np.vstack([way_points, angle_list, way_points_2])
     print(angle_list_1.shape)
 
+    fig = plt.figure(figsize=(15, 4))
+    plt.plot(angle_list_1[:, 0], linewidth=linewidth, label='$q_1$')
+    # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+    plt.plot(angle_list_1[:, 1], linewidth=linewidth, label='$q_2$')
+    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    plt.show()
     np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
     
     # writing_controller = Controller(
