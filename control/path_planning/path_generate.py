@@ -215,7 +215,6 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     plt.ylim([0, 128])
     plt.xlabel('$x_1$')
     plt.ylabel('$x_2$')
-    # plt.axis('equal')
 
     plt.subplot(1, 3, 2)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
@@ -233,13 +232,18 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
 
     plt.subplot(1, 3, 3)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    # total_period = sum(period_list)
+    total_period = sum(period_list)
+    print("total_period :", total_period)
     for i in range(len(traj_list)):
         if i == 0:
-            t_list = np.linspace(0.0, period_list[i], word_angle_list[i].shape[0])
+            start_period = 0.0
+            # t_list = np.linspace(0.0, period_list[i], word_angle_list[i].shape[0])
         else:
-            t_list = np.linspace(period_list[i-1], period_list[i] + period_list[i-1], word_angle_list[i].shape[0])
-            
+            start_period = sum(period_list[:i])
+
+        t_list = np.linspace(start_period, period_list[i] + start_period, word_angle_list[i].shape[0])
+        print("period :", start_period, period_list[i] + start_period)
+        
         plt.plot(t_list, word_angle_list[i][:, 0], linewidth=linewidth, label='$q_1$')
         # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
         plt.plot(t_list, word_angle_list[i][:, 1], linewidth=linewidth, label='$q_2$')
@@ -425,7 +429,7 @@ def generate_word_path(
             velocity=velocity,
             plot_show=False,
             save_path=save_path,
-	        word_name=word_name,
+            word_name=word_name,
             stroke_name=stroke_index
         )
         

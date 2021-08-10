@@ -238,8 +238,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root_path = '../control/data/font_data'
-    folder_name = 'ren'
-    font_name = '人'
+    folder_name = 'chuan'
+    font_name = '川'
     type = 1
     
     stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
@@ -255,7 +255,8 @@ if __name__ == "__main__":
     inverse_list = np.ones(len(traj_list))
     inverse_list[0] = False
     inter_list[0] = 2
-    # inter_list[1] = 2
+    inter_list[1] = 2
+    inter_list[2] = 2
     generate_word_path(
         traj_list,
         inter_list,
