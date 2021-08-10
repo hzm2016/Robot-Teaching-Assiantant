@@ -10,6 +10,8 @@ GAN_PARAM:
   INPUT_NC: 1
   OUTPUT_NC: 1 
   CUDA: False
+
+  
 # GAN_MODEL_PATH: ./saved_model/199_netG_S2P.pth
 # DIS_MODEL_PATH: ./saved_model/199_netD_P.pth
 
@@ -18,6 +20,7 @@ MAX_PADDING: 0
 
 NUM_REFERENCE_POINTS: 4
 TTF_FILE: ./tools/ttf/font1.ttf
+GRAPHICS_TXT: ./tools/src/graphics.txt
 
 CUDA: False
 SAVE_TRAJ: True
@@ -26,7 +29,7 @@ GENERATIION_ONLY: True
 FEEDBACK:
   WITH_FEEDBACK: True
   POST_PRORCESS:
-    { CROPPING: [478, 418, 1586, 672], BINARIZE: 128, RESCALE: 0.8, ROTATE: 0}
+    { BINARIZE: 128}
 
 
 SHOW_VIDEO: False

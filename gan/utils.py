@@ -9,11 +9,12 @@ import torch
 # from visdom import Visdom
 import torchvision.transforms as transforms
 import numpy as np
-from .nn.modules import Generator, StyleGanGenerator
-from .nn.modules import Discriminator
+from gan.nn.modules import Generator, StyleGanGenerator
+from gan.nn.modules import Discriminator
 from PIL import Image
-from .datasets import ImageDataset, SequentialImageDataset
+from gan.datasets import ImageDataset, SequentialImageDataset
 from torch.utils.data import DataLoader
+
 
 def tensor2image(tensor):
     image = 127.5*(tensor[0].cpu().float().numpy() + 1.0)

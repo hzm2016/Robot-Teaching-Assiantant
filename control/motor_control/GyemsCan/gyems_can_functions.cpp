@@ -87,9 +87,30 @@ double Gcan::read_sensor(int nodeID)
 
     //printf( "CAN messages are available to read.\n");
     channel_name.read(rframe); 
-    
+    // printf("channel_name :", rframe); 
+
     unpack_multi_turn_angle(&rframe, &multi_turn_position); 
     return double(multi_turn_position * 3.14/180/600); 
+}
+
+double Gcan::read_single_turn(int nodeID)
+{
+    read_single_turn_angle(nodeID);
+    // printf( "CAN messages are available to read.\n");
+
+    int i=0;
+    while (!channel_name.available()){
+        if (i++>10000000){
+            printf( "No CAN messages.\n");
+        }
+    }
+
+    //printf( "CAN messages are available to read.\n");
+    channel_name.read(rframe); 
+    
+    unpack_single_turn_angle(&rframe, &single_turn_position); 
+
+    return double(single_turn_position * 3.14/180/100); 
 }
 
 double Gcan::set_torque(int nodeID, int16_t iqControl, double* speed_back, double* torque_back)
@@ -100,8 +121,8 @@ double Gcan::set_torque(int nodeID, int16_t iqControl, double* speed_back, doubl
     while (!channel_name.available()){
         if (i++>10000000){
             printf( "No CAN messages.\n");  
-        }
-    }
+        } 
+    } 
 
     //printf( "CAN messages are available to read.\n"); 
     channel_name.read(rframe); 
@@ -110,10 +131,10 @@ double Gcan::set_torque(int nodeID, int16_t iqControl, double* speed_back, doubl
 
     *speed_back = speed * 3.14/180/6; 
     *torque_back = torque * 17.5/800; 
+    // printf("position : %f\n", position * 3.14/180); 
 
     return 0.0; 
 }
-
 
 void Gcan::pack_torque_cmd(int nodeID, int16_t iqControl){
      //range :-2000~2000, corresponding to the actual torque current range -32A~32A
@@ -162,8 +183,8 @@ void Gcan::unpack_speed_torque_reply(struct can_frame* msg, uint8_t* temp, int16
     *temp = msg->data[1];
 
     *ptorque = (msg->data[3]<<8)|msg->data[2];
-    *pspeed = (msg->data[5]<<8)|(msg->data[4]);
-    *pposition = (msg->data[7]<<8)|msg->data[6];       
+    *pspeed = (msg->data[5]<<8)|(msg->data[4]); 
+    *pposition = (msg->data[7]<<8)|msg->data[6];        
     #ifdef DEBUG
     // printf("Temp: %hu toruqe: %d speed: %d pos: %u \n", *temp, *ptorque, *pspeed, *pposition);
     #endif    
@@ -219,6 +240,7 @@ void Gcan::pack_run_cmd(int nodeID){
      
     channel_name.write(msg);
 }
+
 void Gcan::clear_motor_error(int nodeID){
      
     /// pack ints into the can buffer ///
@@ -343,50 +365,50 @@ void Gcan::pack_multi_torque_cmd(int nodeID, int16_t iqControl, int16_t iqContro
 void Gcan::pack_position_1_cmd(int nodeID, int32_t angle){
     //multi-turn
     //actual position is 0.01degree/LSB, 36000 represents 360°
-     #ifdef DEBUG   
+    #ifdef DEBUG   
     printf("Error: angle: %ld \n", angle);
-     #endif
+    #endif
      
     // keep the outer degree consistent with the inner degree input
-     angle = angle * 6;
+    // angle = angle * 6; 
 
-     msg.can_id  = 0x140+nodeID;
-	 msg.can_dlc = 8;
-	 msg.data[0] = 0xA3;                                 
-     msg.data[1] = 0;                 
-     msg.data[2] = 0;                   
-     msg.data[3] = 0;  
-     msg.data[4] = angle&0xff;                
-     msg.data[5] = (angle>>8)&0xff;                  
-     msg.data[6] = (angle>>16)&0xff;  
-     msg.data[7] = (angle>>24)&0xff;                  
+    msg.can_id  = 0x140+nodeID;
+    msg.can_dlc = 8;
+    msg.data[0] = 0xA3;                                 
+    msg.data[1] = 0;                 
+    msg.data[2] = 0;                   
+    msg.data[3] = 0;  
+    msg.data[4] = angle&0xff;                
+    msg.data[5] = (angle>>8)&0xff;                  
+    msg.data[6] = (angle>>16)&0xff;  
+    msg.data[7] = (angle>>24)&0xff;                  
      
-    channel_name.write(msg);
+    channel_name.write(msg);  
 }
 
 void Gcan::pack_position_2_cmd(int nodeID, int32_t angle, uint16_t max_speed){
-     //multi-turn
+    //multi-turn
     //actual position is 0.01degree/LSB, 36000 represents 360°
-    //actual speed of 1dps/LSB
+    //actual speed of 1dps/LSB 
     #ifdef DEBUG   
     printf("Error: angle: %ld speed: %u \n", angle, max_speed);
-     #endif
+    #endif
 
      // keep the outer degree consistent with the inner degree input
-     angle = angle * 6;
+    // angle = angle * 6; 
 
-     msg.can_id  = 0x140+nodeID;
-	 msg.can_dlc = 8;
-	 msg.data[0] = 0xA4;                                 
-     msg.data[1] = 0;                 
-     msg.data[2] = max_speed&0xff;                   
-     msg.data[3] = (max_speed>>8)&0xff;  
-     msg.data[4] = angle&0xff;                
-     msg.data[5] = (angle>>8)&0xff;                  
-     msg.data[6] = (angle>>16)&0xff;  
-     msg.data[7] = (angle>>24)&0xff;                  
+    msg.can_id  = 0x140+nodeID; 
+    msg.can_dlc = 8; 
+    msg.data[0] = 0xA4;                                  
+    msg.data[1] = 0;                 
+    msg.data[2] = max_speed&0xff;                   
+    msg.data[3] = (max_speed>>8)&0xff;  
+    msg.data[4] = angle&0xff;                
+    msg.data[5] = (angle>>8)&0xff;                  
+    msg.data[6] = (angle>>16)&0xff;  
+    msg.data[7] = (angle>>24)&0xff;                  
     
-    channel_name.write(msg);
+    channel_name.write(msg); 
 }
 
 void Gcan::pack_position_3_cmd(int nodeID, uint16_t angle, uint8_t spinDirection){
@@ -397,22 +419,22 @@ void Gcan::pack_position_3_cmd(int nodeID, uint16_t angle, uint8_t spinDirection
 
     #ifdef DEBUG   
     printf("Error: angle: %u spinDirection: %hu\n", angle, spinDirection);
-     #endif
+    #endif 
 
-     // keep the outer degree consistent with the inner degree input
-     angle = angle * 6;
+    // keep the outer degree consistent with the inner degree input
+    angle = angle * 6;
 
-     /// pack ints into the can buffer ///
-     msg.can_id  = 0x140+nodeID;
-	 msg.can_dlc = 8;
-	 msg.data[0] = 0xA5;                                 
-     msg.data[1] = spinDirection;                 
-     msg.data[2] = 0;                   
-     msg.data[3] = 0;  
-     msg.data[4] = angle&0xff;                
-     msg.data[5] = (angle>>8)&0xff;                  
-     msg.data[6] = 0;  
-     msg.data[7] = 0;                  
+    /// pack ints into the can buffer ///
+    msg.can_id  = 0x140+nodeID;
+    msg.can_dlc = 8;
+    msg.data[0] = 0xA5;                                 
+    msg.data[1] = spinDirection;                 
+    msg.data[2] = 0;                   
+    msg.data[3] = 0;  
+    msg.data[4] = angle&0xff;                
+    msg.data[5] = (angle>>8)&0xff;                  
+    msg.data[6] = 0;  
+    msg.data[7] = 0;                  
      
     channel_name.write(msg);
 }
@@ -446,7 +468,6 @@ void Gcan::pack_position_4_cmd(int nodeID, uint16_t angle, uint16_t max_speed, u
     channel_name.write(msg);
 }
 
-
 void Gcan::read_single_turn_angle(int nodeID){
      
     /// pack ints into the can buffer ///
@@ -461,17 +482,17 @@ void Gcan::read_single_turn_angle(int nodeID){
      msg.data[6] = 0;  
      msg.data[7] = 0;   
      
-    channel_name.write(msg);
+    channel_name.write(msg); 
 }
 
 // return the inner angle value without reduction ratio
 void Gcan::unpack_single_turn_angle(struct can_frame* msg, uint16_t* pangle){
-    *pangle = (msg->data[7]<<8)|msg->data[6];
-    double inner_actual_single_turn_angle = double(*pangle) / 100.0; 
+    *pangle = (msg->data[7]<<8)|msg->data[6]; 
+    double inner_actual_single_turn_angle = double(*pangle) / 100.0;  
+    
     #ifdef DEBUG   
-    printf("Position angle %f \n", inner_actual_single_turn_angle);
-     #endif
-        
+    // printf("Position angle %f \n", inner_actual_single_turn_angle); 
+    #endif 
 }
 
 void Gcan::read_multi_turn_angle(int nodeID){
@@ -504,7 +525,6 @@ void Gcan::unpack_multi_turn_angle(struct can_frame* msg, int64_t* mangle){
     #endif
 }
  
-
 void Gcan::set_pos2zero(int nodeID){
      
     /// pack ints into the can buffer ///
@@ -521,7 +541,6 @@ void Gcan::set_pos2zero(int nodeID){
      
     channel_name.write(msg);
 }
-
 
 void Gcan::write_encoder_offset(int nodeID, uint16_t offset){
      
@@ -554,20 +573,20 @@ void Gcan::read_encoder(int nodeID){
      msg.data[6] = 0;  
      msg.data[7] = 0;      
      
-    channel_name.write(msg);
+    channel_name.write(msg); 
 }
 
 void Gcan::unpack_read_encoder(struct can_frame* msg, uint16_t* pos, uint16_t* raw, uint16_t* offset){
     
-    *pos = (msg->data[3]<<8)|msg->data[2];
-    *raw = (msg->data[5]<<8)|(msg->data[4]);
-    *offset = (msg->data[7]<<8)|msg->data[6];
+    *pos = (msg->data[3]<<8)|msg->data[2]; 
+    *raw = (msg->data[5]<<8)|(msg->data[4]); 
+    *offset = (msg->data[7]<<8)|msg->data[6]; 
     #ifdef DEBUG
-    printf("pos: %u raw: %u offset: %u \n", *pos, *raw, *offset);
+    printf("pos: %u raw: %u offset: %u \n", *pos, *raw, *offset); 
+    printf("pos: %d raw: %d offset: %d \n", *pos, *raw, *offset); 
     #endif    
 }
  
-
 void Gcan::write_acceleration2ram(int nodeID,uint16_t accel){
     //set acceleration limit
     
@@ -634,7 +653,6 @@ void Gcan::write_PID(int nodeID,PIDconstant pid){
      
     channel_name.write(msg);
 }
-
 
 void Gcan::read_PID(int nodeID){
      

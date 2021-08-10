@@ -1,5 +1,7 @@
 import os.path as osp
 import cv2
+import numpy as np
+from PIL import Image
 import os
 from cairosvg import svg2png
 from tqdm import tqdm
@@ -15,7 +17,7 @@ def list_to_str(list):
 
     return rt_str
 
-def _svg_2_img(out_path, path_list):
+def svg_2_img(out_path, path_list):
     """[summary]
 
     Args:
@@ -37,6 +39,23 @@ def _svg_2_img(out_path, path_list):
         path_str = list_to_str(path_str_list)
         svg2png(bytestring=path_str,write_to=img_name,background_color='white',output_width=128, output_height=128)
 
+def svg2img(paths,out_path='./example'):
+
+    paths = parse_path(paths)
+
+    transform = [r'<g transform="scale(1, -1) translate(0, -900)">', r'</g>']    
+    path_str = wsvg(paths, dimensions=(1024,1024))
+    path_str_list = path_str.split('\n')
+    path_str_list.insert(2, transform[0])
+    path_str_list.insert(-2, transform[1])
+    path_str = list_to_str(path_str_list)
+    io = svg2png(bytestring=path_str,background_color='white',output_width=128, output_height=128)
+    io.seek(0)
+    byteImg = np.asarray(Image.open(io))
+
+    return byteImg[:,:,0]
+
+
 def _parse_strokes(strokes):
     """[summary]
 
@@ -57,8 +76,8 @@ def main():
     """[summary]
     """
 
-    input_file = './src/graphics.txt'
-    output_dir = './imgs/imgs_part'
+    input_file = './tools/src/graphics.txt'
+    output_dir = './imgs/imgs_part_2'
 
     input_lines = open(input_file,'r').readlines()
 
@@ -75,8 +94,7 @@ def main():
         os.makedirs(out_path, exist_ok = True)
 
         svg = _parse_strokes(strokes)
-        _svg_2_img(out_path, svg)
-
+        svg_2_img(out_path, svg)
 
 if __name__ == '__main__':
     main()
