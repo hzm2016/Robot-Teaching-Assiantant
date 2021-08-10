@@ -275,7 +275,7 @@ def eval_writting(run_on=True, Load_path=False):
 
     if not Load_path: 
         print("Load stroke path !!!") 
-        stroke_angle = np.loadtxt('angle_list_1.txt', delimiter=' ')    
+        stroke_angle = np.loadtxt('angle_list_0.txt', delimiter=' ')    
         # N_way_points = stroke_angle.shape[0]   
         # print("N_way_points :", N_way_points)  
     
@@ -283,11 +283,11 @@ def eval_writting(run_on=True, Load_path=False):
     # ######################################################
     # ############## Wait impedance parameters  ############
     # ###################################################### 
-    _server.wait_params_request() 
+    _server.wait_params_request()  
 
-    # impedance_params = None
-    # while impedance_params is None:  
-    # read impedance parameters :::
+    # impedance_params = None  
+    # while impedance_params is None:   
+    # read impedance parameters :::  
     while True:
         impedance_params = _server.read_params()  
         impedance_params = np.array(impedance_params.copy())  
@@ -303,18 +303,19 @@ def eval_writting(run_on=True, Load_path=False):
     print("Input impedance parameters :::", np.array(impedance_params))  
     print("+"*50)
 
-    if run_on: 
-        write_stroke(stroke_points=stroke_angle, impedance_params=np.array([35.0, 30.0, 1.4, 0.2]), target_point=Initial_point) 
+    num_eval = 3 
+    for i in range(num_eval):  
+        print('Writting episode %d:'%i) 
+        if run_on: 
+            write_stroke(stroke_points=stroke_angle, impedance_params=np.array([35.0, 30.0, 1.4, 0.2]), target_point=Initial_point) 
 
-        print("*" * 50) 
-        print("Eval one stroke once done !!!") 
-
-        motor_control.motor_3_stop() 
+            print("*" * 50) 
+            print("Eval one stroke once done !!!") 
         
-
-    # send movement_done command 
-    _server.send_movement_done() 
+        # send movement_done command 
+        _server.send_movement_done() 
     
+    motor_control.motor_3_stop() 
     _server.close() 
      
 
