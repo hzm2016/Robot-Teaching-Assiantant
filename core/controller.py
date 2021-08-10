@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import argparse
 import time
+import glob
 
 # task interface
 from control.protocol.task_interface import TCPTask
@@ -50,7 +51,7 @@ class Controller(object):
         self.show_video = True
 
         # initial TCP connection :::
-        self.task = TCPTask('169.254.0.99', 5005)
+        # self.task = TCPTask('169.254.0.99', 5005)
 
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
@@ -237,24 +238,33 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root_path = '../control/data/font_data'
-    folder_name = 'tian'
-    font_name = '田'
+    folder_name = 'ren'
+    font_name = '人'
     type = 1
-    num_stroke = 5
-    traj_list = []
     
-    # for str_index in range(num_stroke):
-    #     traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-    #                            font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
-    #     traj_list.append(traj)
-	
-    # generate_word_path(
-    #     traj_list,
-    #     center_shift=np.array([0.16, -WIDTH / 2]),
-    #     velocity=0.04,
-    #     plot_show=True,
-    #     save_path=False,
-    #     word_name='Tian')
+    stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
+    num_stroke = len(stroke_list_file)
+    traj_list = []
+
+    for str_index in range(num_stroke):
+        traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+                               font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+        traj_list.append(traj)
+
+    inter_list = np.ones(len(traj_list))
+    inverse_list = np.ones(len(traj_list))
+    inverse_list[0] = False
+    inter_list[0] = 2
+    # inter_list[1] = 2
+    generate_word_path(
+        traj_list,
+        inter_list,
+        inverse_list,
+        center_shift=np.array([0.16, -WIDTH / 2]),
+        velocity=0.04,
+        plot_show=True,
+        save_path=True,
+        word_name=folder_name)
     
     # generate_stroke_path(traj_list[2],
     #               inter_type=1,
@@ -294,15 +304,15 @@ if __name__ == "__main__":
     # plt.show()
     # np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
     
-    str_index = 0
-    traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-                           font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
-    
-    writing_controller = Controller(
-        args, img_processor=None, impedance_level=0)
-
-    writing_controller.interact_once(
-        traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.04, mode='eval')
+    # str_index = 0
+    # traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+    #                        font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+    #
+    # writing_controller = Controller(
+    #     args, img_processor=None, impedance_level=0)
+    #
+    # writing_controller.interact_once(
+    #     traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.04, mode='eval')
 
     # target_img = cv2.imread(root_path + '/1_font_1.png')
     # writing_controller.interact(path_data, target_img)

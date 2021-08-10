@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import math
 import seaborn as sns
 import copy
+import cv2
+import PIL.Image as Image
+
 
 sns.set_theme()
 
@@ -46,6 +49,29 @@ def initial_parameter_estimate(num_demons_each_style=30):
         images_list.append(i.copy())
 
     return writting_vel, impedance_params
+
+
+def fig2data(fig):
+    """
+    fig = plt.figure()
+    image = fig2data(fig)
+    @brief Convert a Matplotlib figure to a 4D numpy array with RGBA channels and return it
+    @param fig a matplotlib figure
+    @return a numpy 3D array of RGBA values
+    """
+    # draw the renderer
+    fig.canvas.draw()
+
+    # Get the RGBA buffer from the figure
+    w, h = fig.canvas.get_width_height()
+    buf = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
+    buf.shape = (w, h, 4)
+
+    # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
+    buf = np.roll(buf, 3, axis=2)
+    image = Image.frombytes("RGBA", (w, h), buf.tostring())
+    image = np.asarray(image)
+    return image
 
 
 def calibrate_para():
@@ -170,7 +196,7 @@ def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_na
     plt.show()
 
 
-def plot_word_path(period_list, traj_list, image_points_list, task_points_list, word_angle_list, word_name='Stroke Path'):
+def plot_word_path(period_list, traj_list, image_points_list, task_points_list, word_angle_list, word_folder='../control/data', word_name='Stroke Path'):
     """
         plot one word path
     """
@@ -181,6 +207,7 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
     for i in range(len(traj_list)):
+        # traj_list[i].transpose((0, 1)).copy()
         plt.plot(traj_list[i][:, 1], traj_list[i][:, 0], marker='o', linewidth=linewidth)
         plt.plot(image_points_list[i][:, 0], image_points_list[i][:, 1], linewidth=linewidth - 2)
 
@@ -225,10 +252,36 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     
     plt.show()
     
-    
-def generate_stroke_path(traj, inter_type=1,
+    fig = plt.figure(figsize=(4, 4))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+
+    for i in range(len(traj_list)):
+        # rotate_task_point = task_points_list[i].transpose((1, 0))
+        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
+        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i+1), rotation=90)
+
+    plt.ylim([-WIDTH/2, WIDTH/2])
+    plt.xlim([0., 0.13 + WIDTH])
+    # plt.xlabel('$x_1$(m)')
+    # plt.ylabel('$x_2$(m)')
+    plt.tight_layout()
+
+    img_path = fig2data(fig)
+    # img = img_path.transpose(Image.ROTATE_90)  # 将图片旋转90度
+    # img_path.show()
+    img_show = np.rot90(img_path, -1)
+    cv2.imwrite(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
+    # cv2.imshow(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
+    # cv2.waitKey(0)
+    # plt.imshow(img_show)
+    # plt.show()
+
+
+def generate_stroke_path(traj, inter_type=1, inverse=True,
                   center_shift=np.array([-WIDTH/2, 0.23]),
-                  velocity=0.04, Ts=0.001, plot_show=False, save_path=False, stroke_name=0):
+                  velocity=0.04, Ts=0.001, plot_show=False, save_path=False, word_name=None, stroke_name=0):
     """
          generate stroke trajectory from list
          velocity ::: 0.04m/s
@@ -241,7 +294,6 @@ def generate_stroke_path(traj, inter_type=1,
         dist += np.linalg.norm((point_2.copy() - point_1.copy()), ord=2)
     
     path_data = traj
-    
     # M = N//len(traj)
     # x_list = []
     # y_list = []
@@ -266,11 +318,19 @@ def generate_stroke_path(traj, inter_type=1,
     N = np.array(period / Ts).astype(int)
     
     if inter_type==1:
-        y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
-        x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
+        if inverse:
+            y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
+            x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
+        else:
+            y_list = np.linspace(path_data[0, 0], path_data[-1, 0], N)
+            x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
     elif inter_type==2:
-        x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
-        y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
+        if inverse:
+            x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
+            y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
+        else:
+            x_list = np.linspace(path_data[0, 1], path_data[-1, 1], N)
+            y_list = np.interp(x_list, path_data[:, 1], path_data[:, 0])
     else:
         print("Please check the given stroke path !!!")
     
@@ -328,25 +388,26 @@ def generate_stroke_path(traj, inter_type=1,
     
     if plot_show:
         plot_stroke_path(period, traj, image_points, task_points, way_points)
-    
+     
     if save_path:
-        np.savetxt('../control/angle_list_' + stroke_name + '.txt', way_points, fmt='%.05f')
+        np.savetxt('../control/data/font_data/' + word_name + '/' + 'angle_list_' + str(stroke_name) + '.txt', way_points, fmt='%.05f')
 
     return way_points, image_points, task_points, period
 
 
 def generate_word_path(
         traj_list,
+        inter_list=None,
+        inverse_list=None,
         center_shift=np.array([-WIDTH/2, 0.23]),
         velocity=0.04,
         plot_show=False,
         save_path=False,
-        word_name='Tian'):
+        word_name='tian'):
     """
         generate word path
     """
-    inter_list = np.ones(len(traj_list))
-    inter_list[3] = 2
+    # inter_list = np.ones(len(traj_list))
     word_angle_list = []
     word_image_points = []
     word_task_points = []
@@ -355,10 +416,18 @@ def generate_word_path(
         # get one stroke
         traj = traj_list[stroke_index]
         
-        stroke_angle_list, stroke_image_points, stroke_task_points, period = generate_stroke_path(traj, inter_type=inter_list[stroke_index],
-                                                 center_shift=center_shift,
-                                                 velocity=velocity, plot_show=plot_show,
-                                                 save_path=save_path, stroke_name=stroke_index)
+        stroke_angle_list, stroke_image_points, stroke_task_points, period \
+            = generate_stroke_path(
+            traj,
+            inter_type=inter_list[stroke_index],
+            inverse=inverse_list[stroke_index],
+            center_shift=center_shift,
+            velocity=velocity,
+            plot_show=False,
+            save_path=save_path,
+	        word_name=word_name,
+            stroke_name=stroke_index
+        )
         
         word_angle_list.append(stroke_angle_list)
         word_image_points.append(stroke_image_points)
@@ -367,6 +436,7 @@ def generate_word_path(
         
     if plot_show:
         plot_word_path(period_list, traj_list, word_image_points, word_task_points, word_angle_list,
+                       word_folder='../control/data/font_data',
                        word_name=word_name)
 
 
