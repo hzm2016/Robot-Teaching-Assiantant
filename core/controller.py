@@ -238,12 +238,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root_path = '../control/data/font_data'
-    folder_name = 'chuan'
-    font_name = '川'
+    folder_name = 'xing'
+    font_name = '行'
     type = 1
     
     stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
     num_stroke = len(stroke_list_file)
+    print("num_stroke :", num_stroke)
     traj_list = []
 
     for str_index in range(num_stroke):
@@ -254,9 +255,11 @@ if __name__ == "__main__":
     inter_list = np.ones(len(traj_list))
     inverse_list = np.ones(len(traj_list))
     inverse_list[0] = False
+    inverse_list[1] = False
     inter_list[0] = 2
     inter_list[1] = 2
     inter_list[2] = 2
+    inter_list[5] = 2
     generate_word_path(
         traj_list,
         inter_list,
@@ -264,7 +267,7 @@ if __name__ == "__main__":
         center_shift=np.array([0.16, -WIDTH / 2]),
         velocity=0.04,
         plot_show=True,
-        save_path=True,
+        save_path=False,
         word_name=folder_name)
     
     # generate_stroke_path(traj_list[2],
