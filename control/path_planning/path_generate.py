@@ -121,18 +121,18 @@ def path_planning(start_point, target_point, velocity=0.04):
     return np.array(angle_list), N
 
 
-def plot_path(period, traj, image_points, task_points, angle_list, fig_name='Stroke Path'):
+def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_name='Stroke Path'):
     """
         check the planned path
     """
-    t_list = np.linspace(0.0, 2 * period, angle_list.shape[0])
+    t_list = np.linspace(0.0, period, angle_list.shape[0])
     
     fig = plt.figure(figsize=(15, 4))
     
     plt.title(fig_name)
     
     plt.subplot(1, 3, 1)
-    plt.subplots_adjust(wspace=2, hspace=0)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
     plt.plot(traj[:, 1], traj[:, 0], marker='o', linewidth=linewidth)
     plt.plot(image_points[:, 0], image_points[:, 1], linewidth=linewidth - 2)
@@ -168,9 +168,60 @@ def plot_path(period, traj, image_points, task_points, angle_list, fig_name='Str
     plt.legend()
     
     plt.show()
-    
 
-def generate_path(traj, inter_type=1,
+
+def plot_word_path(period_list, traj_list, image_points_list, task_points_list, word_angle_list, word_name='Stroke Path'):
+    """
+        plot one word path
+    """
+    plt.figure(figsize=(15, 4))
+    plt.title(word_name)
+
+    plt.subplot(1, 3, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(traj_list)):
+        plt.plot(traj_list[i][:, 1], traj_list[i][:, 0], marker='o', linewidth=linewidth)
+        plt.plot(image_points_list[i][:, 0], image_points_list[i][:, 1], linewidth=linewidth - 2)
+
+    plt.xlim([0, 128])
+    plt.ylim([0, 128])
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    # plt.axis('equal')
+
+    plt.subplot(1, 3, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(traj_list)):
+        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2, color='r')
+        # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
+        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
+        # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlabel('$x_1$(m)')
+    plt.ylabel('$x_2$(m)')
+
+    plt.subplot(1, 3, 3)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    for i in range(len(traj_list)):
+        t_list = np.linspace(0.0, period_list[i], word_angle_list[i].shape[0])
+        plt.plot(t_list, word_angle_list[i][:, 0], linewidth=linewidth, label='$q_1$')
+        # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+        plt.plot(t_list, word_angle_list[i][:, 1], linewidth=linewidth, label='$q_2$')
+        # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('One-loop Angle (rad)')
+    plt.legend()
+    plt.tight_layout()
+    
+    plt.show()
+    
+    
+def generate_stroke_path(traj, inter_type=1,
                   center_shift=np.array([-WIDTH/2, 0.23]),
                   velocity=0.04, Ts=0.001, plot_show=False, save_path=False, stroke_name=0):
     """
@@ -225,16 +276,15 @@ def generate_path(traj, inter_type=1,
     print("x_list :", x_list)
     print("y_list :", y_list)
     
+    task_points = np.vstack((x_1_list, x_2_list)).transpose()
+    # print("x_1_list :::", x_1_list)
+    # print("x_2_list :::", x_2_list)
+    
     # inverse
     # x_1_list = np.hstack([x_1_list, x_1_list[::-1]])
     # x_2_list = np.hstack([x_2_list, x_2_list[::-1]])
     # x_1_list = np.hstack([x_1_list])
     # x_2_list = np.hstack([x_2_list])
-
-    task_points = np.vstack((x_1_list, x_2_list)).transpose()
-
-    # print("x_1_list :::", x_1_list)
-    # print("x_2_list :::", x_2_list)
 
     angle_1_list_e = []
     angle_2_list_e = []
@@ -247,36 +297,7 @@ def generate_path(traj, inter_type=1,
         
         angle = IK(point)
         
-        # # Inverse kinematics
-        # L = x1 ** 2 + x2 ** 2
-        #
-        # gamma = math.atan2(x2, x1)
-        #
-        # cos_belta = (L1 ** 2 + L - L2 ** 2) / (2 * L1 * np.sqrt(L))
-        #
-        # if cos_belta > 1:
-        #     angle_1 = gamma
-        # elif cos_belta < -1:
-        #     angle_1 = gamma - np.pi
-        # else:
-        #     angle_1 = gamma - math.acos(cos_belta)
-            
-        # x_inner.append(L1 * math.cos(angle_1))
-        # y_inner.append(L1 * math.sin(angle_1))
-        
-        # angle_1_list_e.append(np.round(angle_1, 5).copy())
-    
-        # cos_alpha = (L1 ** 2 - L + L2 ** 2) / (2 * L1 * L2)
-        #
-        # if cos_alpha > 1:
-        #     angle_2 = np.pi
-        # elif cos_alpha < -1:
-        #     angle_2 = 0
-        # else:
-        #     angle_2 = np.pi - math.acos(cos_alpha)
-    
-        # angle_2_list_e.append(np.round(angle_2, 5).copy())
-        
+        # Inverse kinematics
         angle_1_list_e.append(np.round(angle[0].copy(), 5))
         angle_2_list_e.append(np.round(angle[1].copy(), 5))
 
@@ -296,15 +317,47 @@ def generate_path(traj, inter_type=1,
 
     way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
     print('+' * 50)
-    print("Check success with way_points :", way_points.shape)
+    print("Check success with way_points :", way_points.shape[0])
     
     if plot_show:
-        plot_path(period, traj, image_points, task_points, way_points)
-        
+        plot_stroke_path(period, traj, image_points, task_points, way_points)
+    
     if save_path:
         np.savetxt('../control/angle_list_' + stroke_name + '.txt', way_points, fmt='%.05f')
 
-    return way_points
+    return way_points, image_points, task_points, period
+
+
+def generate_word_path(
+        traj_list,
+        center_shift=np.array([-WIDTH/2, 0.23]),
+        velocity=0.04,
+        plot_show=False,
+        save_path=False,
+        word_name='Tian'):
+    """ generate word path """
+    inter_list = np.ones(len(traj_list))
+    word_angle_list = []
+    word_image_points = []
+    word_task_points = []
+    period_list = []
+    for stroke_index in range(len(traj_list)):
+        # get one stroke
+        traj = traj_list[stroke_index]
+        
+        stroke_angle_list, stroke_image_points, stroke_task_points, period = generate_stroke_path(traj, inter_type=inter_list[stroke_index],
+                                                 center_shift=center_shift,
+                                                 velocity=velocity, plot_show=plot_show,
+                                                 save_path=save_path, stroke_name=stroke_index)
+        
+        word_angle_list.append(stroke_angle_list)
+        word_image_points.append(stroke_image_points)
+        word_task_points.append(stroke_task_points)
+        period_list.append(period)
+        
+    if plot_show:
+        plot_word_path(period_list, traj_list, word_image_points, word_task_points, word_angle_list,
+                       word_name=word_name)
 
 
 def check_path(root_path='', plot_show=True, font_name='J_font',
