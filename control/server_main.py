@@ -364,7 +364,7 @@ def set_pen_up():
         pull pen up 
     """ 
     # motor_control.motor_3_stop()
-    up_angle = np.int32(200) 
+    up_angle = np.int32(100) 
     motor_control.set_position(0.0, up_angle)   
 
 
@@ -425,10 +425,14 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    word_path = load_word_path(word_name='ren')
+    word_path = load_word_path(word_name='xing')
 
     write_word(word_path, 
     impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
+
+    # set_pen_up()
+
+    # motor_control.motor_3_stop()
 
     # write_stroke(stroke_points=way_points, 
     # impedance_params=np.array([35.0, 30.0, 0.4, 0.1]), 
