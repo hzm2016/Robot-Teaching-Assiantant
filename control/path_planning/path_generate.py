@@ -342,7 +342,9 @@ def generate_word_path(
         plot_show=False,
         save_path=False,
         word_name='Tian'):
-    """ generate word path """
+    """
+        generate word path
+    """
     inter_list = np.ones(len(traj_list))
     inter_list[3] = 2
     word_angle_list = []

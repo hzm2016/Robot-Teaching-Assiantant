@@ -3,11 +3,12 @@ from utils import hungarian_matching
 import numpy as np
 import cv2
 import argparse
+import time
 
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import *
-# from control.vision_capture.main_functions import capture_image, show_video
+from control.vision_capture.main_functions import capture_image, show_video
 
 
 def draw_points(points, canvas_size=256):
@@ -21,7 +22,7 @@ def draw_points(points, canvas_size=256):
 
 
 def draw_matching(points_1, points_2, matching, canvas_size=256):
-	
+
     points_1 = 2 * points_1
     points_2 = 2 * points_2
     canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8) + 255
@@ -49,7 +50,7 @@ class Controller(object):
         self.show_video = True
 
         # initial TCP connection :::
-        # self.task = TCPTask('169.254.0.99', 5005)
+        self.task = TCPTask('169.254.0.99', 5005)
 
         self.img_processor = img_processor
         self.x_impedance_level = impedance_level
@@ -158,28 +159,29 @@ class Controller(object):
         velocity = 0.04
         return velocity
 
-    def interact_once(self, traj, impedance_params=[5.0, 5.0, 0.2, 0.2], velocity=0.04):
+    def interact_once(self, traj, impedance_params=[5.0, 5.0, 0.2, 0.2], velocity=0.04, mode='eval'):
         """
             interact with robot once
         """
         # check motor and encode well before experiments
         print('+' * 30, 'Hardware check', '+' * 50)
         angle_initial = self.task.wait_encoder_check()
-        # print("Angle_initial (rad) :", angle_initial)
+        print("Current State (rad) :", angle_initial)
 
-        # check the whole path
-        print('+' * 30, 'Check Path', '+' * 50)
-        way_points = generate_path(traj,
-                                   center_shift=np.array([0.16, -WIDTH / 2]),
-                                   velocity=velocity, Ts=0.001,
-                                   plot_show=False)
+        if mode=='train':
+            # check the whole path
+            print('+' * 30, 'Check Path', '+' * 50)
+            way_points = generate_stroke_path(traj,
+                                              center_shift=np.array([0.16, -WIDTH / 2]),
+                                              velocity=velocity, Ts=0.001,
+                                              plot_show=False)
 
-        print('+' * 30, 'Start Send Waypoints !', '+' * 50)
-        self.task.send_way_points_request()
-        self.task.send_way_points(way_points)
+            print('+' * 30, 'Start Send Waypoints !', '+' * 50)
+            self.task.send_way_points_request()
+            self.task.send_way_points(way_points)
 
         # self.task.send_way_points_done()
-        print('+' * 30, 'Start Send Impedance Parameters !', '+' * 50)
+        print('+' * 20, 'Start Send Impedance Parameters !', '+' * 30)
         self.task.send_params_request()
         print("Stiffness :", impedance_params[:2])
         print("Damping :", impedance_params[2:])
@@ -189,15 +191,23 @@ class Controller(object):
             show_video()
 
         print('+' * 50, 'Start Move !', '+' * 50)
-        # video record for trail :::
-        run_done = self.task.get_movement_check()
-
-        if run_done:
-            print('+' * 50, 'Start Capture Image !', '+' * 50)
-            # print("run_done", run_done)
-            written_image, _ = capture_image(
-                root_path=self.root_path + 'captured_images/', font_name='written_image_test')
-        self.task.close()
+        
+        # start_time = time.time()
+        run_done = False
+        index = 0
+        while True:
+            # video record for trail :::
+            run_done = self.task.get_movement_check()
+    
+            if run_done:
+                print('+' * 50, 'Start Capture Image !', '+' * 50)
+                # print("run_done", run_done)
+                written_image, _ = capture_image(
+                    root_path=self.root_path + 'captured_images/', font_name='written_image_test' + '_' + str(index))
+                index += 1
+                run_done = False
+        
+        # self.task.close()
         
     def interact(self, target_img):
         written_image = None
@@ -232,18 +242,19 @@ if __name__ == "__main__":
     type = 1
     num_stroke = 5
     traj_list = []
-    for str_index in range(num_stroke):
-        traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-                               font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
-        traj_list.append(traj)
-
-    generate_word_path(
-        traj_list,
-        center_shift=np.array([0.16, -WIDTH / 2]),
-        velocity=0.04,
-        plot_show=True,
-        save_path=False,
-        word_name='Tian')
+    
+    # for str_index in range(num_stroke):
+    #     traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+    #                            font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+    #     traj_list.append(traj)
+	
+    # generate_word_path(
+    #     traj_list,
+    #     center_shift=np.array([0.16, -WIDTH / 2]),
+    #     velocity=0.04,
+    #     plot_show=True,
+    #     save_path=False,
+    #     word_name='Tian')
     
     # generate_stroke_path(traj_list[2],
     #               inter_type=1,
@@ -283,11 +294,15 @@ if __name__ == "__main__":
     # plt.show()
     # np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
     
-    # writing_controller = Controller(
-    #     args, img_processor=None, impedance_level=0)
-    #
-    # writing_controller.interact_once(
-    #     traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.03)
+    str_index = 0
+    traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+                           font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+    
+    writing_controller = Controller(
+        args, img_processor=None, impedance_level=0)
+
+    writing_controller.interact_once(
+        traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.04, mode='eval')
 
     # target_img = cv2.imread(root_path + '/1_font_1.png')
     # writing_controller.interact(path_data, target_img)
@@ -303,9 +318,9 @@ if __name__ == "__main__":
     # sample_stroke = cv2.imread('./example/example_traj.png', cv2.IMREAD_GRAYSCALE)
 
     # root_path = '../control/data/captured_images/'
-    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image_test')
+    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image_word')
     # cv2.imshow('', ori_img)
-    #
+
     # cv2.waitKey(0)
 
     # show_video()
