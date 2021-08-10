@@ -266,9 +266,9 @@ int motor_3_stop()
     double theta_3_t;   
 
     theta_3_t = motor_3.read_single_turn(1);  
-    printf("Motor 3 position: %f\n", theta_3_t);   
 
     motor_3.pack_stop_cmd(1);  
+    printf("Motor stop !!! and final pos: %f\n", theta_3_t);   
     
     return 1; 
 }
