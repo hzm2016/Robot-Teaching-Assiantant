@@ -126,8 +126,8 @@ def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_na
         check the planned path
     """
     t_list = np.linspace(0.0, period, angle_list.shape[0])
-    
-    fig = plt.figure(figsize=(15, 4))
+    print("task points :", task_points)
+    plt.figure(figsize=(15, 4))
     
     plt.title(fig_name)
     
@@ -206,8 +206,13 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
 
     plt.subplot(1, 3, 3)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    # total_period = sum(period_list)
     for i in range(len(traj_list)):
-        t_list = np.linspace(0.0, period_list[i], word_angle_list[i].shape[0])
+        if i == 0:
+            t_list = np.linspace(0.0, period_list[i], word_angle_list[i].shape[0])
+        else:
+            t_list = np.linspace(period_list[i-1], period_list[i] + period_list[i-1], word_angle_list[i].shape[0])
+            
         plt.plot(t_list, word_angle_list[i][:, 0], linewidth=linewidth, label='$q_1$')
         # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
         plt.plot(t_list, word_angle_list[i][:, 1], linewidth=linewidth, label='$q_2$')
@@ -215,7 +220,7 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
 
     plt.xlabel('Time (s)')
     plt.ylabel('One-loop Angle (rad)')
-    plt.legend()
+    # plt.legend()
     plt.tight_layout()
     
     plt.show()
@@ -273,10 +278,12 @@ def generate_stroke_path(traj, inter_type=1,
 
     x_1_list = x_list/ratio + center_shift[0]
     x_2_list = y_list/ratio + center_shift[1]
+    
     print("x_list :", x_list)
     print("y_list :", y_list)
     
     task_points = np.vstack((x_1_list, x_2_list)).transpose()
+    
     # print("x_1_list :::", x_1_list)
     # print("x_2_list :::", x_2_list)
     
@@ -337,6 +344,7 @@ def generate_word_path(
         word_name='Tian'):
     """ generate word path """
     inter_list = np.ones(len(traj_list))
+    inter_list[3] = 2
     word_angle_list = []
     word_image_points = []
     word_task_points = []
@@ -352,7 +360,7 @@ def generate_word_path(
         
         word_angle_list.append(stroke_angle_list)
         word_image_points.append(stroke_image_points)
-        word_task_points.append(stroke_task_points)
+        word_task_points.append(stroke_task_points.copy())
         period_list.append(period)
         
     if plot_show:

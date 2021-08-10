@@ -21,7 +21,7 @@ def draw_points(points, canvas_size=256):
 
 
 def draw_matching(points_1, points_2, matching, canvas_size=256):
-
+	
     points_1 = 2 * points_1
     points_2 = 2 * points_2
     canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8) + 255
@@ -230,49 +230,58 @@ if __name__ == "__main__":
     folder_name = 'tian'
     font_name = '田'
     type = 1
+    num_stroke = 5
+    traj_list = []
+    for str_index in range(num_stroke):
+        traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+                               font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+        traj_list.append(traj)
+
+    generate_word_path(
+        traj_list,
+        center_shift=np.array([0.16, -WIDTH / 2]),
+        velocity=0.04,
+        plot_show=True,
+        save_path=False,
+        word_name='Tian')
     
-    # for str_index in range():
-    str_index = 0
-    traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-                           font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
-    
-    # generate_path(traj,
+    # generate_stroke_path(traj_list[2],
     #               inter_type=1,
     #               center_shift=np.array([0.16, -WIDTH / 2]),
     #               velocity=0.04,
     #               Ts=0.001,
     #               plot_show=True,
-    #               save_path=True,
-    #               stroke_name=str(str_index)
+    #               save_path=False,
+    #               stroke_name=str(0)
     #               )
 
-    way_points = np.loadtxt('../control/angle_list_1_1.txt', delimiter=' ')
-    N_way_points = way_points.shape[0]
-    # print("N_way_points :", N_way_points)
-    # word_path.append(way_points.copy())
-    angle_point_1 = way_points[-1, :]
-    end_point = forward_ik(angle_point_1)
-    
-    way_points_2 = np.loadtxt('../control/angle_list_1_2.txt', delimiter=' ')
-    # N_way_points = way_points_2.shape[0]
-    # print("N_way_points :", N_way_points)
-    # word_path.append(way_points.copy())
-    angle_point_2 = way_points_2[0, :]
-    start_point = forward_ik(angle_point_2)
-    
-    angle_list, N = path_planning(end_point, start_point, velocity=0.04)
-    print("angle", angle_list.shape)
-    
-    angle_list_1 = np.vstack([way_points, angle_list, way_points_2])
-    print(angle_list_1.shape)
-
-    fig = plt.figure(figsize=(15, 4))
-    plt.plot(angle_list_1[:, 0], linewidth=linewidth, label='$q_1$')
-    # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
-    plt.plot(angle_list_1[:, 1], linewidth=linewidth, label='$q_2$')
-    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
-    plt.show()
-    np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
+    # way_points = np.loadtxt('../control/angle_list_1_1.txt', delimiter=' ')
+    # N_way_points = way_points.shape[0]
+    # # print("N_way_points :", N_way_points)
+    # # word_path.append(way_points.copy())
+    # angle_point_1 = way_points[-1, :]
+    # end_point = forward_ik(angle_point_1)
+    #
+    # way_points_2 = np.loadtxt('../control/angle_list_1_2.txt', delimiter=' ')
+    # # N_way_points = way_points_2.shape[0]
+    # # print("N_way_points :", N_way_points)
+    # # word_path.append(way_points.copy())
+    # angle_point_2 = way_points_2[0, :]
+    # start_point = forward_ik(angle_point_2)
+    #
+    # angle_list, N = path_planning(end_point, start_point, velocity=0.04)
+    # print("angle", angle_list.shape)
+    #
+    # angle_list_1 = np.vstack([way_points, angle_list, way_points_2])
+    # print(angle_list_1.shape)
+	#
+    # fig = plt.figure(figsize=(15, 4))
+    # plt.plot(angle_list_1[:, 0], linewidth=linewidth, label='$q_1$')
+    # # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+    # plt.plot(angle_list_1[:, 1], linewidth=linewidth, label='$q_2$')
+    # # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    # plt.show()
+    # np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
     
     # writing_controller = Controller(
     #     args, img_processor=None, impedance_level=0)
