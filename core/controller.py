@@ -252,11 +252,11 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='yi',
+                        default='ren',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='一',
+                        default='人',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
@@ -304,7 +304,7 @@ if __name__ == "__main__":
     
         # ======================================
         inverse_list[0] = False
-        # inter_list[0] = 2
+        inter_list[0] = 2
         # # inverse_list[1] = False
         # inter_list[1] = 2
         # inverse_list[2] = False
