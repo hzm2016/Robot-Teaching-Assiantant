@@ -234,12 +234,15 @@ if __name__ == "__main__":
     parser.add_argument('--show_video',
                         default=False,
                         help='enables useful debug settings')
+    parser.add_argument('--record_video',
+                        default=False,
+                        help='enables useful debug settings')
 
     args = parser.parse_args()
 
     root_path = '../control/data/font_data'
-    folder_name = 'xing'
-    font_name = '行'
+    folder_name = 'yu'
+    font_name = '余'
     type = 1
     
     stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
@@ -254,12 +257,20 @@ if __name__ == "__main__":
 
     inter_list = np.ones(len(traj_list))
     inverse_list = np.ones(len(traj_list))
+    
+    # ======================================
     inverse_list[0] = False
-    inverse_list[1] = False
     inter_list[0] = 2
-    inter_list[1] = 2
-    inter_list[2] = 2
+    # inverse_list[1] = False
+    # inter_list[1] = 2
+    # inter_list[2] = 2
+    # inter_list[5] = 2
+    inverse_list[4] = False
+    inter_list[4] = 2
+    # inverse_list[5] = False
     inter_list[5] = 2
+    # =======================================
+    
     generate_word_path(
         traj_list,
         inter_list,
@@ -267,8 +278,9 @@ if __name__ == "__main__":
         center_shift=np.array([0.16, -WIDTH / 2]),
         velocity=0.04,
         plot_show=True,
-        save_path=True,
-        word_name=folder_name)
+        save_path=False,
+        word_name=folder_name
+    )
     
     # generate_stroke_path(traj_list[2],
     #               inter_type=1,
