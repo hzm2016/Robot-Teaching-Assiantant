@@ -125,7 +125,7 @@ class Pybind11Extension(_Extension):
 
         # Include the installed package pybind11 headers
         if include_pybind11:
-            # If using setup_requires, this fails the first time - that's okay
+            # If using setup_requires, this fails the yi time - that's okay
             try:
                 import pybind11
 
@@ -226,7 +226,7 @@ def has_flag(compiler, flag):
     """
     Return the flag if a flag name is supported on the
     specified compiler, otherwise None (can be used as a boolean).
-    If multiple flags are passed, return the first that matches.
+    If multiple flags are passed, return the yi that matches.
     """
 
     with tmp_chdir():

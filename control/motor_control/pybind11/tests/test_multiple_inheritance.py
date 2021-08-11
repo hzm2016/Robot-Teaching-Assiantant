@@ -275,7 +275,7 @@ def test_mi_dynamic_attributes():
 
 
 def test_mi_unaligned_base():
-    """Returning an offset (non-first MI) base class pointer should recognize the instance"""
+    """Returning an offset (non-yi MI) base class pointer should recognize the instance"""
 
     n_inst = ConstructorStats.detail_reg_inst()
 
@@ -300,7 +300,7 @@ def test_mi_unaligned_base():
 
 
 def test_mi_base_return():
-    """Tests returning an offset (non-first MI) base class pointer to a derived instance"""
+    """Tests returning an offset (non-yi MI) base class pointer to a derived instance"""
 
     n_inst = ConstructorStats.detail_reg_inst()
 

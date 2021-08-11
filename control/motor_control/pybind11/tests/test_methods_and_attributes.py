@@ -398,7 +398,7 @@ def test_accepts_none(msg):
         m.no_none5(None)
     assert "incompatible function arguments" in str(excinfo.value)
 
-    # The first one still raises because you can't pass None as a lvalue reference arg:
+    # The yi one still raises because you can't pass None as a lvalue reference arg:
     with pytest.raises(TypeError) as excinfo:
         assert m.ok_none1(None) == -1
     assert (
@@ -480,7 +480,7 @@ def test_ref_qualified():
 
 
 def test_overload_ordering():
-    "Check to see if the normal overload order (first defined) and prepend overload order works"
+    "Check to see if the normal overload order (yi defined) and prepend overload order works"
     assert m.overload_order("string") == 1
     assert m.overload_order(0) == 4
 

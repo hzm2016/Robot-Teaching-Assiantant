@@ -235,44 +235,62 @@ if __name__ == "__main__":
                         default=False,
                         help='enables useful debug settings')
     
+    parser.add_argument('--capture_image',
+                        default=False,
+                        help='enables useful debug settings')
+    
     parser.add_argument('--record_video',
-                        default=True,
+                        default=False,
+                        help='enables useful debug settings')
+
+    parser.add_argument('--folder_name',
+                        default='mu',
+                        help='enables useful debug settings')
+    
+    parser.add_argument('--font_name',
+                        default='木',
+                        help='enables useful debug settings')
+    
+    parser.add_argument('--font_type',
+                        default=1,
+                        type=int,
+                        help='enables useful debug settings')
+
+    parser.add_argument('--root_path',
+                        default='../control/data/',
                         help='enables useful debug settings')
 
     args = parser.parse_args()
 
-    # show_video()
+    if args.show_video:
+        show_video()
     
-    # folder_name = 'yu'
-    # if args.record_video:
-    #     record_video(filepath='../control/data/video/' + folder_name + '.svo')
+    if args.record_video:
+        record_video(filepath='../control/data/video/' + args.folder_name + '.svo')
     
-    # root_path = '../control/data/captured_images/'
-    # sample_stroke, img, ori_img = capture_image(root_path=root_path, font_name='written_image_chuan')
-    
-    root_path = '../control/data/font_data'
-    folder_name = 'chuan'
-    font_name = '川'
-    type = 1
+    if args.capture_image:
+        # root_path = '../control/data/captured_images/'
+        sample_stroke, img, ori_img = capture_image(root_path=args.root_path + 'captured_images/', font_name='written_image_chuan')
 
-    stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
+    stroke_list_file = glob.glob(args.root_path + 'font_data' + '/' + args.folder_name + '/' + args.font_name + '_*.txt')
     num_stroke = len(stroke_list_file)
     print("num_stroke :", num_stroke)
+    
     traj_list = []
-
     for str_index in range(num_stroke):
-        traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-                               font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+        traj = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                               args.font_name + '_' + str(str_index) + '_font' + str(args.font_type) + '.txt')
         traj_list.append(traj)
 
     inter_list = np.ones(len(traj_list))
     inverse_list = np.ones(len(traj_list))
 
     # ======================================
-    inverse_list[0] = False
-    inter_list[0] = 2
-    # inverse_list[1] = False
+    # inverse_list[0] = False
+    # inter_list[0] = 2
+    # # inverse_list[1] = False
     inter_list[1] = 2
+    inverse_list[2] = False
     inter_list[2] = 2
     # inter_list[5] = 2
     # inverse_list[4] = False
@@ -285,13 +303,13 @@ if __name__ == "__main__":
         traj_list,
         inter_list,
         inverse_list,
-        center_shift=np.array([0.13, -WIDTH / 2]),
+        center_shift=np.array([0.15, -WIDTH / 2]),
         velocity=0.04,
         plot_show=True,
         save_path=True,
-        word_name=folder_name
+        word_name=args.folder_name
     )
-    
+
     # generate_stroke_path(traj_list[2],
     #               inter_type=1,
     #               center_shift=np.array([0.16, -WIDTH / 2]),
