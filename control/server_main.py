@@ -21,7 +21,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.319117, 0.397937, 0.421981])   
+Angle_initial = np.array([-0.344586, 0.439135, 1.948196])   
 
 # impedance params : 
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -364,7 +364,7 @@ def set_pen_up():
         pull pen up 
     """ 
     # motor_control.motor_3_stop()
-    up_angle = np.int32(100) 
+    up_angle = np.int32(9000) 
     motor_control.set_position(0.0, up_angle)   
 
 
@@ -373,7 +373,7 @@ def set_pen_down():
         pull pen down  
     """ 
     # motor_control.motor_3_stop()
-    down_angle = np.int32(1700)   
+    down_angle = np.int32(11200)   
     motor_control.set_position(0.0, down_angle)   
 
 
@@ -425,7 +425,7 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    word_path = load_word_path(word_name='xing')
+    word_path = load_word_path(word_name='tian') 
 
     write_word(word_path, 
     impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
@@ -445,12 +445,14 @@ if __name__ == "__main__":
     # print("N_way_points :", N_way_points) 
 
     # set_pen_up() 
+
     # set_pen_down() 
+    # motor_control.motor_3_stop() 
 
     # motor_control.read_angle_3(0.0)   
 
     # motor_control.set_position(0.0, np.int32(1700)) 
-    # motor_control.motor_3_stop() 
+
 
     # """ calibrate position for each start up """ 
     # Angle_initial = reset_and_calibration() 
