@@ -12,8 +12,8 @@ import PIL.Image as Image
 sns.set_theme()
 
 # writing space
-WIDTH = 0.370
-HEIGHT = 0.370
+WIDTH = 0.360
+HEIGHT = 0.360
 
 # image size
 IMAGE_WIDTH = 128

@@ -133,6 +133,8 @@ coverage.xml
 # Django stuff:
 *.log
 *.pot
+*.avi
+*.svo
 
 # pycharm
 .idea

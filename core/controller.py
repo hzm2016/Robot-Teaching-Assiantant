@@ -9,7 +9,7 @@ import glob
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import *
-from control.vision_capture.main_functions import capture_image, show_video
+from control.vision_capture.main_functions import capture_image, show_video, record_video
 
 
 def draw_points(points, canvas_size=256):
@@ -230,57 +230,67 @@ class Controller(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Runs a learning example on a registered gym environment.')
-
+    
     parser.add_argument('--show_video',
                         default=False,
                         help='enables useful debug settings')
+    
     parser.add_argument('--record_video',
-                        default=False,
+                        default=True,
                         help='enables useful debug settings')
 
     args = parser.parse_args()
 
-    root_path = '../control/data/font_data'
-    folder_name = 'yu'
-    font_name = '余'
-    type = 1
+    # show_video()
     
-    stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
-    num_stroke = len(stroke_list_file)
-    print("num_stroke :", num_stroke)
-    traj_list = []
-
-    for str_index in range(num_stroke):
-        traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-                               font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
-        traj_list.append(traj)
-
-    inter_list = np.ones(len(traj_list))
-    inverse_list = np.ones(len(traj_list))
+    # folder_name = 'yu'
+    # if args.record_video:
+    #     record_video(filepath='../control/data/video/' + folder_name + '.svo')
     
-    # ======================================
-    inverse_list[0] = False
-    inter_list[0] = 2
-    # inverse_list[1] = False
-    # inter_list[1] = 2
-    # inter_list[2] = 2
+    root_path = '../control/data/captured_images/'
+    sample_stroke, img, ori_img = capture_image(root_path=root_path, font_name='written_image_word')
+    
+    # root_path = '../control/data/font_data'
+    # folder_name = 'yu'
+    # font_name = '余'
+    # type = 1
+    #
+    # stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
+    # num_stroke = len(stroke_list_file)
+    # print("num_stroke :", num_stroke)
+    # traj_list = []
+    #
+    # for str_index in range(num_stroke):
+    #     traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+    #                            font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+    #     traj_list.append(traj)
+    #
+    # inter_list = np.ones(len(traj_list))
+    # inverse_list = np.ones(len(traj_list))
+    #
+    # # ======================================
+    # inverse_list[0] = False
+    # inter_list[0] = 2
+    # # inverse_list[1] = False
+    # # inter_list[1] = 2
+    # # inter_list[2] = 2
+    # # inter_list[5] = 2
+    # inverse_list[4] = False
+    # inter_list[4] = 2
+    # # inverse_list[5] = False
     # inter_list[5] = 2
-    inverse_list[4] = False
-    inter_list[4] = 2
-    # inverse_list[5] = False
-    inter_list[5] = 2
-    # =======================================
-    
-    generate_word_path(
-        traj_list,
-        inter_list,
-        inverse_list,
-        center_shift=np.array([0.16, -WIDTH / 2]),
-        velocity=0.04,
-        plot_show=True,
-        save_path=True,
-        word_name=folder_name
-    )
+    # # =======================================
+    #
+    # generate_word_path(
+    #     traj_list,
+    #     inter_list,
+    #     inverse_list,
+    #     center_shift=np.array([0.16, -WIDTH / 2]),
+    #     velocity=0.04,
+    #     plot_show=True,
+    #     save_path=True,
+    #     word_name=folder_name
+    # )
     
     # generate_stroke_path(traj_list[2],
     #               inter_type=1,
@@ -342,10 +352,6 @@ if __name__ == "__main__":
     #
     # written_stroke = cv2.imread('./example/written_image.png')
     # sample_stroke = cv2.imread('./example/example_traj.png', cv2.IMREAD_GRAYSCALE)
-
-    # root_path = '../control/data/captured_images/'
-    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image_word')
-    # cv2.imshow('', ori_img)
 
     # cv2.waitKey(0)
 
