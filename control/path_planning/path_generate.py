@@ -403,7 +403,7 @@ def generate_word_path(
         traj_list,
         inter_list=None,
         inverse_list=None,
-        center_shift=np.array([-WIDTH/2, 0.23]),
+        center_shift=np.array([0.23, -WIDTH/2]),
         velocity=0.04,
         plot_show=False,
         save_path=False,
@@ -422,16 +422,16 @@ def generate_word_path(
         
         stroke_angle_list, stroke_image_points, stroke_task_points, period \
             = generate_stroke_path(
-            traj,
-            inter_type=inter_list[stroke_index],
-            inverse=inverse_list[stroke_index],
-            center_shift=center_shift,
-            velocity=velocity,
-            plot_show=False,
-            save_path=save_path,
-            word_name=word_name,
-            stroke_name=stroke_index
-        )
+                traj,
+                inter_type=inter_list[stroke_index],
+                inverse=inverse_list[stroke_index],
+                center_shift=center_shift,
+                velocity=velocity,
+                plot_show=False,
+                save_path=save_path,
+                word_name=word_name,
+                stroke_name=stroke_index
+            )
         
         word_angle_list.append(stroke_angle_list)
         word_image_points.append(stroke_image_points)

@@ -244,7 +244,7 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--generate_path',
-                        default=False,
+                        default=True,
                         help='enables useful debug settings')
     
     parser.add_argument('--record_video',
@@ -303,12 +303,12 @@ if __name__ == "__main__":
         inverse_list = np.ones(len(traj_list))
     
         # ======================================
-        # inverse_list[0] = False
+        inverse_list[0] = False
         # inter_list[0] = 2
         # # inverse_list[1] = False
-        inter_list[1] = 2
-        inverse_list[2] = False
-        inter_list[2] = 2
+        # inter_list[1] = 2
+        # inverse_list[2] = False
+        # inter_list[2] = 2
         # inter_list[5] = 2
         # inverse_list[4] = False
         # inter_list[4] = 2
@@ -321,7 +321,7 @@ if __name__ == "__main__":
             inter_list,
             inverse_list,
             center_shift=np.array([0.15, -WIDTH / 2]),
-            velocity=0.04,
+            velocity=0.08,
             plot_show=True,
             save_path=True,
             word_name=args.folder_name
@@ -337,25 +337,25 @@ if __name__ == "__main__":
         #               stroke_name=str(0)
         #               )
 
-    # a = np.array([(3, 4), (7, 8)])
-    # b = np.array([(1, 2), (3, 4), (5, 6)])
-    from imgprocessor import Postprocessor
-    c = Controller(Postprocessor(
-        {'ROTATE': 0, 'BINARIZE': 128}), img_processor=Postprocessor(
-        {'ROTATE': 0, 'BINARIZE': 128}))
-    stroke_index = 0
-    written_stroke = cv2.imread(args.root_path + 'captured_images/' + args.folder_name + '/' + args.folder_name + '.png')
-    print("written_stroke :", written_stroke.shape)
-    sample_stroke = cv2.imread(args.root_path + 'font_data/' + args.folder_name + '/' + args.font_name + '_' + str(stroke_index) + '_font1.png',
-                               cv2.IMREAD_GRAYSCALE)
-    print("sample_stroke :", sample_stroke.shape)
-    # cv2.waitKey(0)
-
-    # show_video()
-    
-    x_dis, y_dis, tgt = c.update_impedance(sample_stroke, written_stroke)
-    # print(x_dis, y_dis, tgt)
-    # matching = c.key_point_matching(a, b)
+    # # a = np.array([(3, 4), (7, 8)])
+    # # b = np.array([(1, 2), (3, 4), (5, 6)])
+    # from imgprocessor import Postprocessor
+    # c = Controller(Postprocessor(
+    #     {'ROTATE': 0, 'BINARIZE': 128}), img_processor=Postprocessor(
+    #     {'ROTATE': 0, 'BINARIZE': 128}))
+    # stroke_index = 0
+    # written_stroke = cv2.imread(args.root_path + 'captured_images/' + args.folder_name + '/' + args.folder_name + '.png')
+    # print("written_stroke :", written_stroke.shape)
+    # sample_stroke = cv2.imread(args.root_path + 'font_data/' + args.folder_name + '/' + args.font_name + '_' + str(stroke_index) + '_font1.png',
+    #                            cv2.IMREAD_GRAYSCALE)
+    # print("sample_stroke :", sample_stroke.shape)
+    # # cv2.waitKey(0)
+    #
+    # # show_video()
+    #
+    # x_dis, y_dis, tgt = c.update_impedance(sample_stroke, written_stroke)
+    # # print(x_dis, y_dis, tgt)
+    # # matching = c.key_point_matching(a, b)
 
     # way_points = np.loadtxt('../control/angle_list_1_1.txt', delimiter=' ')
     # N_way_points = way_points.shape[0]
