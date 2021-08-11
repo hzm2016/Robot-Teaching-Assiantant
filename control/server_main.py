@@ -6,7 +6,7 @@ from motor_control import motor_control
 from path_planning.plot_path import * 
 from path_planning.path_generate import * 
 import ctypes 
-import time
+import time 
 import glob 
 
 np.set_printoptions(precision=5) 
@@ -23,7 +23,7 @@ Initial_point = np.array([0.32299, -0.23264])
 
 Angle_initial = np.array([-0.344586, 0.439135, 1.948196])   
 
-# impedance params : 
+# impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
 
 
@@ -67,7 +67,7 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342, 0.379417])):
     return angle, point   
 
 
-def move_to_target_point(target_point, impedance_params, velocity=0.04):  
+def move_to_target_point(target_point, impedance_params, velocity=0.05):  
     """
         move to target point  
     """ 
@@ -195,8 +195,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close() 
 
 
-def write_word(word_path, 
-    impedance_params=np.array([35.0, 25.0, 0.4, 0.1])): 
+def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1])): 
     
     for index in range(len(word_path)):  
         print("*" * 50)
@@ -223,8 +222,7 @@ def write_word(word_path,
         motor_control.motor_3_stop() 
 
 
-def write_stroke(stroke_points=None, 
-    impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
+def write_stroke(stroke_points=None, impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
     target_point=Initial_point): 
 
     # print("Write stroke !!!")  
@@ -239,21 +237,21 @@ def write_stroke(stroke_points=None,
 
     # move to target point
     set_pen_up()  
-    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.05)  
+    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)  
 
     set_pen_down()  
-    time.sleep(0.3)  
+    time.sleep(0.4)  
     motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
                                 way_points[:, 0].copy(), way_points[:, 1].copy(), Num_way_points, 
                                 Angle_initial[0], Angle_initial[1], 1)  
     
-    time.sleep(0.3) 
+    time.sleep(0.4) 
 
     # move to target point 
     set_pen_up() 
-    time.sleep(0.3) 
+    time.sleep(0.4) 
 
-    move_to_target_point(target_point, Move_Impedance_Params, velocity=0.05)  
+    move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)  
 
     print("Write stroke once done !!!")  
     print("*" * 50)  
@@ -425,14 +423,14 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    word_path = load_word_path(word_name='tian') 
+    word_path = load_word_path(word_name='mu') 
 
     write_word(word_path, 
     impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
 
     # set_pen_up()
 
-    # motor_control.motor_3_stop()
+    # motor_control.motor_3_stop() 
 
     # write_stroke(stroke_points=way_points, 
     # impedance_params=np.array([35.0, 30.0, 0.4, 0.1]), 
