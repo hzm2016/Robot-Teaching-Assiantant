@@ -71,8 +71,9 @@ def image_precessing(img_path, img_name):
     return img
 
 
-def capture_image(root_path='', font_name='font_1', size=(128, 128)):
+def capture_image(file_path='', font_name='font_1', size=(128, 128)):
     print("Capture image ...")
+    
     init = sl.InitParameters()
     cam = sl.Camera()
     if not cam.is_opened():
@@ -100,9 +101,10 @@ def capture_image(root_path='', font_name='font_1', size=(128, 128)):
         # cv2.imshow("rotated_img", rotated_img)
         # cv2.waitKey(0)
         
+        # crop image
         crop_img = rotated_img[200:750, 350:1000]
         # feature_extraction(ori_img=crop_img)
-        cv2.imwrite(root_path + font_name + '_ori_image.png', img[200:750, 350:1000])
+        # cv2.imwrite(file_path + '/' + font_name + '_ori_image.png', img[200:750, 350:1000])
         
         # ori_img = img[200:700, 400:900]
         ori_img = crop_img[0:490, 50:540]
@@ -121,8 +123,8 @@ def capture_image(root_path='', font_name='font_1', size=(128, 128)):
         M = np.float32([[1, 0, -30], [0, 1, 0]])
         pos_img = cv2.warpAffine(ori_img, M, (rows, cols))
         
-        cv2.imwrite(root_path + font_name + '_ori.png', ori_img)
-        cv2.imwrite(root_path + font_name + '_pos.png', pos_img)
+        cv2.imwrite(file_path + '/' + font_name + '_ori.png', ori_img)
+        cv2.imwrite(file_path + '/' + font_name + '_pos.png', pos_img)
         
         # need to define according tob root position
         # crop_img = img[200:750, 350:900]
@@ -135,9 +137,9 @@ def capture_image(root_path='', font_name='font_1', size=(128, 128)):
         # rotate image :::
         cols, rows = resize_img.shape[:2]
         M = cv2.getRotationMatrix2D((cols / 2, rows / 2), -90, 1)
-        rotated_img = cv2.warpAffine(resize_img, M, (cols, rows))
+        final_img = cv2.warpAffine(resize_img, M, (cols, rows))
         
-        cv2.imwrite(root_path + font_name + '.png', rotated_img)
+        cv2.imwrite(file_path + '/' + font_name + '.png', final_img)
         key = cv2.waitKey(5)
         settings(key, cam, runtime, mat)
     else:
@@ -148,7 +150,7 @@ def capture_image(root_path='', font_name='font_1', size=(128, 128)):
     cam.close()
     print("\nFINISH ...")
     
-    return resize_img, rotated_img, ori_img
+    return final_img
 
 
 def feature_extraction(ori_img=None):
