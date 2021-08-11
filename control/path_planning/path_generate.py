@@ -226,7 +226,7 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
         # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
         # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
     plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlim([0.13, 0.13 + WIDTH])
     plt.xlabel('$x_1$(m)')
     plt.ylabel('$x_2$(m)')
 
@@ -267,7 +267,7 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
         plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i+1), rotation=90)
 
     plt.ylim([-WIDTH/2, WIDTH/2])
-    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlim([0.13, 0.13 + WIDTH])
     # plt.xlabel('$x_1$(m)')
     # plt.ylabel('$x_2$(m)')
     plt.tight_layout()
