@@ -182,7 +182,7 @@ def plot_real_2d_path(
     plt.xlabel('x(m)', fontsize=FONT_SIZE)  
     plt.ylabel('y(m)', fontsize=FONT_SIZE) 
     plt.ylim([-WIDTH/2, WIDTH/2])
-    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlim([0.13, 0.13 + WIDTH])
     # plt.legend()
 
     plt.show()
@@ -198,7 +198,7 @@ def plot_torque_path(
     linewidth = 4
     # plt.rcParams['font.family'] = 'Times New Roman'
     # plt.rcParams['font.size'] = FONT_SIZE
-    print("angle_list :", root_path + file_angle_name) 
+    # print("angle_list :", root_path + file_angle_name)
 
     angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1) 
     max_index = angle_list_e.shape[0]

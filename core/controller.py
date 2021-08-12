@@ -244,9 +244,9 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--generate_path',
-                        default=True,
+                        default=False,
                         help='enables useful debug settings')
-    
+     
     parser.add_argument('--record_video',
                         default=False,
                         help='enables useful debug settings')
@@ -337,6 +337,8 @@ if __name__ == "__main__":
         #               stroke_name=str(0)
         #               )
 
+    from control.path_planning.plot_path import *
+    plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
     # # a = np.array([(3, 4), (7, 8)])
     # # b = np.array([(1, 2), (3, 4), (5, 6)])
     # from imgprocessor import Postprocessor
