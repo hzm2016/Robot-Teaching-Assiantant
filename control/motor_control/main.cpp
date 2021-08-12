@@ -625,7 +625,6 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN
     ////////////////////////////////////////////////////////
-
     CANDevice can0((char *) "can0");  
     can0.begin();  
     CANDevice can1((char *) "can1");  
