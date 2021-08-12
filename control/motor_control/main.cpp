@@ -84,7 +84,7 @@ int read_initial_encode()
     return 1;  
 } 
 
-double read_initial_angle_1()
+double read_initial_angle_1() 
 {
     ////////////////////////////////////////////
     // Read motor original angle 1
@@ -261,7 +261,7 @@ int motor_3_stop()
     can0.begin();   
 
     Gcan motor_3(can0);   
-    motor_3.begin();  
+    motor_3.begin();   
  
     double theta_3_t;   
 
@@ -679,13 +679,13 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     result.resize({buff_size_list.shape[0], buff_size_list.shape[1]}); 
 
     // acquire buffer info 
-	py::buffer_info result_buf = result.request(); 
+	py::buffer_info result_buf = result.request();  
 
     double *theta_list = (double *)result_buf.ptr; 
 
     int index = 0; 
-    int index_buff = 0; 
-    int buff_length = 10000; 
+    int index_buff = 0;  
+    int buff_length = 10000;  
 
     printf("Print enter for starting record !!!!\n");  
     getchar(); 
@@ -704,14 +704,14 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
         OutFileAngle << theta_1_t << "," << theta_2_t << "\n";  
 
         index_buff = index%buff_length;  
-        // theta_list[index_buff][0] = theta_1_t;  
-        // theta_list[index_buff][1] = theta_2_t;  
+        // theta_list[index_buff][0] = theta_1_t;   
+        // theta_list[index_buff][1] = theta_2_t;   
 
         pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);   
         pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);   
 
-        theta_list[index_buff*result_buf.shape[1] + 0] = theta_1_t; 
-        theta_list[index_buff*result_buf.shape[1] + 1] = theta_2_t; 
+        theta_list[index_buff*result_buf.shape[1] + 0] = theta_1_t;   
+        theta_list[index_buff*result_buf.shape[1] + 1] = theta_2_t;   
 
         // for(i=0; i<result_buf.shape[0]; i++)
         // {
@@ -969,10 +969,11 @@ int rotate_to_target(
 }
 
 
-int run_one_loop(double stiffness_1, double stiffness_2,  
+py::array_t<double> run_one_loop(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
 py::array_t<double> theta_1_target, py::array_t<double> theta_2_target, int Num_waypoints,  
-double theta_1_initial, double theta_2_initial, int num_episodes
+double theta_1_initial, double theta_2_initial, int num_episodes, 
+string angle_path_name, string torque_path_name
 )  
 {
     //////////////////////////////////////////////////////// 
@@ -1004,19 +1005,26 @@ double theta_1_initial, double theta_2_initial, int num_episodes
     ////////////////////////////////////////////////////////
     // Define file to store data
     ////////////////////////////////////////////////////////
-    string root_path = "";  
 
-    string output_torque = root_path + "real_torque_list.txt";  
+    // string output_torque = root_path + "real_torque_list.txt";  
+    // ofstream OutFileTorque(output_torque);   
+    // OutFileTorque << "torque_1" << "," << "torque_2" << "\n";  
+
+    // string output_angle = root_path + "real_angle_list.txt";   
+    // ofstream OutFileAngle(output_angle);  
+    // OutFileAngle << "angle_1" << "," << "angle_2" << "\n";  
+
+    // string output_vel = root_path + "real_angle_vel_list.txt";   
+    // ofstream OutFileVel(output_vel);   
+    // OutFileVel << "vel_1" << "," << "vel_2" << "\n";   
+
+    string output_torque = torque_path_name;  
     ofstream OutFileTorque(output_torque);   
-    OutFileTorque << "torque_1" << "," << "torque_2" << "\n";  
+    OutFileTorque << "torque_1" << " " << "torque_2" << "\n";  
 
-    string output_angle = root_path + "real_angle_list.txt";   
+    string output_angle = angle_path_name;   
     ofstream OutFileAngle(output_angle);  
-    OutFileAngle << "angle_1" << "," << "angle_2" << "\n";  
-
-    string output_vel = root_path + "real_angle_vel_list.txt";   
-    ofstream OutFileVel(output_vel);   
-    OutFileVel << "vel_1" << "," << "vel_2" << "\n";   
+    OutFileAngle << "angle_1" << " " << "angle_2" << "\n";  
 
     ////////////////////////////////////////////////////////
     // Impedance Parameters ::: input 
@@ -1045,6 +1053,20 @@ double theta_1_initial, double theta_2_initial, int num_episodes
 
     double pos_1 = 0.0;  
     double pos_2 = 0.0;  
+
+    // input data
+    py::buffer_info theta_1_list_buf = theta_1_target.request();   
+    py::buffer_info theta_2_list_buf = theta_2_target.request();   
+    double *theta_1_list = (double *)theta_1_list_buf.ptr;   
+    double *theta_2_list = (double *)theta_2_list_buf.ptr;    
+
+    // allocate the output buffer
+	py::array_t<double> result = py::array_t<double>(theta_1_list_buf.size); 
+
+    // acquire buffer info 
+	py::buffer_info result_buf = result.request();  
+
+    double *return_list = (double *)result_buf.ptr; 
     
 
     run_on = 1; 
@@ -1069,11 +1091,6 @@ double theta_1_initial, double theta_2_initial, int num_episodes
     // double theta_2_list[Num_waypoints] = {0};   
     // load_path_data(theta_1_list, theta_2_list);   
 
-    py::buffer_info theta_1_list_buf = theta_1_target.request();   
-    py::buffer_info theta_2_list_buf = theta_2_target.request();   
-    double *theta_1_list = (double *)theta_1_list_buf.ptr;   
-    double *theta_2_list = (double *)theta_2_list_buf.ptr;    
-
     // printf("Theta_1_list :: %f\n", theta_1_list);    
     // printf("Theta_2_list :: %f\n", theta_2_list);  
 
@@ -1091,17 +1108,17 @@ double theta_1_initial, double theta_2_initial, int num_episodes
     ///////////////////////////////////////////////////////
     // avoid large motion at starting points 
     ///////////////////////////////////////////////////////
-    for(int index=0; index<20; index=index+1)  
+    for(int index=0; index<10; index=index+1)   
     {
-        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);  
-        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);  
+        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(1, 0.0, &d_theta_2_t, &torque_2_t);   
     }
 
     run_on = 1; 
     for (int epi=0; epi < num_episodes; epi=epi+1)
-    {
-        // Catch a Ctrl-C event: 
-        signal(SIGINT, sig_h); 
+    {    
+        // Catch a Ctrl-C event:    
+        signal(SIGINT, sig_h);  
 
         for (int index = 0; index<Num_waypoints; index=index+1)
         { 
@@ -1130,6 +1147,9 @@ double theta_1_initial, double theta_2_initial, int num_episodes
             theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
             theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);    
 
+            return_list[index] = theta_1_t; 
+            // return_list[index, 1] = theta_2_t; 
+
             /////////////////////////////////////////////////////
             // set torque control command 
             ///////////////////////////////////////////////////// 
@@ -1148,13 +1168,13 @@ double theta_1_initial, double theta_2_initial, int num_episodes
             ////////////////////////////////////////////////////////
             // Save Data
             ////////////////////////////////////////////////////////
-            OutFileAngle << theta_1_t << "," << theta_2_t << "\n";   
+            OutFileAngle << theta_1_t << " " << theta_2_t << "\n";   
 
-            OutFileTorque << torque_1_o << "," << torque_2_o << "\n";   
+            OutFileTorque << torque_1_o << " " << torque_2_o << "\n";    
 
-            OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n"; 
+            // OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n";  
             
-            if (run_on==0)
+            if (run_on==0) 
             {
                 break; 
             } 
@@ -1229,12 +1249,12 @@ double theta_1_initial, double theta_2_initial, int num_episodes
     
     OutFileTorque.close();   
     OutFileAngle.close();   
-    OutFileVel.close();   
+    // OutFileVel.close();   
 
     motor_1.pack_stop_cmd(2);    
     motor_2.pack_stop_cmd(1);     
 
-    return 0;  
+    return result;   
 }
 
 // void hardware_reset(Gcan *motor_1, Gcan *motor_2) 

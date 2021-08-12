@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 import numpy as np
-from control.path_planning.path_generate import *
+from path_planning.path_generate import *
 from matplotlib.animation import FuncAnimation
 
 """ ================================= Plot result ===================================== """
