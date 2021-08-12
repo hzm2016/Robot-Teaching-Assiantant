@@ -248,8 +248,8 @@ def write_stroke(stroke_points=None, impedance_params = np.array([35.0, 25.0, 0.
     time.sleep(0.4) 
 
     # move to target point 
-    set_pen_up() 
-    time.sleep(0.4) 
+    set_pen_up()  
+    time.sleep(0.4)  
 
     move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)  
 
