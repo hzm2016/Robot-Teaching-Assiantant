@@ -252,11 +252,11 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='tian_1',
+                        default='yi',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='天',
+                        default='一',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
