@@ -243,10 +243,14 @@ def write_stroke(stroke_points=None,
 
     # move to target point
     set_pen_up()  
-    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)  
+    time.sleep(0.5) 
 
-    set_pen_down()  
-    time.sleep(0.4)  
+    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)  
+    time.sleep(0.5) 
+
+    set_pen_down()   
+    time.sleep(0.5)   
+
     stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '.txt' 
     stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '.txt' 
     curr_path_list = motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
@@ -255,11 +259,11 @@ def write_stroke(stroke_points=None,
     # print("curr_path_list", curr_path_list.shape)  
     # np.savetxt('curr_path_list.txt', curr_path_list)
     
-    time.sleep(0.4) 
+    time.sleep(0.5) 
 
     # move to target point 
     set_pen_up()  
-    time.sleep(0.4)  
+    time.sleep(0.5)  
 
     move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)  
 
