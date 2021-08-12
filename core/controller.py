@@ -252,11 +252,11 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='ren',
+                        default='chuan',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='人',
+                        default='川',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
@@ -303,8 +303,8 @@ if __name__ == "__main__":
         inverse_list = np.ones(len(traj_list))
     
         # ======================================
-        inverse_list[0] = False
-        inter_list[0] = 2
+        # inverse_list[0] = False
+        # inter_list[0] = 2
         # # inverse_list[1] = False
         # inter_list[1] = 2
         # inverse_list[2] = False
@@ -390,7 +390,7 @@ if __name__ == "__main__":
     #
     # angle_list_1 = np.vstack([way_points, angle_list, way_points_2])
     # print(angle_list_1.shape)
-#
+
 # fig = plt.figure(figsize=(15, 4))
 # plt.plot(angle_list_1[:, 0], linewidth=linewidth, label='$q_1$')
 # # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')

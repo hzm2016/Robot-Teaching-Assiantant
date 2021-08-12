@@ -116,12 +116,27 @@ def IK(point):
 
 
 def forward_ik(angle):
-    """ calculate point """
+    """
+        calculate point
+    """
     point = np.zeros_like(angle)
     point[0] = L1 * math.cos(angle[0]) + L2 * math.cos(angle[0] + angle[1])
     point[1] = L1 * math.sin(angle[0]) + L2 * math.sin(angle[0] + angle[1])
     
     return point
+
+
+def forward_ik_path(angle_list):
+    """
+        calculate osc point
+    """
+    point_list = np.zeros_like(angle_list)
+    
+    for i in range(point_list.shape[0]):
+        point_list[i, 0] = L1 * math.cos(angle_list[i, 0]) + L2 * math.cos(angle_list[i, 0] + angle_list[i, 1])
+        point_list[i, 1] = L1 * math.sin(angle_list[i, 0]) + L2 * math.sin(angle_list[i, 0] + angle_list[i, 1])
+    
+    return point_list
 
 
 def path_planning(start_point, target_point, velocity=0.04):
@@ -326,6 +341,18 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
     print("Distance (mm) :", np.array(dist))
     print("Period (s) :", np.array(period))
     N = np.array(period / Ts).astype(int)
+    
+    start_point = np.array([path_data[0, 1], path_data[0, 0]])
+    end_point = np.array([path_data[-1, 1], path_data[-1, 0]])
+    dir = end_point - start_point
+    angle = math.atan2(dir[1], dir[0])
+    print("angle :", angle)
+    
+    if angle > -math.pi/2 and angle < 0:
+        inter_type = 2
+        inverse = False
+    if angle > 3.0 or angle < -3.0:
+        inter_type = 2
     
     sample_x = []
     sample_y = []
