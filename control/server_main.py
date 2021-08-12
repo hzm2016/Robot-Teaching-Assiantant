@@ -21,7 +21,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.344586, 0.439135, 1.948196])   
+Angle_initial = np.array([-0.316181, 0.433320, 1.948196])   
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -423,10 +423,9 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    word_path = load_word_path(word_name='mu') 
+    # word_path = load_word_path(word_name='ren') 
 
-    write_word(word_path, 
-    impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
+    # write_word(word_path, impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
 
     # set_pen_up()
 
@@ -452,7 +451,7 @@ if __name__ == "__main__":
     # motor_control.set_position(0.0, np.int32(1700)) 
 
 
-    # """ calibrate position for each start up """ 
+    """ calibrate position for each start up """ 
     # Angle_initial = reset_and_calibration() 
 
     # motor_control.read_initial_angle_2() 
@@ -471,11 +470,11 @@ if __name__ == "__main__":
     # train() 
     # train(run_on=True, Load_path=True)  
     
-    # plot_torque_path(
-    #     root_path='',
-    #     file_angle_name='move_target_angle_list.txt', 
-    #     file_torque_name='move_target_torque_list.txt' 
-    # )
+    plot_torque_path(
+        root_path='',
+        file_angle_name='real_angle_list.txt', 
+        file_torque_name='real_torque_list.txt' 
+    )
 
     #################################################################################
     # plot_real_2d_path(
