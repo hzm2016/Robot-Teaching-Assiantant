@@ -335,14 +335,14 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
             x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
         else:
             y_list = np.linspace(path_data[0, 0], path_data[-1, 0], N)
-            # x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
+            x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
             
-            sample_y = np.array(path_data[:, 0])
-            sample_x = np.array(path_data[:, 1])
-
-            # 进行三次样条拟合
-            ipo3 = spi.splrep(sample_y, sample_x, k=3)  # 样本点导入，生成参数
-            x_list = spi.splev(y_list, ipo3)  # 根据观测点和样条参数，生成插值
+            # sample_y = np.array(path_data[:, 0])
+            # sample_x = np.array(path_data[:, 1])
+            #
+            # # 进行三次样条拟合
+            # ipo3 = spi.splrep(sample_y, sample_x, k=3)  # 样本点导入，生成参数
+            # x_list = spi.splev(y_list, ipo3)  # 根据观测点和样条参数，生成插值
     elif inter_type==2:
         if inverse:
             x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
