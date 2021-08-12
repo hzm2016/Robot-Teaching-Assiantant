@@ -21,7 +21,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.316181, 0.433320, 1.948196])   
+Angle_initial = np.array([-0.343946, 0.445735, 1.796778])   
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -88,7 +88,8 @@ def move_to_target_point(target_point, impedance_params, velocity=0.05):
         angle_1_list, angle_2_list, N,   
         Angle_initial[0], Angle_initial[1],   
         dist_threshold   
-    )
+    ) 
+
     # while dist > DIST_THREHOLD: 
     #     motor_control.move_to_target(target_point) 
     #     dist = np.linalg.norm((curr_point - target_point), ord=2)  
@@ -195,7 +196,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close() 
 
 
-def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1])): 
+def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1]), word_name='yi'): 
     
     for index in range(len(word_path)):  
         print("*" * 50)
@@ -217,13 +218,18 @@ def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1])):
         
         write_stroke(stroke_points=stroke_points_index,  
                      impedance_params=impedance_params,  
-                     target_point=stroke_target_point)  
+                     target_point=stroke_target_point,
+                     word_name=word_name,
+                     stroke_name=str(index))  
 
         motor_control.motor_3_stop() 
 
 
-def write_stroke(stroke_points=None, impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
-    target_point=Initial_point): 
+def write_stroke(stroke_points=None, 
+                impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
+                target_point=Initial_point,
+                word_name='yi',
+                stroke_name='0'): 
 
     # print("Write stroke !!!")  
     way_points = stroke_points  
@@ -241,9 +247,13 @@ def write_stroke(stroke_points=None, impedance_params = np.array([35.0, 25.0, 0.
 
     set_pen_down()  
     time.sleep(0.4)  
-    motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-                                way_points[:, 0].copy(), way_points[:, 1].copy(), Num_way_points, 
-                                Angle_initial[0], Angle_initial[1], 1)  
+    stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '.txt' 
+    stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '.txt' 
+    curr_path_list = motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
+                                                way_points[:, 0].copy(), way_points[:, 1].copy(), Num_way_points, 
+                                                Angle_initial[0], Angle_initial[1], 1, stroke_angle_name, stroke_torque_name) 
+    # print("curr_path_list", curr_path_list.shape)  
+    # np.savetxt('curr_path_list.txt', curr_path_list)
     
     time.sleep(0.4) 
 
@@ -424,8 +434,13 @@ def load_word_path(word_name=None):
 if __name__ == "__main__":  
 
     word_path = load_word_path(word_name='yi') 
-
     write_word(word_path, impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
+
+    # from path_planning.plot_path import * 
+    # plot_real_2d_path(
+    #     root_path='./data/font_data/yi/',
+    #     file_name='real_angle_list.txt'
+    # )
 
     # set_pen_up()
 
