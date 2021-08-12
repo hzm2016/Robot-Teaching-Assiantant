@@ -348,10 +348,16 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
     angle = math.atan2(dir[1], dir[0])
     print("angle :", angle)
     
-    if angle > -math.pi/2 and angle < 0:
+    if angle > -math.pi/4 and angle < 0:
         inter_type = 2
         inverse = False
     if angle > 3.0 or angle < -3.0:
+        inter_type = 2
+    if angle > -math.pi/2 and angle < - math.pi/4:
+        inter_type = 1
+    if angle > math.pi/4 and angle < math.pi *3/4:
+        inverse = False
+    if angle > math.pi *3/4 and angle < math.pi:
         inter_type = 2
     
     sample_x = []
@@ -385,8 +391,8 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
     x_1_list = x_list/ratio + center_shift[0]
     x_2_list = y_list/ratio + center_shift[1]
 
-    print("x_list :", x_list)
-    print("y_list :", y_list)
+    # print("x_list :", x_list)
+    # print("y_list :", y_list)
     
     task_points = np.vstack((x_1_list, x_2_list)).transpose()
     
@@ -461,7 +467,8 @@ def generate_word_path(
     for stroke_index in range(len(traj_list)):
         # get one stroke
         traj = traj_list[stroke_index]
-        
+        print('=' * 20)
+        print('stroke index :', stroke_index)
         stroke_angle_list, stroke_image_points, stroke_task_points, period \
             = generate_stroke_path(
                 traj,
