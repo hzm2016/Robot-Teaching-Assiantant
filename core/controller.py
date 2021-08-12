@@ -252,11 +252,11 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='yu',
+                        default='tian_1',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='余',
+                        default='天',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
@@ -323,7 +323,7 @@ if __name__ == "__main__":
             center_shift=np.array([0.15, -WIDTH / 2]),
             velocity=0.08,
             plot_show=True,
-            save_path=True,
+            save_path=False,
             word_name=args.folder_name
         )
 
