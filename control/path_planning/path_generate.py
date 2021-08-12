@@ -8,6 +8,8 @@ import copy
 import cv2
 import PIL.Image as Image
 
+from scipy.signal import savgol_filter
+import scipy.interpolate as spi
 
 sns.set_theme()
 
@@ -296,8 +298,12 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
         point_1 = np.array([traj[i, 1], traj[i, 0]])
         point_2 = np.array([traj[i+1, 1], traj[i+1, 0]])
         dist += np.linalg.norm((point_2.copy() - point_1.copy()), ord=2)
+
+    path_data = np.zeros_like(traj)
     
-    path_data = traj
+    path_data[:, 0] = savgol_filter(traj[:, 0], 17, 3, mode='nearest')
+    path_data[:, 1] = savgol_filter(traj[:, 1], 17, 3, mode='nearest')
+    
     # M = N//len(traj)
     # x_list = []
     # y_list = []
@@ -321,13 +327,22 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
     print("Period (s) :", np.array(period))
     N = np.array(period / Ts).astype(int)
     
+    sample_x = []
+    sample_y = []
     if inter_type==1:
         if inverse:
             y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
             x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
         else:
             y_list = np.linspace(path_data[0, 0], path_data[-1, 0], N)
-            x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
+            # x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
+            
+            sample_y = np.array(path_data[:, 0])
+            sample_x = np.array(path_data[:, 1])
+
+            # 进行三次样条拟合
+            ipo3 = spi.splrep(sample_y, sample_x, k=3)  # 样本点导入，生成参数
+            x_list = spi.splev(y_list, ipo3)  # 根据观测点和样条参数，生成插值
     elif inter_type==2:
         if inverse:
             x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
@@ -342,7 +357,7 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
 
     x_1_list = x_list/ratio + center_shift[0]
     x_2_list = y_list/ratio + center_shift[1]
-    
+
     print("x_list :", x_list)
     print("y_list :", y_list)
     

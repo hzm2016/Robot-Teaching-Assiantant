@@ -244,7 +244,7 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--generate_path',
-                        default=False,
+                        default=True,
                         help='enables useful debug settings')
      
     parser.add_argument('--record_video',
@@ -252,11 +252,11 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='ren',
+                        default='yi',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='人',
+                        default='一',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
@@ -304,7 +304,7 @@ if __name__ == "__main__":
     
         # ======================================
         inverse_list[0] = False
-        inter_list[0] = 2
+        # inter_list[0] = 2
         # # inverse_list[1] = False
         # inter_list[1] = 2
         # inverse_list[2] = False
@@ -337,8 +337,20 @@ if __name__ == "__main__":
         #               stroke_name=str(0)
         #               )
 
-    from control.path_planning.plot_path import *
-    plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
+        # import scipy.interpolate as spi
+        #
+        # sample_y = np.array(traj[:, 0])
+        # print(sample_y)
+        # sample_x = np.array(traj[:, 1])
+        # print(sample_x)
+        #
+        # # 进行三次样条拟合
+        # ipo3 = spi.splrep(sample_y, sample_x, k=3)
+        # # x_list = spi.splev(y_list, ipo3)
+
+    # from control.path_planning.plot_path import *
+    # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
+    
     # # a = np.array([(3, 4), (7, 8)])
     # # b = np.array([(1, 2), (3, 4), (5, 6)])
     # from imgprocessor import Postprocessor
