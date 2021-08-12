@@ -323,7 +323,7 @@ if __name__ == "__main__":
             center_shift=np.array([0.15, -WIDTH / 2]),
             velocity=0.08,
             plot_show=True,
-            save_path=False,
+            save_path=True,
             word_name=args.folder_name
         )
 
