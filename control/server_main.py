@@ -433,7 +433,7 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    word_path = load_word_path(word_name='yi') 
+    word_path = load_word_path(word_name='ren') 
     write_word(word_path, impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
 
     # from path_planning.plot_path import * 
