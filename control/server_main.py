@@ -423,9 +423,9 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    # word_path = load_word_path(word_name='ren') 
+    word_path = load_word_path(word_name='yi') 
 
-    # write_word(word_path, impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
+    write_word(word_path, impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
 
     # set_pen_up()
 
@@ -470,11 +470,11 @@ if __name__ == "__main__":
     # train() 
     # train(run_on=True, Load_path=True)  
     
-    plot_torque_path(
-        root_path='',
-        file_angle_name='real_angle_list.txt', 
-        file_torque_name='real_torque_list.txt' 
-    )
+    # plot_torque_path(
+    #     root_path='',
+    #     file_angle_name='real_angle_list.txt', 
+    #     file_torque_name='real_torque_list.txt' 
+    # )
 
     #################################################################################
     # plot_real_2d_path(
