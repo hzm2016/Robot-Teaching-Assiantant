@@ -343,10 +343,6 @@ if __name__ == "__main__":
         # print(sample_y)
         # sample_x = np.array(traj[:, 1])
         # print(sample_x)
-        #
-        # # 进行三次样条拟合
-        # ipo3 = spi.splrep(sample_y, sample_x, k=3)
-        # # x_list = spi.splev(y_list, ipo3)
 
     # from control.path_planning.plot_path import *
     # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
