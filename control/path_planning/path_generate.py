@@ -300,6 +300,34 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     # plt.show()
 
 
+def real_stroke_path(task_points_list=None):
+    
+    fig = plt.figure(figsize=(4, 4))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(task_points_list)):
+        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
+        # plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        # plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
+    
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0.13, 0.13 + WIDTH])
+    # plt.xlabel('$x_1$(m)')
+    # plt.ylabel('$x_2$(m)')
+    # plt.axis('off')
+    plt.tight_layout()
+    
+    img_path = fig2data(fig)
+    # img = img_path.transpose(Image.ROTATE_90)  # 将图片旋转90度
+    # img_path.show()
+    img_show = np.rot90(img_path, -1)
+    # cv2.imwrite(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
+    # plt.show()
+    cv2.imshow("Real path :", img_show)
+    cv2.waitKey(0)
+    
+
 def generate_stroke_path(traj, inter_type=1, inverse=True,
                   center_shift=np.array([-WIDTH/2, 0.23]),
                   velocity=0.04, Ts=0.001, plot_show=False, save_path=False, word_name=None, stroke_name=0):
@@ -649,3 +677,34 @@ def check_path(root_path='', plot_show=True, font_name='J_font',
     return np.array(angle_1_list_e), np.array(angle_2_list_e)
 
 
+def plot_torque(torque_list, period_list):
+    """
+        torque_list
+    """
+    fig = plt.figure(figsize=(4, 4))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+
+    total_period = sum(period_list)
+    print("total_period :", total_period)
+    for i in range(len(torque_list)):
+        if i == 0:
+            start_period = 0.0
+        else:
+            start_period = sum(period_list[:i])
+        
+        t_list = np.linspace(start_period, period_list[i] + start_period, torque_list[i].shape[0])
+        print("period :", start_period, period_list[i] + start_period)
+        
+        plt.plot(t_list, torque_list[i][:, 0], linewidth=linewidth, label='$q_1$')
+        # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+        plt.plot(t_list, torque_list[i][:, 1], linewidth=linewidth, label='$q_2$')
+    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    
+    plt.xlabel('Time (s)')
+    plt.ylabel('Torque (Nm)')
+    # plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+    plt.tight_layout()
+    
+    plt.show()

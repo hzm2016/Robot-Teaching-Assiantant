@@ -244,6 +244,10 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--generate_path',
+                        default=False,
+                        help='enables useful debug settings')
+    
+    parser.add_argument('--plot_real_path',
                         default=True,
                         help='enables useful debug settings')
      
@@ -252,11 +256,11 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='yi',
+                        default='mu',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='一',
+                        default='木',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
@@ -337,13 +341,30 @@ if __name__ == "__main__":
         #               stroke_name=str(0)
         #               )
 
-        # import scipy.interpolate as spi
-        #
-        # sample_y = np.array(traj[:, 0])
-        # print(sample_y)
-        # sample_x = np.array(traj[:, 1])
-        # print(sample_x)
+    if args.plot_real_path:
+        stroke_list_file = glob.glob(
+            args.root_path + 'font_data' + '/' + args.folder_name + '/' + 'real_angle_list*.txt')
+        num_stroke = len(stroke_list_file)
+        print("num_stroke :", num_stroke)
+    
+        word_angle_list = []
+        task_point_list =[]
+        torque_list = []
+        period_list = []
+        for str_index in range(num_stroke):
+            angle_list = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                              'real_angle_list_' + str(str_index) + '.txt', delimiter=' ', skiprows=1)
+            stroke_torque = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                                    'real_torque_list_' + str(str_index) + '.txt', delimiter=' ', skiprows=1)
+            point_list = forward_ik_path(angle_list)
+            word_angle_list.append(angle_list)
+            task_point_list.append(point_list)
+            torque_list.append(stroke_torque)
+            period_list.append(angle_list.shape[0])
 
+        # real_stroke_path(task_points_list=task_point_list)
+        plot_torque(torque_list, period_list)
+    
     # from control.path_planning.plot_path import *
     # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
     

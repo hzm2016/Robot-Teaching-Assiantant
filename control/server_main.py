@@ -38,7 +38,7 @@ def reset_and_calibration():
     return angle_initial  
 
 
-def get_current_path():
+def get_demo_writting(): 
     
 
     pass

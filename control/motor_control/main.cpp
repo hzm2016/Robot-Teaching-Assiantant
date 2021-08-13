@@ -620,7 +620,9 @@ void load_path_data(double *theta_1_list, double *theta_2_list)
 }
 
 
-py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_initial, py::array_t<double> buff_size) 
+py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_initial, 
+double stiffness, double damping, 
+py::array_t<double> buff_size) 
 {
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN
@@ -630,8 +632,6 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     CANDevice can1((char *) "can1");  
     can1.begin();  
 
-    // motor_1(can1);  
-    // motor_2(can0);  
     Gcan motor_1(can1);   
     Gcan motor_2(can0);   
     motor_1.begin();   
@@ -650,6 +650,10 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     ofstream OutFileAngle(output_angle);    
     OutFileAngle << "angle_1" << "," << "angle_2" << "\n";   
 
+
+    double torque_lower_bound = -1.0;   
+    double torque_upper_bound = 1.0;   
+
     double theta_1_t = 0.0;   
     double theta_2_t = 0.0;   
 
@@ -659,11 +663,21 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     double torque_1 = 0.0;  
     double torque_2 = 0.0;  
 
+    double torque_1_e = 0.0;   
+    double torque_2_e = 0.0;  
+
     double torque_1_t = 0.0;  
     double torque_2_t = 0.0;  
 
     double pos_1 = 0.0;   
     double pos_2 = 0.0;   
+
+    ///////////////////////////////////////////////////////
+    double stiffness_1 = stiffness;  
+    double stiffness_2 = stiffness;   
+
+    double damping_1 = damping;    
+    double damping_2 = damping;    
 
     run_on = 1;   
 
@@ -671,7 +685,7 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     // pointer to signal handler
 	void (*sig_h)(int) = sigint_1_step;   
 
-    py::buffer_info buff_size_list = buff_size.request(); 
+    py::buffer_info buff_size_list = buff_size.request();  
 
     // allocate the output buffer
 	py::array_t<double> result = py::array_t<double>(buff_size_list.size); 
@@ -681,7 +695,7 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
     // acquire buffer info 
 	py::buffer_info result_buf = result.request();  
 
-    double *theta_list = (double *)result_buf.ptr; 
+    double *theta_list = (double *)result_buf.ptr;  
 
     int index = 0; 
     int index_buff = 0;  
@@ -698,14 +712,20 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
         theta_1_t = motor_1.read_sensor(2) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
 
-        printf(" theta_1_t: %f\n", theta_1_t);  
-        printf(" theta_2_t: %f\n", theta_2_t);  
+        // printf(" theta_1_t: %f\n", theta_1_t);  
+        // printf(" theta_2_t: %f\n", theta_2_t);  
 
         OutFileAngle << theta_1_t << "," << theta_2_t << "\n";  
 
         index_buff = index%buff_length;  
+
         // theta_list[index_buff][0] = theta_1_t;   
         // theta_list[index_buff][1] = theta_2_t;   
+
+        /// zero impedance control
+        
+        torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
+        torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
 
         pos_1 = motor_1.set_torque(2, 0, &d_theta_1_t, &torque_1_t);   
         pos_2 = motor_2.set_torque(1, 0, &d_theta_2_t, &torque_2_t);   
@@ -713,7 +733,7 @@ py::array_t<double> get_demonstration(double theta_1_initial, double theta_2_ini
         theta_list[index_buff*result_buf.shape[1] + 0] = theta_1_t;   
         theta_list[index_buff*result_buf.shape[1] + 1] = theta_2_t;   
 
-        // for(i=0; i<result_buf.shape[0]; i++)
+        // for(i=0; i<result_buf.shape[0]; i++) 
         // {
         //     for(j=0; j<result_buf.shape[1]; j++)
         //     {

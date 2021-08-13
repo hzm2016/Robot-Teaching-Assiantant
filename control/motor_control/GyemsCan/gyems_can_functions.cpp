@@ -129,8 +129,12 @@ double Gcan::set_torque(int nodeID, int16_t iqControl, double* speed_back, doubl
     
     unpack_speed_torque_reply(&rframe,&temp,&torque,&speed,&position); 
 
-    *speed_back = speed * 3.14/180/6; 
+    // *speed_back = speed * 3.14/180/6; 
+    // *torque_back = torque * 17.5/800; 
+
+    *speed_back = speed;  
     *torque_back = torque * 17.5/800; 
+    // *torque_back = torque;  
     // printf("position : %f\n", position * 3.14/180); 
 
     return 0.0; 
