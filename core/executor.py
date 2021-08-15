@@ -204,6 +204,7 @@ class Executor(object):
                 break
             
             char_info = self.char_list[character]
+            print('char_info', char_info)
             strokes = char_info['strokes']
 
             img_list = []

@@ -5,11 +5,12 @@ import cv2
 import argparse
 import time
 import glob
+import os
 
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import *
-from control.vision_capture.main_functions import capture_image, show_video
+from control.vision_capture.main_functions import capture_image, show_video, record_video
 
 
 def draw_points(points, canvas_size=256):
@@ -90,7 +91,9 @@ class Controller(object):
         """
         if self.img_processor is not None:
             input = self.img_processor.process(input)
-
+        cv2.imshow("Input Image", input)
+        cv2.waitKey()
+        
         tgt_pts, _ = skeletonize(~target)
         in_pts, _ = skeletonize(~input)
 
@@ -113,8 +116,9 @@ class Controller(object):
         # cv2.imwrite('in_pts_vis.jpg', in_pts_vis)
 
         matching = self.key_point_matching(tgt_pts, in_pts)
+        print("matching :", matching)
         matching_vis = draw_matching(tgt_pts, in_pts, matching)
-        # cv2.imwrite('matching_vis.jpg', matching_vis)
+        cv2.imwrite('matching_vis.jpg', matching_vis)
 
         tgt_index = matching[:, 0]
         in_index = matching[:, 1]
@@ -230,55 +234,159 @@ class Controller(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Runs a learning example on a registered gym environment.')
-
+    
     parser.add_argument('--show_video',
                         default=False,
+                        help='enables useful debug settings')
+    
+    parser.add_argument('--capture_image',
+                        default=False,
+                        help='enables useful debug settings')
+
+    parser.add_argument('--generate_path',
+                        default=False,
+                        help='enables useful debug settings')
+    
+    parser.add_argument('--plot_real_path',
+                        default=True,
+                        help='enables useful debug settings')
+     
+    parser.add_argument('--record_video',
+                        default=False,
+                        help='enables useful debug settings')
+
+    parser.add_argument('--folder_name',
+                        default='mu',
+                        help='enables useful debug settings')
+    
+    parser.add_argument('--font_name',
+                        default='木',
+                        help='enables useful debug settings')
+    
+    parser.add_argument('--font_type',
+                        default=1,
+                        type=int,
+                        help='enables useful debug settings')
+
+    parser.add_argument('--root_path',
+                        default='../control/data/',
                         help='enables useful debug settings')
 
     args = parser.parse_args()
 
-    root_path = '../control/data/font_data'
-    folder_name = 'xing'
-    font_name = '行'
-    type = 1
+    if args.show_video:
+        show_video()
     
-    stroke_list_file = glob.glob(root_path + '/' + folder_name + '/' + font_name + '_*.txt')
-    num_stroke = len(stroke_list_file)
-    print("num_stroke :", num_stroke)
-    traj_list = []
-
-    for str_index in range(num_stroke):
-        traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-                               font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
-        traj_list.append(traj)
-
-    inter_list = np.ones(len(traj_list))
-    inverse_list = np.ones(len(traj_list))
-    inverse_list[0] = False
-    inverse_list[1] = False
-    inter_list[0] = 2
-    inter_list[1] = 2
-    inter_list[2] = 2
-    inter_list[5] = 2
-    generate_word_path(
-        traj_list,
-        inter_list,
-        inverse_list,
-        center_shift=np.array([0.16, -WIDTH / 2]),
-        velocity=0.04,
-        plot_show=True,
-        save_path=True,
-        word_name=folder_name)
+    if args.record_video:
+        record_video(filepath=args.root_path + 'video/' + args.folder_name + '.svo')
     
-    # generate_stroke_path(traj_list[2],
-    #               inter_type=1,
-    #               center_shift=np.array([0.16, -WIDTH / 2]),
-    #               velocity=0.04,
-    #               Ts=0.001,
-    #               plot_show=True,
-    #               save_path=False,
-    #               stroke_name=str(0)
-    #               )
+    if args.capture_image:
+        file_path = args.root_path + 'captured_images/' + args.folder_name
+        if os.path.exists(file_path):
+            print('%s: exist' % file_path)
+        else:
+            try:
+                os.mkdir(file_path)
+            except Exception as e:
+                os.makedirs(file_path)
+
+        word_img = capture_image(file_path=file_path, font_name=args.folder_name)
+    
+    if args.generate_path:
+        stroke_list_file = glob.glob(args.root_path + 'font_data' + '/' + args.folder_name + '/' + args.font_name + '_*.txt')
+        num_stroke = len(stroke_list_file)
+        print("num_stroke :", num_stroke)
+        
+        traj_list = []
+        for str_index in range(num_stroke):
+            traj = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                                   args.font_name + '_' + str(str_index) + '_font' + str(args.font_type) + '.txt')
+            traj_list.append(traj)
+    
+        inter_list = np.ones(len(traj_list))
+        inverse_list = np.ones(len(traj_list))
+    
+        # ======================================
+        # inverse_list[0] = False
+        # inter_list[0] = 2
+        # # inverse_list[1] = False
+        # inter_list[1] = 2
+        # inverse_list[2] = False
+        # inter_list[2] = 2
+        # inter_list[5] = 2
+        # inverse_list[4] = False
+        # inter_list[4] = 2
+        # # inverse_list[5] = False
+        # inter_list[5] = 2
+        # =======================================
+    
+        generate_word_path(
+            traj_list,
+            inter_list,
+            inverse_list,
+            center_shift=np.array([0.15, -WIDTH / 2]),
+            velocity=0.08,
+            plot_show=True,
+            save_path=True,
+            word_name=args.folder_name
+        )
+
+        # generate_stroke_path(traj_list[2],
+        #               inter_type=1,
+        #               center_shift=np.array([0.16, -WIDTH / 2]),
+        #               velocity=0.04,
+        #               Ts=0.001,
+        #               plot_show=True,
+        #               save_path=False,
+        #               stroke_name=str(0)
+        #               )
+
+    if args.plot_real_path:
+        stroke_list_file = glob.glob(
+            args.root_path + 'font_data' + '/' + args.folder_name + '/' + 'real_angle_list*.txt')
+        num_stroke = len(stroke_list_file)
+        print("num_stroke :", num_stroke)
+    
+        word_angle_list = []
+        task_point_list =[]
+        torque_list = []
+        period_list = []
+        for str_index in range(num_stroke):
+            angle_list = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                              'real_angle_list_' + str(str_index) + '.txt', delimiter=' ', skiprows=1)
+            stroke_torque = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                                    'real_torque_list_' + str(str_index) + '.txt', delimiter=' ', skiprows=1)
+            point_list = forward_ik_path(angle_list)
+            word_angle_list.append(angle_list)
+            task_point_list.append(point_list)
+            torque_list.append(stroke_torque)
+            period_list.append(angle_list.shape[0])
+
+        # real_stroke_path(task_points_list=task_point_list)
+        plot_torque(torque_list, period_list)
+    
+    # from control.path_planning.plot_path import *
+    # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
+    
+    # # a = np.array([(3, 4), (7, 8)])
+    # # b = np.array([(1, 2), (3, 4), (5, 6)])
+    # from imgprocessor import Postprocessor
+    # c = Controller(Postprocessor(
+    #     {'ROTATE': 0, 'BINARIZE': 128}), img_processor=Postprocessor(
+    #     {'ROTATE': 0, 'BINARIZE': 128}))
+    # stroke_index = 0
+    # written_stroke = cv2.imread(args.root_path + 'captured_images/' + args.folder_name + '/' + args.folder_name + '.png')
+    # print("written_stroke :", written_stroke.shape)
+    # sample_stroke = cv2.imread(args.root_path + 'font_data/' + args.folder_name + '/' + args.font_name + '_' + str(stroke_index) + '_font1.png',
+    #                            cv2.IMREAD_GRAYSCALE)
+    # print("sample_stroke :", sample_stroke.shape)
+    # # cv2.waitKey(0)
+    #
+    # # show_video()
+    #
+    # x_dis, y_dis, tgt = c.update_impedance(sample_stroke, written_stroke)
+    # # print(x_dis, y_dis, tgt)
+    # # matching = c.key_point_matching(a, b)
 
     # way_points = np.loadtxt('../control/angle_list_1_1.txt', delimiter=' ')
     # N_way_points = way_points.shape[0]
@@ -299,46 +407,24 @@ if __name__ == "__main__":
     #
     # angle_list_1 = np.vstack([way_points, angle_list, way_points_2])
     # print(angle_list_1.shape)
-	#
-    # fig = plt.figure(figsize=(15, 4))
-    # plt.plot(angle_list_1[:, 0], linewidth=linewidth, label='$q_1$')
-    # # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
-    # plt.plot(angle_list_1[:, 1], linewidth=linewidth, label='$q_2$')
-    # # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
-    # plt.show()
-    # np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
-    
-    # str_index = 0
-    # traj = np.loadtxt(root_path + '/' + folder_name + '/' +
-    #                        font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
-    #
-    # writing_controller = Controller(
-    #     args, img_processor=None, impedance_level=0)
-    #
-    # writing_controller.interact_once(
-    #     traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.04, mode='eval')
 
-    # target_img = cv2.imread(root_path + '/1_font_1.png')
-    # writing_controller.interact(path_data, target_img)
+# fig = plt.figure(figsize=(15, 4))
+# plt.plot(angle_list_1[:, 0], linewidth=linewidth, label='$q_1$')
+# # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+# plt.plot(angle_list_1[:, 1], linewidth=linewidth, label='$q_2$')
+# # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+# plt.show()
+# np.savetxt('../control/angle_list_1.txt', angle_list_1.copy(), fmt='%.05f')
 
-    # a = np.array([(3, 4), (7, 8)])
-    # b = np.array([(1, 2), (3, 4), (5, 6)])
-    # from imgprocessor import Postprocessor
-    # c = Controller(Postprocessor(
-    #     {'ROTATE': 0, 'BINARIZE': 128}), img_processor=Postprocessor(
-    #     {'ROTATE': 0, 'BINARIZE': 128}))
-    #
-    # written_stroke = cv2.imread('./example/written_image.png')
-    # sample_stroke = cv2.imread('./example/example_traj.png', cv2.IMREAD_GRAYSCALE)
+# str_index = 0
+# traj = np.loadtxt(root_path + '/' + folder_name + '/' +
+#                        font_name + '_' + str(str_index) + '_font' + str(type) + '.txt')
+#
+# writing_controller = Controller(
+#     args, img_processor=None, impedance_level=0)
+#
+# writing_controller.interact_once(
+#     traj, impedance_params=[35.0, 25.0, 0.5, 0.1], velocity=0.04, mode='eval')
 
-    # root_path = '../control/data/captured_images/'
-    # sample_stroke, ori_img = capture_image(root_path=root_path, font_name='written_image_word')
-    # cv2.imshow('', ori_img)
-
-    # cv2.waitKey(0)
-
-    # show_video()
-
-    # x_dis, y_dis, tgt = c.update_impedance(sample_stroke, written_stroke)
-    # print(x_dis, y_dis, tgt)
-    # matching = c.key_point_matching(a, b)
+# target_img = cv2.imread(root_path + '/1_font_1.png')
+# writing_controller.interact(path_data, target_img)

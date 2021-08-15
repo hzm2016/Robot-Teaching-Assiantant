@@ -8,7 +8,7 @@ def test_docstring_options():
 
     assert m.test_function2.__doc__ == "A custom docstring"
 
-    # docstring specified on just the first overload definition:
+    # docstring specified on just the yi overload definition:
     assert m.test_overloaded1.__doc__ == "Overload docstring"
 
     # docstring on both overloads:

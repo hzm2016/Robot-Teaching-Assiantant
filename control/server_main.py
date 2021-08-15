@@ -6,7 +6,7 @@ from motor_control import motor_control
 from path_planning.plot_path import * 
 from path_planning.path_generate import * 
 import ctypes 
-import time
+import time 
 import glob 
 
 np.set_printoptions(precision=5) 
@@ -21,9 +21,9 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.319117, 0.397937, 0.421981])   
+Angle_initial = np.array([-0.343946, 0.445735, 1.796778])   
 
-# impedance params : 
+# impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
 
 
@@ -38,7 +38,7 @@ def reset_and_calibration():
     return angle_initial  
 
 
-def get_current_path():
+def get_demo_writting(): 
     
 
     pass
@@ -67,13 +67,15 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342, 0.379417])):
     return angle, point   
 
 
-def move_to_target_point(target_point, impedance_params, velocity=0.04):  
+def move_to_target_point(target_point, impedance_params, velocity=0.05):  
     """
         move to target point  
     """ 
-    curr_angle, curr_point = get_observation() 
-    # dist = np.linalg.norm((curr_point - target_point), ord=2) 
-    # print("Curr_point (m) :", curr_point)  
+    # done = False
+
+    curr_angle, curr_point = get_observation()  
+    # dist = np.linalg.norm((curr_point - target_point), ord=2)  
+    # print("Curr_point (m) :", curr_point)   
     # print("Initial dist (m) :", dist)  
 
     angle_list, N = path_planning(curr_point, target_point, velocity=velocity) 
@@ -84,11 +86,12 @@ def move_to_target_point(target_point, impedance_params, velocity=0.04):
     angle_2_list = angle_list[:, 1].copy()  
 
     dist_threshold = 0.05 
-    motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
+    done = motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
         angle_1_list, angle_2_list, N,   
         Angle_initial[0], Angle_initial[1],   
         dist_threshold   
-    )
+    ) 
+
     # while dist > DIST_THREHOLD: 
     #     motor_control.move_to_target(target_point) 
     #     dist = np.linalg.norm((curr_point - target_point), ord=2)  
@@ -98,6 +101,7 @@ def move_to_target_point(target_point, impedance_params, velocity=0.04):
     # print("Final dist (m) :", final_dist)  
     # done = True  
     # return done, final_dist  
+    return done
 
 
 def train(angle_initial=Angle_initial, run_on=True, Load_path=False): 
@@ -195,8 +199,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close() 
 
 
-def write_word(word_path, 
-    impedance_params=np.array([35.0, 25.0, 0.4, 0.1])): 
+def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1]), word_name='yi'): 
     
     for index in range(len(word_path)):  
         print("*" * 50)
@@ -218,14 +221,18 @@ def write_word(word_path,
         
         write_stroke(stroke_points=stroke_points_index,  
                      impedance_params=impedance_params,  
-                     target_point=stroke_target_point)  
+                     target_point=stroke_target_point,
+                     word_name=word_name,
+                     stroke_name=str(index))  
 
         motor_control.motor_3_stop() 
 
 
 def write_stroke(stroke_points=None, 
-    impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
-    target_point=Initial_point): 
+                impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
+                target_point=Initial_point,
+                word_name='yi',
+                stroke_name='0'): 
 
     # print("Write stroke !!!")  
     way_points = stroke_points  
@@ -239,24 +246,34 @@ def write_stroke(stroke_points=None,
 
     # move to target point
     set_pen_up()  
-    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.05)  
+    # time.sleep(0.5) 
 
-    set_pen_down()  
-    time.sleep(0.3)  
-    motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-                                way_points[:, 0].copy(), way_points[:, 1].copy(), Num_way_points, 
-                                Angle_initial[0], Angle_initial[1], 1)  
+    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)  
+    # time.sleep(0.5) 
+
+    set_pen_down()   
+    # time.sleep(0.5)   
+
+    stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '.txt' 
+    stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '.txt' 
+    done = motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
+                                                way_points[:, 0].copy(), way_points[:, 1].copy(), Num_way_points, 
+                                                Angle_initial[0], Angle_initial[1], 1, stroke_angle_name, stroke_torque_name) 
+    # print("curr_path_list", curr_path_list.shape)  
+    # np.savetxt('curr_path_list.txt', curr_path_list)
     
-    time.sleep(0.3) 
+    # time.sleep(0.5) 
 
     # move to target point 
-    set_pen_up() 
-    time.sleep(0.3) 
+    set_pen_up()  
+    # time.sleep(0.5)  
 
-    move_to_target_point(target_point, Move_Impedance_Params, velocity=0.05)  
+    move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)  
 
     print("Write stroke once done !!!")  
     print("*" * 50)  
+
+    return done
 
 
 def eval_writting(run_on=True, Load_path=False): 
@@ -364,8 +381,9 @@ def set_pen_up():
         pull pen up 
     """ 
     # motor_control.motor_3_stop()
-    up_angle = np.int32(100) 
-    motor_control.set_position(0.0, up_angle)   
+    up_angle = np.int32(9000) 
+    motor_control.set_position(0.0, up_angle)  
+    time.sleep(1.0) 
 
 
 def set_pen_down():  
@@ -373,8 +391,9 @@ def set_pen_down():
         pull pen down  
     """ 
     # motor_control.motor_3_stop()
-    down_angle = np.int32(1700)   
+    down_angle = np.int32(11200)   
     motor_control.set_position(0.0, down_angle)   
+    time.sleep(1.0)
 
 
 def load_word_path(word_name=None):
@@ -425,14 +444,19 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    word_path = load_word_path(word_name='xing')
+    write_name = 'mu'
+    word_path = load_word_path(word_name=write_name) 
+    write_word(word_path, impedance_params=np.array([35.0, 30.0, 0.4, 0.1]), word_name=write_name)   
 
-    write_word(word_path, 
-    impedance_params=np.array([35.0, 30.0, 0.4, 0.1]))  
+    # from path_planning.plot_path import * 
+    # plot_real_2d_path(
+    #     root_path='./data/font_data/yi/',
+    #     file_name='real_angle_list.txt'
+    # )
 
     # set_pen_up()
 
-    # motor_control.motor_3_stop()
+    # motor_control.motor_3_stop() 
 
     # write_stroke(stroke_points=way_points, 
     # impedance_params=np.array([35.0, 30.0, 0.4, 0.1]), 
@@ -445,14 +469,16 @@ if __name__ == "__main__":
     # print("N_way_points :", N_way_points) 
 
     # set_pen_up() 
+
     # set_pen_down() 
+    # motor_control.motor_3_stop() 
 
     # motor_control.read_angle_3(0.0)   
 
     # motor_control.set_position(0.0, np.int32(1700)) 
-    # motor_control.motor_3_stop() 
 
-    # """ calibrate position for each start up """ 
+
+    """ calibrate position for each start up """ 
     # Angle_initial = reset_and_calibration() 
 
     # motor_control.read_initial_angle_2() 
@@ -460,7 +486,7 @@ if __name__ == "__main__":
     # impedance_params = np.array([35.0, 10, 2.0, 0.1])  
     # move_to_target_point(np.array([0.34, -0.13]), impedance_params, velocity=0.05)  
 
-    # angle, point = get_observation(angle_initial=Angle_initial)   
+    angle, point = get_observation(angle_initial=Angle_initial)   
 
     # impedance_params = np.array([0.1, 0.1, 0, 0])  
     # motor_control.rotate_to_target(impedance_params[0], impedance_params[2], 3.14, 0.0, 0.05, 10)  
@@ -473,8 +499,8 @@ if __name__ == "__main__":
     
     # plot_torque_path(
     #     root_path='',
-    #     file_angle_name='move_target_angle_list.txt', 
-    #     file_torque_name='move_target_torque_list.txt' 
+    #     file_angle_name='real_angle_list.txt', 
+    #     file_torque_name='real_torque_list.txt' 
     # )
 
     #################################################################################

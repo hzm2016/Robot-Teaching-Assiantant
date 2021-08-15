@@ -92,7 +92,7 @@ def test_operators_notimplemented():
 
 
 def test_nested():
-    """#328: first member in a class can't be used in operators"""
+    """#328: yi member in a class can't be used in operators"""
 
     a = m.NestA()
     b = m.NestB()

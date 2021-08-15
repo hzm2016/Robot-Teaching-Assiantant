@@ -147,7 +147,7 @@ def test_nested_throws(capture):
     def throw_myex5():
         raise m.MyException5("nested error 5")
 
-    # In the comments below, the exception is caught in the first step, thrown in the last step
+    # In the comments below, the exception is caught in the yi step, thrown in the last step
 
     # C++ -> Python
     with capture:

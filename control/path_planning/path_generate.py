@@ -8,12 +8,14 @@ import copy
 import cv2
 import PIL.Image as Image
 
+from scipy.signal import savgol_filter
+import scipy.interpolate as spi
 
 sns.set_theme()
 
 # writing space
-WIDTH = 0.370
-HEIGHT = 0.370
+WIDTH = 0.360
+HEIGHT = 0.360
 
 # image size
 IMAGE_WIDTH = 128
@@ -114,12 +116,27 @@ def IK(point):
 
 
 def forward_ik(angle):
-    """ calculate point """
+    """
+        calculate point
+    """
     point = np.zeros_like(angle)
     point[0] = L1 * math.cos(angle[0]) + L2 * math.cos(angle[0] + angle[1])
     point[1] = L1 * math.sin(angle[0]) + L2 * math.sin(angle[0] + angle[1])
     
     return point
+
+
+def forward_ik_path(angle_list):
+    """
+        calculate osc point
+    """
+    point_list = np.zeros_like(angle_list)
+    
+    for i in range(point_list.shape[0]):
+        point_list[i, 0] = L1 * math.cos(angle_list[i, 0]) + L2 * math.cos(angle_list[i, 0] + angle_list[i, 1])
+        point_list[i, 1] = L1 * math.sin(angle_list[i, 0]) + L2 * math.sin(angle_list[i, 0] + angle_list[i, 1])
+    
+    return point_list
 
 
 def path_planning(start_point, target_point, velocity=0.04):
@@ -226,7 +243,7 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
         # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
         # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
     plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlim([0.13, 0.13 + WIDTH])
     plt.xlabel('$x_1$(m)')
     plt.ylabel('$x_2$(m)')
 
@@ -267,7 +284,7 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
         plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i+1), rotation=90)
 
     plt.ylim([-WIDTH/2, WIDTH/2])
-    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlim([0.13, 0.13 + WIDTH])
     # plt.xlabel('$x_1$(m)')
     # plt.ylabel('$x_2$(m)')
     plt.tight_layout()
@@ -283,6 +300,34 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     # plt.show()
 
 
+def real_stroke_path(task_points_list=None):
+    
+    fig = plt.figure(figsize=(4, 4))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(task_points_list)):
+        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
+        # plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        # plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
+    
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0.13, 0.13 + WIDTH])
+    # plt.xlabel('$x_1$(m)')
+    # plt.ylabel('$x_2$(m)')
+    # plt.axis('off')
+    plt.tight_layout()
+    
+    img_path = fig2data(fig)
+    # img = img_path.transpose(Image.ROTATE_90)  # 将图片旋转90度
+    # img_path.show()
+    img_show = np.rot90(img_path, -1)
+    # cv2.imwrite(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
+    # plt.show()
+    cv2.imshow("Real path :", img_show)
+    cv2.waitKey(0)
+    
+
 def generate_stroke_path(traj, inter_type=1, inverse=True,
                   center_shift=np.array([-WIDTH/2, 0.23]),
                   velocity=0.04, Ts=0.001, plot_show=False, save_path=False, word_name=None, stroke_name=0):
@@ -296,8 +341,12 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
         point_1 = np.array([traj[i, 1], traj[i, 0]])
         point_2 = np.array([traj[i+1, 1], traj[i+1, 0]])
         dist += np.linalg.norm((point_2.copy() - point_1.copy()), ord=2)
+
+    path_data = np.zeros_like(traj)
     
-    path_data = traj
+    path_data[:, 0] = savgol_filter(traj[:, 0], 17, 3, mode='nearest')
+    path_data[:, 1] = savgol_filter(traj[:, 1], 17, 3, mode='nearest')
+    
     # M = N//len(traj)
     # x_list = []
     # y_list = []
@@ -321,6 +370,26 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
     print("Period (s) :", np.array(period))
     N = np.array(period / Ts).astype(int)
     
+    start_point = np.array([path_data[0, 1], path_data[0, 0]])
+    end_point = np.array([path_data[-1, 1], path_data[-1, 0]])
+    dir = end_point - start_point
+    angle = math.atan2(dir[1], dir[0])
+    print("angle :", angle)
+    
+    if angle > -math.pi/4 and angle < 0:
+        inter_type = 2
+        inverse = False
+    if angle > 3.0 or angle < -3.0:
+        inter_type = 2
+    if angle > -math.pi/2 and angle < - math.pi/4:
+        inter_type = 1
+    if angle > math.pi/4 and angle < math.pi *3/4:
+        inverse = False
+    if angle > math.pi *3/4 and angle < math.pi:
+        inter_type = 2
+    
+    sample_x = []
+    sample_y = []
     if inter_type==1:
         if inverse:
             y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
@@ -328,6 +397,13 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
         else:
             y_list = np.linspace(path_data[0, 0], path_data[-1, 0], N)
             x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
+            
+            # sample_y = np.array(path_data[:, 0])
+            # sample_x = np.array(path_data[:, 1])
+            #
+            # # 进行三次样条拟合
+            # ipo3 = spi.splrep(sample_y, sample_x, k=3)  # 样本点导入，生成参数
+            # x_list = spi.splev(y_list, ipo3)  # 根据观测点和样条参数，生成插值
     elif inter_type==2:
         if inverse:
             x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
@@ -342,9 +418,9 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
 
     x_1_list = x_list/ratio + center_shift[0]
     x_2_list = y_list/ratio + center_shift[1]
-    
-    print("x_list :", x_list)
-    print("y_list :", y_list)
+
+    # print("x_list :", x_list)
+    # print("y_list :", y_list)
     
     task_points = np.vstack((x_1_list, x_2_list)).transpose()
     
@@ -403,7 +479,7 @@ def generate_word_path(
         traj_list,
         inter_list=None,
         inverse_list=None,
-        center_shift=np.array([-WIDTH/2, 0.23]),
+        center_shift=np.array([0.23, -WIDTH/2]),
         velocity=0.04,
         plot_show=False,
         save_path=False,
@@ -419,19 +495,20 @@ def generate_word_path(
     for stroke_index in range(len(traj_list)):
         # get one stroke
         traj = traj_list[stroke_index]
-        
+        print('=' * 20)
+        print('stroke index :', stroke_index)
         stroke_angle_list, stroke_image_points, stroke_task_points, period \
             = generate_stroke_path(
-            traj,
-            inter_type=inter_list[stroke_index],
-            inverse=inverse_list[stroke_index],
-            center_shift=center_shift,
-            velocity=velocity,
-            plot_show=False,
-            save_path=save_path,
-            word_name=word_name,
-            stroke_name=stroke_index
-        )
+                traj,
+                inter_type=inter_list[stroke_index],
+                inverse=inverse_list[stroke_index],
+                center_shift=center_shift,
+                velocity=velocity,
+                plot_show=False,
+                save_path=save_path,
+                word_name=word_name,
+                stroke_name=stroke_index
+            )
         
         word_angle_list.append(stroke_angle_list)
         word_image_points.append(stroke_image_points)
@@ -600,3 +677,34 @@ def check_path(root_path='', plot_show=True, font_name='J_font',
     return np.array(angle_1_list_e), np.array(angle_2_list_e)
 
 
+def plot_torque(torque_list, period_list):
+    """
+        torque_list
+    """
+    fig = plt.figure(figsize=(4, 4))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+
+    total_period = sum(period_list)
+    print("total_period :", total_period)
+    for i in range(len(torque_list)):
+        if i == 0:
+            start_period = 0.0
+        else:
+            start_period = sum(period_list[:i])
+        
+        t_list = np.linspace(start_period, period_list[i] + start_period, torque_list[i].shape[0])
+        print("period :", start_period, period_list[i] + start_period)
+        
+        plt.plot(t_list, torque_list[i][:, 0], linewidth=linewidth, label='$q_1$')
+        # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+        plt.plot(t_list, torque_list[i][:, 1], linewidth=linewidth, label='$q_2$')
+    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    
+    plt.xlabel('Time (s)')
+    plt.ylabel('Torque (Nm)')
+    # plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+    plt.tight_layout()
+    
+    plt.show()

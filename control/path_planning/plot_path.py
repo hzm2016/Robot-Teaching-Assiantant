@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 import numpy as np
+from path_planning.path_generate import *
+from matplotlib.animation import FuncAnimation
 
 """ ================================= Plot result ===================================== """
 COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple', 'pink',
@@ -182,7 +184,7 @@ def plot_real_2d_path(
     plt.xlabel('x(m)', fontsize=FONT_SIZE)  
     plt.ylabel('y(m)', fontsize=FONT_SIZE) 
     plt.ylim([-WIDTH/2, WIDTH/2])
-    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlim([0.13, 0.13 + WIDTH])
     # plt.legend()
 
     plt.show()
@@ -198,7 +200,7 @@ def plot_torque_path(
     linewidth = 4
     # plt.rcParams['font.family'] = 'Times New Roman'
     # plt.rcParams['font.size'] = FONT_SIZE
-    print("angle_list :", root_path + file_angle_name) 
+    # print("angle_list :", root_path + file_angle_name)
 
     angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1) 
     max_index = angle_list_e.shape[0]
@@ -231,3 +233,46 @@ def plot_torque_path(
     plt.legend()
     
     plt.show()
+    
+    
+if __name__ == "__main__":
+    
+    
+    fig, ax = plt.subplots()
+    x, y = [], []
+    line, = plt.plot([], [], '.-', color='orange')
+    nums = 50  # 需要的帧数
+    
+    
+    # def init():
+    #     ax.set_xlim(-5, 60)
+    #     ax.set_ylim(-3, 3)
+    #     return line
+    #
+    #
+    # def update(step):
+    #     if len(x) >= nums:  # 通过控制帧数来避免不断的绘图
+    #         return line
+    #     x.append(step)
+    #     y.append(np.cos(step / 3) + np.sin(step ** 2))  # 计算y
+    #     line.set_data(x, y)
+    #     return line
+    #
+    #
+    # ani = FuncAnimation(fig, update, frames=nums,  # nums输入到frames后会使用range(nums)得到一系列step输入到update中去
+    #                     init_func=init, interval=500)
+    stroke_length = 3
+    for i in range(stroke_length):
+        angle_list = np.loadtxt('../data/font_data/chuan/angle_list_' + str(i) + '.txt', delimiter=' ')
+        N_way_points = angle_list.shape[0]
+        # print("N_way_points :", N_way_points)
+        # word_path.append(way_points.copy())
+        # angle_point_1 = way_points[-1, :]
+        # end_point = forward_ik(angle_point_1)
+        point_list = forward_ik_path(angle_list)
+
+        plt.plot(point_list[:, 0], linewidth=linewidth, label='x_1(m)')
+        plt.plot(point_list[:, 1], linewidth=linewidth, label='x_2(m)')
+        
+        plt.show()
+        plt.pause(1)

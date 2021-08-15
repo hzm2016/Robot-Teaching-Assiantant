@@ -318,7 +318,7 @@ def test_overload_resolution(msg):
     assert m.overloaded(np.array([1], dtype="complex")) == "double complex"
     assert m.overloaded(np.array([1], dtype="csingle")) == "float complex"
 
-    # No exact match, should call first convertible version:
+    # No exact match, should call yi convertible version:
     assert m.overloaded(np.array([1], dtype="uint8")) == "double"
 
     with pytest.raises(TypeError) as excinfo:
@@ -369,7 +369,7 @@ def test_overload_resolution(msg):
     assert m.overloaded4(np.array([1], dtype="longlong")) == "long long"
     # Non-exact matches requiring conversion.  Since float to integer isn't a
     # save conversion, it should go to the double overload, but short can go to
-    # either (and so should end up on the first-registered, the long long).
+    # either (and so should end up on the yi-registered, the long long).
     assert m.overloaded4(np.array([1], dtype="float32")) == "double"
     assert m.overloaded4(np.array([1], dtype="short")) == "long long"
 

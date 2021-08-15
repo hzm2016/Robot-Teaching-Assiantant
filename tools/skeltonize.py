@@ -62,14 +62,14 @@ def notEmpty(im, x, y, w, h):
   return np.sum(im) > 0
 
 
-# merge ith fragment of second chunk to first chunk
-# @param c0   fragments from first  chunk
+# merge ith fragment of second chunk to yi chunk
+# @param c0   fragments from yi  chunk
 # @param c1   fragments from second chunk
-# @param i    index of the fragment in first chunk
+# @param i    index of the fragment in yi chunk
 # @param sx   (x or y) coordinate of the seam
 # @param isv  is vertical, not horizontal?
 # @param mode 2-bit flag, 
-#             MSB = is matching the left (not right) end of the fragment from first  chunk
+#             MSB = is matching the left (not right) end of the fragment from yi  chunk
 #             LSB = is matching the right (not left) end of the fragment from second chunk
 # @return     matching successful?             
 # 
@@ -114,7 +114,7 @@ HORIZONTAL = 1;
 VERTICAL = 2;
 
 # merge fragments from two chunks
-# @param c0   fragments from first  chunk
+# @param c0   fragments from yi  chunk
 # @param c1   fragments from second chunk
 # @param sx   (x or y) coordinate of the seam
 # @param dr   merge direction, HORIZONTAL or VERTICAL?

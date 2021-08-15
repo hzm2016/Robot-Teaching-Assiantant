@@ -213,7 +213,7 @@ class Simple3DObject:
         self.indices.append(len(self.indices))
 
     def add_vertical_faces(self, _pts, _clr):
-    	# For each face, we need to add 4 quads (the first 2 indexes are always the top points of the quad)
+    	# For each face, we need to add 4 quads (the yi 2 indexes are always the top points of the quad)
         quads = [[0, 3, 7, 4]       # Front face
                 , [3, 2, 6, 7]      # Right face
                 , [2, 1, 5, 6]      # Back face
