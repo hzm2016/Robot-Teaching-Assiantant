@@ -151,7 +151,9 @@ def plot_real_trajectory(
 
 def plot_real_2d_path(
     root_path='./motor_control/bin/data/',
-    file_name=''
+    file_name='',
+    delimiter=',',
+    skiprows=1
 ):
     """ 
         plot angle trajectory and cartesian path 
@@ -159,7 +161,7 @@ def plot_real_2d_path(
     FONT_SIZE = 28 
     linewidth = 4 
     
-    angle_list_e = np.loadtxt(root_path + file_name, delimiter=',', skiprows=1)
+    angle_list_e = np.loadtxt(root_path + file_name, delimiter=delimiter, skiprows=skiprows)
 
     angle_list_1_e = angle_list_e[:, 0]
     angle_list_2_e = angle_list_e[:, 1]
@@ -182,9 +184,9 @@ def plot_real_2d_path(
     
     plt.plot(x, y, linewidth=linewidth) 
     plt.xlabel('x(m)', fontsize=FONT_SIZE)  
-    plt.ylabel('y(m)', fontsize=FONT_SIZE) 
-    plt.ylim([-WIDTH/2, WIDTH/2])
-    plt.xlim([0.13, 0.13 + WIDTH])
+    plt.ylabel('y(m)', fontsize=FONT_SIZE)  
+    plt.ylim([-WIDTH/2, WIDTH/2])  
+    plt.xlim([0.13, 0.13 + WIDTH])  
     # plt.legend()
 
     plt.show()

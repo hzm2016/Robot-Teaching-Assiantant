@@ -11,40 +11,46 @@ import glob
 
 np.set_printoptions(precision=5) 
 
-L_1 = 0.3 
-L_2 = 0.25  
-action_dim = 3
-DIST_THREHOLD = 0.05  
+L_1 = 0.3  
+L_2 = 0.25   
+action_dim = 3   
+DIST_THREHOLD = 0.05    
 
 # initial angle (rad) ::: 
 Initial_angle = np.array([-1.31, 1.527])  
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.343946, 0.445735, 1.796778])   
+Angle_initial = np.array([-0.353831, -0.150109, 1.983084])  
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
 
 
 def reset_and_calibration(): 
-    print("Please make sure two links are at zero position !!!")
+    print("Please make sure two links are at zero position !!!") 
     angle_initial = np.zeros(3) 
     
     angle_initial[0] = motor_control.read_initial_angle_1() 
     angle_initial[1] = motor_control.read_initial_angle_2() 
-    angle_initial[2] = motor_control.read_initial_angle_3()
+    angle_initial[2] = motor_control.read_initial_angle_3() 
      
     return angle_initial  
 
 
 def get_demo_writting(): 
-    
+    """ 
+        zero impedance control
+    """
+    buff_size = np.zeros((100, 2)) 
+    impedance_params = np.array([35.0, 25.0, 0.4, 0.1])
 
-    pass
+    set_pen_down()  
+    motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], 
+    2.0, 2.0, 0.0, 0.0, buff_size)  
 
 
-def get_observation(angle_initial=np.array([-0.336998, 0.426342, 0.379417])): 
+def get_observation(angle_initial=Angle_initial): 
     """
         obtain joint angles and cartesian state 
     """
@@ -52,12 +58,14 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342, 0.379417])):
     # ############## get current state ##################### 
     # ###################################################### 
     angle = np.zeros(action_dim)  
-    point = np.zeros(2) 
+    point = np.zeros(2)  
     
-    print('+' * 20) 
+    print('+' * 20)   
     angle[0] = motor_control.read_angle_1(angle_initial[0])  
+    # print("Joint 1 angles (rad) :", angle[0])   
     angle[1] = motor_control.read_angle_2(angle_initial[1], angle[0].copy())  
-    angle[2] = motor_control.read_angle_3(angle_initial[2])  
+    # print("Joint 2 angles (rad) :", angle[1])  
+    # angle[2] = motor_control.read_angle_3(angle_initial[2])  
     print("Joint angles (rad) :", np.array(angle))  
     
     point[0] = L_1 * math.cos(angle[0]) + L_2 * math.cos(angle[0] + angle[1])
@@ -67,19 +75,21 @@ def get_observation(angle_initial=np.array([-0.336998, 0.426342, 0.379417])):
     return angle, point   
 
 
-def move_to_target_point(target_point, impedance_params, velocity=0.05):  
+def move_to_target_point(target_point, impedance_params=Move_Impedance_Params, velocity=0.05):  
     """
         move to target point  
     """ 
-    # done = False
+    # done = False  
 
     curr_angle, curr_point = get_observation()  
     # dist = np.linalg.norm((curr_point - target_point), ord=2)  
     # print("Curr_point (m) :", curr_point)   
     # print("Initial dist (m) :", dist)  
 
-    angle_list, N = path_planning(curr_point, target_point, velocity=velocity) 
-    # N = angle_list.shape[0]  
+    angle_list, N = path_planning(curr_point, target_point, velocity=velocity)  
+    # angle_list = np.loadtxt('angle_list.txt', delimiter=',', skiprows=1)  
+
+    N = angle_list.shape[0]  
 
     # angle_array = ctypes.c_float * 5
     angle_1_list = angle_list[:, 0].copy() 
@@ -101,7 +111,7 @@ def move_to_target_point(target_point, impedance_params, velocity=0.05):
     # print("Final dist (m) :", final_dist)  
     # done = True  
     # return done, final_dist  
-    return done
+    # return done
 
 
 def train(angle_initial=Angle_initial, run_on=True, Load_path=False): 
@@ -200,7 +210,9 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
 
 
 def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1]), word_name='yi'): 
-    
+    """
+        write a word and plot :: 
+    """
     for index in range(len(word_path)):  
         print("*" * 50)
         print("*" * 50)
@@ -396,6 +408,14 @@ def set_pen_down():
     time.sleep(1.0)
 
 
+def motor_stop():
+    """
+        sometimes need to stop motors
+    """
+    motor_control.motor_two_link_stop() 
+    motor_control.motor_3_stop() 
+
+
 def load_word_path(word_name=None):
 
     word_file = './data/font_data' + '/' + word_name + '/' 
@@ -444,15 +464,23 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    write_name = 'mu'
-    word_path = load_word_path(word_name=write_name) 
-    write_word(word_path, impedance_params=np.array([35.0, 30.0, 0.4, 0.1]), word_name=write_name)   
+    # write_name = 'yi' 
+    # word_path = load_word_path(word_name=write_name)  
+    # write_word(word_path, impedance_params=np.array([45.0, 33.0, 4.0, 0.1]), word_name=write_name)   
 
-    # from path_planning.plot_path import * 
     # plot_real_2d_path(
     #     root_path='./data/font_data/yi/',
-    #     file_name='real_angle_list.txt'
-    # )
+    #     file_name='real_angle_list_0.txt'
+    # )  
+
+    # motor_stop() 
+
+    # get_demo_writting()  
+
+    """ calibrate position for each start up """ 
+    # Angle_initial = reset_and_calibration() 
+
+    # angle, point = get_observation(angle_initial=Angle_initial)  
 
     # set_pen_up()
 
@@ -464,32 +492,80 @@ if __name__ == "__main__":
 
     # print("Load stroke path !!!") 
     # way_points = np.loadtxt('angle_list_4.txt', delimiter=' ')    
-    # print(way_points[:, 1].copy())
+    # print(way_points[:, 1].copy())  
     # N_way_points = way_points.shape[0]   
-    # print("N_way_points :", N_way_points) 
+    # print("N_way_points :", N_way_points)   
 
-    # set_pen_up() 
+    # set_pen_up()   
 
-    # set_pen_down() 
+    # set_pen_down()   
     # motor_control.motor_3_stop() 
 
     # motor_control.read_angle_3(0.0)   
 
-    # motor_control.set_position(0.0, np.int32(1700)) 
+    # motor_control.set_position(0.0, np.int32(500))   
 
+    
+    # impedance_params = np.array([35.0, 35, 0.8, 0.1])  
+    # move_to_target_point(np.array([0.34, -0.03]), impedance_params, velocity=0.04)  
 
-    """ calibrate position for each start up """ 
-    # Angle_initial = reset_and_calibration() 
+    # T = 10
+    # Ts = 0.001 
+    # N = int(T/Ts) 
+    # print('N :', N) 
+    # t = np.linspace(0, T, N) 
+    # omega = 0.01 
+    # angle_1_list = 0.5 * np.sin(2 * math.pi /T * t) 
+    # angle_2_list = 0.5 * np.sin(2 * math.pi /T * t) 
+    # impedance_params=np.array([40.0, 40.0, 0.4, 0.4]) 
 
-    # motor_control.read_initial_angle_2() 
+    # motor_control.control_single_motor(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
+    # angle_1_list, angle_2_list, N, Angle_initial[0], Angle_initial[1], 0.05) 
 
-    # impedance_params = np.array([35.0, 10, 2.0, 0.1])  
-    # move_to_target_point(np.array([0.34, -0.13]), impedance_params, velocity=0.05)  
+    # torque_list = np.loadtxt('demonstrated_torque_list.txt', delimiter=',', skiprows=1)
 
-    angle, point = get_observation(angle_initial=Angle_initial)   
+    # fig = plt.figure(figsize=(20, 8))  
+    # plt.subplot(1, 2, 1)  
+    # plt.subplots_adjust(wspace=2, hspace=0)  
+    
+    # plt.plot(torque_list[:, 0], linewidth=linewidth, label='Input')  
+    # plt.plot(torque_list[:, 1], linewidth=linewidth, label='Output')  
+    # # plt.xlim([0, 128])  
+    # # plt.ylim([0, 128])  
+    # plt.xlabel('time($t$)')    
+    # plt.ylabel('$q_1$(rad)')    
+    # # plt.axis('equal') 
+    # plt.legend() 
+    
+    # plt.subplot(1, 2, 2)
+    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    # plt.plot(torque_list[:, 2], linewidth=linewidth, label='Input')  
+    # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Output')  
+    
+    # # plt.xlim([0., 0.6])
+    # # plt.ylim([0., 0.6])
+    # plt.xlabel('time($t$)') 
+    # plt.ylabel('$q_2$(rad)')   
+    # plt.legend()
 
-    # impedance_params = np.array([0.1, 0.1, 0, 0])  
-    # motor_control.rotate_to_target(impedance_params[0], impedance_params[2], 3.14, 0.0, 0.05, 10)  
+    # plt.tight_layout() 
+    # plt.show() 
+
+    # plot_real_2d_path(
+    #     root_path='',
+    #     file_name='demonstrated_angle_list.txt',
+    #     delimiter=',',
+    #     skiprows=1
+    # )  
+
+    # motor_control.set_two_link_position(Angle_initial[0], Angle_initial[1], 0000, 0000)
+
+    # motor_control.motor_two_link_stop()  
+    
+    # get_demo_writting()  
+
+    # motor_control.read_initial_angle_2()  
 
     # eval(stroke_angle, impedance_params=np.array([35.0, 30.0, 0.4, 0.1])) 
     # eval_writting() 
@@ -499,8 +575,8 @@ if __name__ == "__main__":
     
     # plot_torque_path(
     #     root_path='',
-    #     file_angle_name='real_angle_list.txt', 
-    #     file_torque_name='real_torque_list.txt' 
+    #     file_angle_name='move_target_angle_list.txt', 
+    #     file_torque_name='move_target_torque_list.txt' 
     # )
 
     #################################################################################
@@ -526,27 +602,3 @@ if __name__ == "__main__":
 
     # angle_1_list = way_points[:, 0]  
     # angle_2_list = way_points[:, 1]  
-
-    # fig = plt.figure(figsize=(20, 8))  
-    # plt.subplot(1, 2, 1)  
-    # plt.subplots_adjust(wspace=2, hspace=0)  
-    
-    # plt.plot(angle_1_list, linewidth=linewidth)
-    # # plt.xlim([0, 128])
-    # # plt.ylim([0, 128])
-    # plt.xlabel('time($t$)')
-    # plt.ylabel('$q_1$(rad)')
-    # # plt.axis('equal')
-    # plt.tight_layout()
-    
-    # plt.subplot(1, 2, 2)
-    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-    # plt.plot(angle_2_list, linewidth=linewidth)
-    
-    # # plt.xlim([0., 0.6])
-    # # plt.ylim([0., 0.6])
-    # plt.xlabel('time($t$)')
-    # plt.ylabel('$q_2$(rad)')
-
-    # plt.show() 
