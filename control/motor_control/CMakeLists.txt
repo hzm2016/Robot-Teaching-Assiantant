@@ -36,10 +36,13 @@ add_subdirectory(RenishawCAN)
 add_subdirectory(GyemsCan)   
 # add_subdirectory(test_gyems)   
 # add_subdirectory(motor_control) 
-add_subdirectory(pybind11)  
+add_subdirectory(pybind11) 
+add_subdirectory(robot_cal)  
 
 link_libraries(gyems_can_lib)  
-link_libraries(renishaw_can_lib)   
+link_libraries(renishaw_can_lib)  
+link_libraries(robot_cal_lib)
 
-pybind11_add_module(motor_control main.cpp robot_cal.app)   
+
+pybind11_add_module(motor_control main.cpp)    
 target_compile_definitions(motor_control PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})  
