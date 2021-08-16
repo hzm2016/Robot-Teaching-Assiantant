@@ -11,15 +11,20 @@ using namespace std;
 #include <unistd.h> 
 #include <signal.h>  
 #include <cmath> 
-#include<stdio.h>
+#include <stdio.h>
+
+#include <Eigen/Dense>
+
+using namespace Eigen
 
 #include <pybind11/numpy.h>
 namespace py = pybind11;
 
 #define PI 3.1415926 
-const double ctl_ratio_1 = -2000.0/32;    
+const double ctl_ratio_1 = -2000.0/32;     
 const double ctl_ratio_2 = 2000.0/32;  
-const double d_t = 0.001;   
+const double d_t = 0.001; 
+const double L_1 = 0.30, L_2 = 0.25;   
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -983,6 +988,7 @@ double dist_threshold
 
         pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
         pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
+        
 
         // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
         // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   

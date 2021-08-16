@@ -41,5 +41,5 @@ add_subdirectory(pybind11)
 link_libraries(gyems_can_lib)  
 link_libraries(renishaw_can_lib)   
 
-pybind11_add_module(motor_control main.cpp)  
+pybind11_add_module(motor_control main.cpp robot_cal.app)   
 target_compile_definitions(motor_control PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})  
