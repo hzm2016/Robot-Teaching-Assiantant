@@ -115,18 +115,18 @@ def IK(point):
     return angle
 
 
-def forward_ik(angle):
-    """
-        calculate point
-    """
+def forward_ik(angle): 
+    """ 
+        calculate point 
+    """ 
     point = np.zeros_like(angle)
     point[0] = L1 * math.cos(angle[0]) + L2 * math.cos(angle[0] + angle[1])
     point[1] = L1 * math.sin(angle[0]) + L2 * math.sin(angle[0] + angle[1])
     
-    return point
+    return point 
 
 
-def forward_ik_path(angle_list):
+def forward_ik_path(angle_list):  
     """
         calculate osc point
     """
@@ -302,11 +302,11 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
 
 def real_stroke_path(task_points_list=None):
     
-    fig = plt.figure(figsize=(4, 4))
-    plt.subplot(1, 1, 1)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    fig = plt.figure(figsize=(4, 4)) 
+    plt.subplot(1, 1, 1) 
+    plt.subplots_adjust(wspace=0.2, hspace=0.2) 
     
-    for i in range(len(task_points_list)):
+    for i in range(len(task_points_list)): 
         plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
         # plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
         # plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
@@ -476,14 +476,14 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
 
 
 def generate_word_path(
-        traj_list,
-        inter_list=None,
-        inverse_list=None,
-        center_shift=np.array([0.23, -WIDTH/2]),
-        velocity=0.04,
-        plot_show=False,
-        save_path=False,
-        word_name='tian'):
+        traj_list, 
+        inter_list=None, 
+        inverse_list=None, 
+        center_shift=np.array([0.23, -WIDTH/2]), 
+        velocity=0.04, 
+        plot_show=False, 
+        save_path=False, 
+        word_name='tian'): 
     """
         generate word path
     """
