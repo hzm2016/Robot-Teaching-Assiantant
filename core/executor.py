@@ -1,3 +1,4 @@
+import enum
 import logging
 import os
 import torch
@@ -180,6 +181,82 @@ class Executor(object):
 
         return styled_written_image
 
+    def __merge(self, points, mask, head, tail, condition=0):
+        '''
+        condition explaination:
+        0: head, head
+        1: head, tail
+        2: tail, head
+        3: tail, tail   
+        '''
+        if head != tail:
+            reverse = True
+        
+        if condition == 0:
+            pos_i = (1,0)
+            pos_j = (1,0)
+        
+        elif condition == 1:
+            pos_i = (1,0)
+            pos_j = (-2,-1)
+        
+        elif condition == 2:
+
+            pos_i = (-2,-1)
+            pos_j = (1,0)
+        
+        elif condition == 3:
+
+            pos_i = (-2,-1)
+            pos_j = (-2,-1)
+        
+        else:
+            raise NotImplementedError
+
+        for idx, i in enumerate(head):
+            if mask[idx] == 0:
+                continue
+            # compare head with head
+            for idy, j in enumerate(tail[idx+1:]):
+
+                real_index = idx + idy + 1     
+                if mask[real_index] == 0:
+                    continue           
+                if i == j:
+                    x_trend_0 = points[idx][pos_i[0]][0] - points[idx][pos_i[1]][0]
+                    y_trend_0 = points[idx][pos_i[0]][1] - points[idx][pos_i[1]][1]
+
+                    x_trend_1 = points[real_index][pos_j[0]][0] - points[real_index][pos_j[1]][0]
+                    y_trend_1 = points[real_index][pos_j[0]][1] - points[real_index][pos_j[1]][1]
+
+                    if (x_trend_0 * x_trend_1 >= 0) and (y_trend_0 * y_trend_1 >= 0):
+
+                        if len(points[idx]) > len(points[real_index]):
+                            mask[real_index] = 0
+                        else:
+                            mask[idx] = 0
+
+        return mask
+
+
+    def merge_keypoints(self, points):
+
+        # Find Common Element
+        mask = [1] * len(points)
+        head = [i[0] for i in points]
+        tail = [i[-1] for i in points]
+
+        for idx, i in enumerate(points):
+            if len(i) < 5:
+                mask[idx] = 0
+
+        mask = self.__merge(points, mask, head, head, 0)
+        mask = self.__merge(points, mask, head, tail, 1)
+        mask = self.__merge(points, mask, tail, head, 2)
+        mask = self.__merge(points, mask, tail, tail, 3)
+
+        return np.array(points)[list(map(bool,mask))].tolist()
+
     def pipeline(self,):
         """ Full pipeline
         Obtain target character -> generate target character's trajectory -> Interact with learner -> Get learner output
@@ -187,7 +264,7 @@ class Executor(object):
 
         while True:
 
-            character = input('Please provide a character you want to learn: ')
+            character = '行' #input('Please provide a character you want to learn: ')
             written_image = None
 
             if len(character) > 1:
@@ -203,43 +280,62 @@ class Executor(object):
                 logging.warning('Sorry, the character is not supported, please try another one')
                 break
             
+
             char_info = self.char_list[character]
-            print('char_info', char_info)
-            strokes = char_info['strokes']
+            # print('char_info', char_info)
+            for i in tqdm(self.char_list):
+                strokes = self.char_list[i]['strokes']
 
-            img_list = []
-            for stroke in strokes:
-                img_list.append(svg2img(stroke))
+                img_list = []
+                for stroke in strokes:
+                    img_list.append(svg2img(stroke))
 
-            while not self.learner.satisfied:
+            # while not self.learner.satisfied:
             
                 # character_img = self.sample_character(character, written_image)
                 # character_img = np.array(character_img)
-                    
+                cnt = 0
                 if self.save_traj:
                     img_ske_list = []
                     traj_list = []
 
-                    for img in img_list:
+                    for idx, img in enumerate(img_list):
                         traj, traj_img = skeletonize(~img)
                         img_ske_list.append(traj_img)
+                        if len(traj) > 1:
+                            # print('{}\'s {} stroke'.format(i, idx+1))
+                            traj = self.merge_keypoints(traj)
+                            # img_canvas = np.full((128,128),255, np.uint8)
+
+                            # for l in traj:
+                            #     c = (0,0,0)
+                            #     print(l)
+                            #     for i in range(0,len(l)-1):
+                            #         cv2.line(img_canvas,(l[i][0],l[i][1]),(l[i+1][0],l[i+1][1]),c,2)
+
+                            # cv2.imshow('',img_canvas);cv2.waitKey(0)
+                            # for k in traj:
+                            #     print(k)
+                            if len(traj) > 2:
+                                print('fail on {}'.format(i))
+                                cnt += 1
                         traj_list.append(traj)
                     
-                    for idx, traj in enumerate(traj_list):
-                        save_traj_name = self.__save_stroke_traj(character+'_'+ str(idx), traj)
-                        cv2.imwrite(save_traj_name.replace('txt', 'png'), img_ske_list[idx])
+                    # for idx, traj in enumerate(traj_list):
+                    #     save_traj_name = self.__save_stroke_traj(character+'_'+ str(idx), traj)
+                    #     cv2.imwrite(save_traj_name.replace('txt', 'png'), img_ske_list[idx])
 
-                    logging.info('{} traj stored'.format(character))
-                
+                    # logging.info('{} traj stored'.format(character))
+
                 # if self.save_traj:
                 #     save_traj_name = self.__save_stroke_traj(character, traj_list)
                 #     cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
                 #     logging.info('{} traj stored'.format(character))
 
-                if self.generation_only:
-                    break
-
-                written_image = self.controller.interact(traj_list, img_ske_list)
+                # if self.generation_only:
+                #     break
+            print(cnt)
+                # written_image = self.controller.interact(traj_list, img_ske_list)
 
         self.__quit()
 

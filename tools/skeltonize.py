@@ -49,7 +49,7 @@ def thinningZSIteration(im, iter):
 
 def thinningSkimage(im):
   from skimage.morphology import skeletonize
-  return skeletonize(im).astype(np.uint8)
+  return skeletonize(im,method='lee').astype(np.uint8)
 
 def thinning(im):
   try:
@@ -311,16 +311,7 @@ if __name__ == "__main__":
   im0 = cv2.imread("../test_images/opencv-thinning-src-img.png")
 
   im = (im0[:,:,0]>128).astype(np.uint8)
-
-  # for i in range(im.shape[0]):
-  #   for j in range(im.shape[1]):
-  #     print(im[i,j],end="")
-  #   print("")
-  # print(np.sum(im),im.shape[0]*im.shape[1])
   im = thinning(im);
-
-  # cv2.imshow('',im*255);cv2.waitKey(0)
-
   rects = []
   polys = traceSkeleton(im,0,0,im.shape[1],im.shape[0],10,999,rects)
   
