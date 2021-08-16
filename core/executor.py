@@ -140,7 +140,7 @@ class Executor(object):
                 self.font_type, stroke, self.font_size))
             return self.__generate_written_traj(written_character, source_image)
 
-    def stylization(self, img, written_img = None):
+    def stylization(self, img, written_img=None):
         pass
 
     def __reset_learner(self,):
@@ -181,7 +181,7 @@ class Executor(object):
 
         return styled_written_image
 
-    def __merge(self, points, mask, head, tail, condition=0):
+    def __filter(self, points, mask, head, tail, condition=0):
         '''
         condition explaination:
         0: head, head
@@ -191,25 +191,25 @@ class Executor(object):
         '''
         if head != tail:
             reverse = True
-        
+
         if condition == 0:
-            pos_i = (1,0)
-            pos_j = (1,0)
-        
+            pos_i = (1, 0)
+            pos_j = (1, 0)
+
         elif condition == 1:
-            pos_i = (1,0)
-            pos_j = (-2,-1)
-        
+            pos_i = (1, 0)
+            pos_j = (-2, -1)
+
         elif condition == 2:
 
-            pos_i = (-2,-1)
-            pos_j = (1,0)
-        
+            pos_i = (-2, -1)
+            pos_j = (1, 0)
+
         elif condition == 3:
 
-            pos_i = (-2,-1)
-            pos_j = (-2,-1)
-        
+            pos_i = (-2, -1)
+            pos_j = (-2, -1)
+
         else:
             raise NotImplementedError
 
@@ -219,15 +219,19 @@ class Executor(object):
             # compare head with head
             for idy, j in enumerate(tail[idx+1:]):
 
-                real_index = idx + idy + 1     
+                real_index = idx + idy + 1
                 if mask[real_index] == 0:
-                    continue           
+                    continue
                 if i == j:
-                    x_trend_0 = points[idx][pos_i[0]][0] - points[idx][pos_i[1]][0]
-                    y_trend_0 = points[idx][pos_i[0]][1] - points[idx][pos_i[1]][1]
+                    x_trend_0 = points[idx][pos_i[0]][0] - \
+                        points[idx][pos_i[1]][0]
+                    y_trend_0 = points[idx][pos_i[0]][1] - \
+                        points[idx][pos_i[1]][1]
 
-                    x_trend_1 = points[real_index][pos_j[0]][0] - points[real_index][pos_j[1]][0]
-                    y_trend_1 = points[real_index][pos_j[0]][1] - points[real_index][pos_j[1]][1]
+                    x_trend_1 = points[real_index][pos_j[0]
+                                                   ][0] - points[real_index][pos_j[1]][0]
+                    y_trend_1 = points[real_index][pos_j[0]
+                                                   ][1] - points[real_index][pos_j[1]][1]
 
                     if (x_trend_0 * x_trend_1 >= 0) and (y_trend_0 * y_trend_1 >= 0):
 
@@ -238,6 +242,18 @@ class Executor(object):
 
         return mask
 
+    def __merge(self, a, b, idx, offset=1):
+
+        if idx == 0:
+            result = b + a[offset:]
+        elif idx == 1:
+            result = a + b[offset:]
+        elif idx == 2:
+            result = list(reversed(a)) + b[offset:]
+        elif idx == 3:
+            result = a[:-offset] + list(reversed(b))
+
+        return result
 
     def merge_keypoints(self, points):
 
@@ -247,15 +263,49 @@ class Executor(object):
         tail = [i[-1] for i in points]
 
         for idx, i in enumerate(points):
-            if len(i) < 5:
+            if len(i) < 3:
                 mask[idx] = 0
 
-        mask = self.__merge(points, mask, head, head, 0)
-        mask = self.__merge(points, mask, head, tail, 1)
-        mask = self.__merge(points, mask, tail, head, 2)
-        mask = self.__merge(points, mask, tail, tail, 3)
+        mask = self.__filter(points, mask, head, head, 0)
+        mask = self.__filter(points, mask, head, tail, 1)
+        mask = self.__filter(points, mask, tail, head, 2)
+        mask = self.__filter(points, mask, tail, tail, 3)
 
-        return np.array(points)[list(map(bool,mask))].tolist()
+        filtered_points = np.array(points)[list(map(bool, mask))].tolist()
+
+        filtered_points = sorted(filtered_points, key=len)
+
+        if len(filtered_points) == 1:
+            return filtered_points
+
+        # Only take the two longest list of stroke
+        filtered_points = filtered_points[-2:]
+
+        a = filtered_points[0]
+        b = filtered_points[1]
+
+        if a[0] == b[-1]:
+            return self.__merge(a, b, 0)
+        elif a[-1] == b[0]:
+            return self.__merge(a, b, 1)
+        elif a[0] == b[0]:
+            return self.__merge(a, b, 2)
+        elif a[-1] == b[-1]:
+            return self.__merge(a, b, 3)
+        else:
+            dist_h2h = self.__dist(a[0], b[0])
+            dist_t2t = self.__dist(a[-1], b[-1])
+            dist_h2t = self.__dist(a[0], b[-1])
+            dist_t2h = self.__dist(a[-1], b[0])
+
+            dists = [dist_h2t,dist_t2h,dist_h2h,dist_t2t]
+
+            min_dist = dists.index(min(dists))  
+            return self.__merge(a, b, min_dist, 0)         
+
+    def __dist(self, a, b):
+
+        return np.linalg.norm(np.array(a)-np.array(b))
 
     def pipeline(self,):
         """ Full pipeline
@@ -264,36 +314,38 @@ class Executor(object):
 
         while True:
 
-            character = '行' #input('Please provide a character you want to learn: ')
+            character = input('Please provide a character you want to learn: ')
             written_image = None
 
             if len(character) > 1:
                 logging.warning('Please input once character only')
                 continue
-            
+
             if character == ' ':
                 break
 
             if character in self.char_list:
                 logging.info('We find the character for you')
             else:
-                logging.warning('Sorry, the character is not supported, please try another one')
+                logging.warning(
+                    'Sorry, the character is not supported, please try another one')
                 break
-            
 
             char_info = self.char_list[character]
+            strokes = char_info['strokes']
             # print('char_info', char_info)
-            for i in tqdm(self.char_list):
-                strokes = self.char_list[i]['strokes']
+            # for ch in tqdm(self.char_list):
+            #     strokes = self.char_list[ch]['strokes']
 
-                img_list = []
-                for stroke in strokes:
-                    img_list.append(svg2img(stroke))
+            img_list = []
+            for stroke in strokes:
+                img_list.append(svg2img(stroke))
 
-            # while not self.learner.satisfied:
-            
+            while not self.learner.satisfied:
+
                 # character_img = self.sample_character(character, written_image)
                 # character_img = np.array(character_img)
+                
                 cnt = 0
                 if self.save_traj:
                     img_ske_list = []
@@ -303,49 +355,22 @@ class Executor(object):
                         traj, traj_img = skeletonize(~img)
                         img_ske_list.append(traj_img)
                         if len(traj) > 1:
-                            # print('{}\'s {} stroke'.format(i, idx+1))
-                            traj = self.merge_keypoints(traj)
-                            # img_canvas = np.full((128,128),255, np.uint8)
-
-                            # for l in traj:
-                            #     c = (0,0,0)
-                            #     print(l)
-                            #     for i in range(0,len(l)-1):
-                            #         cv2.line(img_canvas,(l[i][0],l[i][1]),(l[i+1][0],l[i+1][1]),c,2)
-
-                            # cv2.imshow('',img_canvas);cv2.waitKey(0)
-                            # for k in traj:
-                            #     print(k)
-                            if len(traj) > 2:
-                                print('fail on {}'.format(i))
-                                cnt += 1
+                            traj = [self.merge_keypoints(traj)]
                         traj_list.append(traj)
-                    
-                    # for idx, traj in enumerate(traj_list):
-                    #     save_traj_name = self.__save_stroke_traj(character+'_'+ str(idx), traj)
-                    #     cv2.imwrite(save_traj_name.replace('txt', 'png'), img_ske_list[idx])
 
-                    # logging.info('{} traj stored'.format(character))
+                    for idx, traj in enumerate(traj_list):
+                        save_traj_name = self.__save_stroke_traj(character+'_'+ str(idx), traj)
+                        cv2.imwrite(save_traj_name.replace('txt', 'png'), img_ske_list[idx])
 
-                # if self.save_traj:
-                #     save_traj_name = self.__save_stroke_traj(character, traj_list)
-                #     cv2.imwrite(save_traj_name.replace('txt', 'png'), traj_img)
-                #     logging.info('{} traj stored'.format(character))
+                    logging.info('{} traj stored'.format(character))
 
-                # if self.generation_only:
-                #     break
-            print(cnt)
-                # written_image = self.controller.interact(traj_list, img_ske_list)
+
+                if self.generation_only:
+                    continue
+
+            written_image = self.controller.interact(traj_list, img_ske_list)
 
         self.__quit()
-
-        # cv2.imshow('',stroke_img)
-        # cv2.waitKey(0)
-
-        # if character_img is None:
-        #     logging.warning(
-        #         'Provided character cannot be found in this font, please provide another one')
-        #     break
 
         # if written_image is not None:
         #     cv2.imshow('',stroke_img)
