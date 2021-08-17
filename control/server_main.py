@@ -451,19 +451,79 @@ def load_word_path(word_name=None, joint_params=None):
 
 
 if __name__ == "__main__":  
-    write_name = 'yi' 
-    word_path, word_params = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 8, 1.2]))  
-    # print("word_params :", word_params[0][0, :]) 
-    eval_times = 2
-    for i in range(eval_times): 
-        write_word(word_path, word_params=word_params, word_name=write_name)  
+    # write_name = 'yi' 
+    # word_path, word_params = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 8, 0.8]))  
+    # # print("word_params :", word_params[0][0, :]) 
+    # eval_times = 1
+    # for i in range(eval_times): 
+    #     write_word(word_path, word_params=word_params, word_name=write_name)  
 
-    plot_real_2d_path(
-        root_path='./data/font_data/yi/',
-        file_name='real_angle_list_0.txt',
-        delimiter=' ',
-        skiprows=1
-    )  
+    # plot_real_2d_path(
+    #     root_path='./data/font_data/yi/',
+    #     file_name='real_angle_list_0.txt',
+    #     delimiter=' ',
+    #     skiprows=1
+    # )  
+
+    # torque_list = np.loadtxt('./data/font_data/yi/real_torque_list_0.txt', delimiter=' ', skiprows=1)
+
+    # fig = plt.figure(figsize=(20, 8))  
+    # plt.subplot(1, 2, 1)  
+    # plt.subplots_adjust(wspace=2, hspace=0)  
+    
+    # plt.plot(torque_list[:, 0], linewidth=linewidth, label='Input')  
+    # plt.plot(torque_list[:, 1], linewidth=linewidth, label='Output')  
+    # # plt.xlim([0, 128])  
+    # # plt.ylim([0, 128])  
+    # plt.xlabel('time($t$)')    
+    # plt.ylabel('$q_1$(rad)')    
+    # # plt.axis('equal') 
+    # plt.legend() 
+    
+    # plt.subplot(1, 2, 2)
+    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    # plt.plot(torque_list[:, 2], linewidth=linewidth, label='Input')  
+    # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Output')  
+    
+    # # plt.xlim([0., 0.6])
+    # # plt.ylim([0., 0.6])
+    # plt.xlabel('time($t$)') 
+    # plt.ylabel('$q_2$(rad)')   
+    # plt.legend()
+
+    # plt.tight_layout() 
+    # plt.show() 
+
+    angle_list = np.loadtxt('./data/font_data/yi/real_angle_list_0.txt', delimiter=' ', skiprows=1)
+
+    fig = plt.figure(figsize=(20, 8))  
+    plt.subplot(1, 2, 1)  
+    plt.subplots_adjust(wspace=2, hspace=0)  
+    
+    plt.plot(angle_list[:, 2], linewidth=linewidth, label='Input')  
+    # plt.plot(torque_list[:, 1], linewidth=linewidth, label='Output')  
+    # plt.xlim([0, 128])  
+    # plt.ylim([0, 128])  
+    plt.xlabel('time($t$)')    
+    plt.ylabel('$q_1$(rad)')    
+    # plt.axis('equal') 
+    plt.legend() 
+    
+    plt.subplot(1, 2, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    plt.plot(angle_list[:, 5], linewidth=linewidth, label='Input')  
+    # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Output')  
+    
+    # plt.xlim([0., 0.6])
+    # plt.ylim([0., 0.6])
+    plt.xlabel('time($t$)') 
+    plt.ylabel('$q_2$(rad)')   
+    plt.legend()
+
+    plt.tight_layout() 
+    plt.show() 
 
     # motor_stop() 
 
@@ -516,36 +576,6 @@ if __name__ == "__main__":
 
     # motor_control.control_single_motor(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
     # angle_1_list, angle_2_list, N, Angle_initial[0], Angle_initial[1], 0.05) 
-
-    # torque_list = np.loadtxt('move_target_torque_list.txt', delimiter=',', skiprows=1)
-
-    # fig = plt.figure(figsize=(20, 8))  
-    # plt.subplot(1, 2, 1)  
-    # plt.subplots_adjust(wspace=2, hspace=0)  
-    
-    # plt.plot(torque_list[:, 0], linewidth=linewidth, label='Input')  
-    # plt.plot(torque_list[:, 1], linewidth=linewidth, label='Output')  
-    # # plt.xlim([0, 128])  
-    # # plt.ylim([0, 128])  
-    # plt.xlabel('time($t$)')    
-    # plt.ylabel('$q_1$(rad)')    
-    # # plt.axis('equal') 
-    # plt.legend() 
-    
-    # plt.subplot(1, 2, 2)
-    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-    # plt.plot(torque_list[:, 2], linewidth=linewidth, label='Input')  
-    # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Output')  
-    
-    # # plt.xlim([0., 0.6])
-    # # plt.ylim([0., 0.6])
-    # plt.xlabel('time($t$)') 
-    # plt.ylabel('$q_2$(rad)')   
-    # plt.legend()
-
-    # plt.tight_layout() 
-    # plt.show() 
 
     # plot_real_2d_path(
     #     root_path='',
