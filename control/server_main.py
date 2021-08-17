@@ -1,3 +1,5 @@
+from matplotlib.pyplot import title
+from numpy.lib import NumpyVersion
 from protocol.task_interface import *
 import numpy as np
 import math
@@ -21,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.353831, -0.150109, 1.983084])  
+Angle_initial = np.array([-0.289578, -0.167234, 0.530486])  
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -31,9 +33,9 @@ def reset_and_calibration():
     print("Please make sure two links are at zero position !!!") 
     angle_initial = np.zeros(3) 
     
-    angle_initial[0] = motor_control.read_initial_angle_1() 
-    angle_initial[1] = motor_control.read_initial_angle_2() 
-    angle_initial[2] = motor_control.read_initial_angle_3() 
+    angle_initial[0] = motor_control.read_initial_angle_1()  
+    angle_initial[1] = motor_control.read_initial_angle_2()  
+    angle_initial[2] = motor_control.read_initial_angle_3()  
      
     return angle_initial  
 
@@ -242,8 +244,8 @@ def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1]), wor
 
 def write_stroke(stroke_points=None, 
                 impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
-                target_point=Initial_point,
-                word_name='yi',
+                target_point=Initial_point, 
+                word_name='yi', 
                 stroke_name='0'): 
 
     # print("Write stroke !!!")  
@@ -264,12 +266,18 @@ def write_stroke(stroke_points=None,
     # time.sleep(0.5) 
 
     set_pen_down()   
-    # time.sleep(0.5)   
+    # time.sleep(0.5)
+    
+    params_list = np.tile(impedance_params, (Num_way_points, 1))  
+    # params_list = np.repeat(impedance_params, (Num_way_points, 1))    
 
     stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '.txt' 
     stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '.txt' 
     done = motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-                                                way_points[:, 0].copy(), way_points[:, 1].copy(), Num_way_points, 
+                                                way_points[:, 0].copy(), way_points[:, 1].copy(), 
+                                                params_list[:, 0].copy(), params_list[:, 1].copy(), 
+                                                params_list[:, 2].copy(), params_list[:, 3].copy(), 
+                                                Num_way_points, 
                                                 Angle_initial[0], Angle_initial[1], 1, stroke_angle_name, stroke_torque_name) 
     # print("curr_path_list", curr_path_list.shape)  
     # np.savetxt('curr_path_list.txt', curr_path_list)
@@ -464,9 +472,9 @@ def load_word_path(word_name=None):
 
 if __name__ == "__main__":  
 
-    # write_name = 'yi' 
-    # word_path = load_word_path(word_name=write_name)  
-    # write_word(word_path, impedance_params=np.array([45.0, 33.0, 4.0, 0.1]), word_name=write_name)   
+    write_name = 'yi' 
+    word_path = load_word_path(word_name=write_name)  
+    write_word(word_path, impedance_params=np.array([45.0, 33.0, 4.0, 0.1]), word_name=write_name)   
 
     # plot_real_2d_path(
     #     root_path='./data/font_data/yi/',
@@ -477,10 +485,15 @@ if __name__ == "__main__":
 
     # get_demo_writting()  
 
+    # motor_control.Jacobian(0.0, 0.0) 
+
     """ calibrate position for each start up """ 
     # Angle_initial = reset_and_calibration() 
 
     # angle, point = get_observation(angle_initial=Angle_initial)  
+
+    # impedance_params = np.array([35.0, 35, 0.8, 0.1])  
+    # move_to_target_point(np.array([0.34, -0.23]), impedance_params, velocity=0.04)  
 
     # set_pen_up()
 
@@ -505,10 +518,6 @@ if __name__ == "__main__":
 
     # motor_control.set_position(0.0, np.int32(500))   
 
-    
-    # impedance_params = np.array([35.0, 35, 0.8, 0.1])  
-    # move_to_target_point(np.array([0.34, -0.03]), impedance_params, velocity=0.04)  
-
     # T = 10
     # Ts = 0.001 
     # N = int(T/Ts) 
@@ -522,7 +531,7 @@ if __name__ == "__main__":
     # motor_control.control_single_motor(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
     # angle_1_list, angle_2_list, N, Angle_initial[0], Angle_initial[1], 0.05) 
 
-    # torque_list = np.loadtxt('demonstrated_torque_list.txt', delimiter=',', skiprows=1)
+    # torque_list = np.loadtxt('move_target_torque_list.txt', delimiter=',', skiprows=1)
 
     # fig = plt.figure(figsize=(20, 8))  
     # plt.subplot(1, 2, 1)  
