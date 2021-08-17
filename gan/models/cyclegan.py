@@ -75,7 +75,7 @@ class CycleGAN(GAN):
 
     def init_loss(self, args):
 
-        self.criterion_GAN = torch.nn.MSELoss()
+        self.criterion_GAN = torch.nn.L1Loss()
         self.criterion_cycle = torch.nn.L1Loss()
 
         self.fake_A_buffer = ReplayBuffer()
@@ -96,10 +96,10 @@ class CycleGAN(GAN):
 
         # Cycle loss
         recovered_A = self.G_B2A(fake_B)
-        loss_cycle_ABA = self.criterion_cycle(recovered_A, A)*10.0
+        loss_cycle_ABA = self.criterion_cycle(recovered_A, A)*15.0
 
         recovered_B = self.G_A2B(fake_A)
-        loss_cycle_BAB = self.criterion_cycle(recovered_B, B)*10.0
+        loss_cycle_BAB = self.criterion_cycle(recovered_B, B)*15.0
 
         # Sum all losses
         loss_G = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB
@@ -132,6 +132,7 @@ class CycleGAN(GAN):
         self.G_A2B.train()
         self.D_A.train()
         self.D_B.train()
+
         Tensor = torch.cuda.FloatTensor if self.cuda else torch.Tensor
         frequency = self.args.frequency
         output_dir = self.args.output_dir

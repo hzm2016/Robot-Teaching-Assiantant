@@ -23,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.289578, -0.167234, 0.530486])  
+Angle_initial = np.array([-0.316907, -0.206659, 1.982736])  
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -211,7 +211,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close() 
 
 
-def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1]), word_name='yi'): 
+def write_word(word_path, word_params=None, word_name='yi'): 
     """
         write a word and plot :: 
     """
@@ -234,7 +234,7 @@ def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1]), wor
             stroke_target_point = Initial_point
         
         write_stroke(stroke_points=stroke_points_index,  
-                     impedance_params=impedance_params,  
+                     stroke_params=word_params[index],   
                      target_point=stroke_target_point,
                      word_name=word_name,
                      stroke_name=str(index))  
@@ -243,7 +243,7 @@ def write_word(word_path, impedance_params=np.array([35.0, 25.0, 0.4, 0.1]), wor
 
 
 def write_stroke(stroke_points=None, 
-                impedance_params = np.array([35.0, 25.0, 0.4, 0.1]), 
+                stroke_params=None, 
                 target_point=Initial_point, 
                 word_name='yi', 
                 stroke_name='0'): 
@@ -268,17 +268,20 @@ def write_stroke(stroke_points=None,
     set_pen_down()   
     # time.sleep(0.5)
     
-    params_list = np.tile(impedance_params, (Num_way_points, 1))  
-    # params_list = np.repeat(impedance_params, (Num_way_points, 1))    
+    # params_list = np.tile(impedance_params, (Num_way_points, 1))  
+    if stroke_params is None:
+        exit()
+    else:
+        params_list = stroke_params   
 
     stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '.txt' 
     stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '.txt' 
-    done = motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-                                                way_points[:, 0].copy(), way_points[:, 1].copy(), 
-                                                params_list[:, 0].copy(), params_list[:, 1].copy(), 
-                                                params_list[:, 2].copy(), params_list[:, 3].copy(), 
-                                                Num_way_points, 
-                                                Angle_initial[0], Angle_initial[1], 1, stroke_angle_name, stroke_torque_name) 
+    done = motor_control.run_one_loop(
+                                    way_points[:, 0].copy(), way_points[:, 1].copy(),  
+                                    params_list[:, 0].copy(), params_list[:, 1].copy(),  
+                                    params_list[:, 2].copy(), params_list[:, 3].copy(),  
+                                    Num_way_points,  
+                                    Angle_initial[0], Angle_initial[1], 1, stroke_angle_name, stroke_torque_name) 
     # print("curr_path_list", curr_path_list.shape)  
     # np.savetxt('curr_path_list.txt', curr_path_list)
     
@@ -293,7 +296,7 @@ def write_stroke(stroke_points=None,
     print("Write stroke once done !!!")  
     print("*" * 50)  
 
-    return done
+    return done 
 
 
 def eval_writting(run_on=True, Load_path=False): 
@@ -431,11 +434,14 @@ def load_word_path(word_name=None):
     print("Load stroke data %d", len(stroke_list_file)) 
 
     word_path = []
+    word_params = [] 
     for i in range(len(stroke_list_file)):
-        way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')    
+        way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ') 
+        params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')    
         N_way_points = way_points.shape[0]   
         print("N_way_points :", N_way_points)   
         word_path.append(way_points.copy())  
+        word_params.append(params_list.copy())  
 
     # way_points = np.loadtxt('angle_list_0.txt', delimiter=' ')    
     # N_way_points = way_points.shape[0]   
@@ -467,19 +473,22 @@ def load_word_path(word_name=None):
     # print("N_way_points :", N_way_points)  
     # word_path.append(way_points.copy()) 
 
-    return word_path
+    return word_path, word_params
 
 
 if __name__ == "__main__":  
 
     write_name = 'yi' 
-    word_path = load_word_path(word_name=write_name)  
-    write_word(word_path, impedance_params=np.array([45.0, 33.0, 4.0, 0.1]), word_name=write_name)   
+    # word_path, word_params = load_word_path(word_name=write_name)  
+    # # print("word_params :", word_params[0][0, :])  
+    # write_word(word_path, word_params=word_params, word_name=write_name)   
 
-    # plot_real_2d_path(
-    #     root_path='./data/font_data/yi/',
-    #     file_name='real_angle_list_0.txt'
-    # )  
+    plot_real_2d_path(
+        root_path='./data/font_data/yi/',
+        file_name='real_angle_list_0.txt',
+        delimiter=' ',
+        skiprows=1
+    )  
 
     # motor_stop() 
 
@@ -518,6 +527,8 @@ if __name__ == "__main__":
 
     # motor_control.set_position(0.0, np.int32(500))   
 
+    # impedance_params = np.array([35.0, 35, 0.8, 0.1])  
+    # move_to_target_point(np.array([0.34, -0.03]), impedance_params, velocity=0.04)  
     # T = 10
     # Ts = 0.001 
     # N = int(T/Ts) 

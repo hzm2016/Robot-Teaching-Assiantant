@@ -697,8 +697,9 @@ int rotate_to_target(
 }
 
 
-int run_one_loop(double stiffness_1, double stiffness_2,  
-double damping_1, double damping_2,  
+int run_one_loop(
+// double stiffness_1, double stiffness_2,  
+// double damping_1, double damping_2,  
 py::array_t<double> theta_1_target, py::array_t<double> theta_2_target, 
 py::array_t<double> stiff_1_target, py::array_t<double> stiff_2_target, 
 py::array_t<double> damping_1_target, py::array_t<double> damping_2_target, 
@@ -710,11 +711,11 @@ string angle_path_name, string torque_path_name
     //////////////////////////////////////////////////////// 
     // give way points :::: 
     //////////////////////////////////////////////////////// 
-    double K_p_1 = stiffness_1;  
-	double K_d_1 = damping_1;  
+    // double K_p_1 = stiffness_1;  
+	// double K_d_1 = damping_1;  
 
-    double K_p_2 = stiffness_2;  
-	double K_d_2 = damping_2;  
+    // double K_p_2 = stiffness_2;  
+	// double K_d_2 = damping_2;  
 
     ////////////////////////////////////////////////////////
     // Initial hardware ::: can device
@@ -763,13 +764,14 @@ string angle_path_name, string torque_path_name
     double torque_upper_bound = 2.0;   
 
     // double params_list[Num_waypoints][4]; 
-    double params[4] = {stiffness_1, stiffness_2, damping_1, damping_2};  
+    // double params[4] = {stiffness_1, stiffness_2, damping_1, damping_2};  
+    double params[4] = {30, 20, 0.0, 0.0};  
     
     double theta_t_list[2] = {0.0, 0.0};  
     double theta_1_t = 0.0;   
     double theta_2_t = 0.0;   
 
-    double d_theta_t_list[2] = {0.0, 0.0};
+    double d_theta_t_list[2] = {0.0, 0.0}; 
     double d_theta_1_t = 0.0;    
     double d_theta_2_t = 0.0;    
 
@@ -875,7 +877,7 @@ string angle_path_name, string torque_path_name
             theta_1_t = motor_1.read_sensor(2) - theta_1_initial;   
             theta_2_t = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);    
 
-            return_list[index] = theta_1_t; 
+            // return_list[index] = theta_1_t; 
             // return_list[index, 1] = theta_2_t;   
 
             theta_t_list[0] = theta_1_t;    
@@ -897,7 +899,7 @@ string angle_path_name, string torque_path_name
             /////////////////////////////////////////////////////
             // calculate stiffness and damping 
             ///////////////////////////////////////////////////// 
-            Jacobian(theta_1_t, theta_2_t); 
+            // Jacobian(theta_1_t, theta_2_t); 
 
             /////////////////////////////////////////////////////
             // set torque control command 
@@ -910,8 +912,8 @@ string angle_path_name, string torque_path_name
             // torque_1 = clip(- K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
             // torque_2 = clip(- K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
-            double torque_1_o = - K_p_1 * (theta_1_e - theta_1_t) - K_d_1 * (d_theta_1_e - d_theta_1_t);   
-            double torque_2_o = - K_p_2 * (theta_2_e - theta_2_t) - K_d_2 * (d_theta_2_e - d_theta_2_t);   
+            double torque_1_o = - params[0] * (theta_1_e - theta_1_t) - params[2] * (d_theta_1_e - d_theta_1_t);   
+            double torque_2_o = - params[1] * (theta_2_e - theta_2_t) - params[3] * (d_theta_2_e - d_theta_2_t);   
 
             pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
             pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);   
