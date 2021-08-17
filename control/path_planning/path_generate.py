@@ -115,15 +115,40 @@ def IK(point):
     return angle
 
 
-def forward_ik(angle): 
+def forward_ik(angle):
     """ 
-        calculate point 
-    """ 
+        calculate point
+    """
     point = np.zeros_like(angle)
     point[0] = L1 * math.cos(angle[0]) + L2 * math.cos(angle[0] + angle[1])
     point[1] = L1 * math.sin(angle[0]) + L2 * math.sin(angle[0] + angle[1])
     
-    return point 
+    return point
+
+
+def Jacobian(theta):
+    """
+        calculate Jacobian
+    """
+    J = np.zeros((action_dim, action_dim))
+    
+    J[0, 0] = -L1 * math.sin(theta[0]) - L2 * math.sin(theta[0] + theta[1])
+    J[0, 1] = -L2 * math.sin(theta[0] + theta[1])
+    J[1, 0] = L1 * math.cos(theta[0]) + L2 * math.cos(theta[0] + theta[1])
+    J[1, 1] = L2 * math.cos(theta[0] + theta[1])
+    
+    return J
+
+
+def Stiff_convert(theta, stiffness, damping):
+    """
+        convert stiffness from task space to joint space
+    """
+    J = Jacobian(theta)
+    stiff_joint = J.transpose().dot(stiffness).dot(J)
+    damping_joint = J.transpose().dot(damping).dot(J)
+    
+    return stiff_joint, damping_joint
 
 
 def forward_ik_path(angle_list):  
@@ -139,194 +164,31 @@ def forward_ik_path(angle_list):
     return point_list
 
 
-def path_planning(start_point, target_point, velocity=0.04):
+def generate_stroke_stiffness_path(angle_list, stiffness_list, damping_list,
+                                   save_path=False, word_name='yi', stroke_name=0):
     """
-        path planning
+    :param angle_list:
+    :param stiffness_list:
+    :param damping_list:
+    :return:
     """
-    dist = np.linalg.norm((start_point - target_point), ord=2)
-    T = dist/velocity
-    N = int(T/Ts)
+    stiff_joint_list = []
+    damping_joint_list = []
+    for i in range(angle_list.shape[0]):
+        stiff_task = np.diag(stiffness_list[i, :]).copy()
+        damping_task = np.diag(damping_list[i, :]).copy()
+        stiff_joint, damping_joint = Stiff_convert(angle_list[i, :], stiff_task, damping_task)
+        stiff_joint_list.append([stiff_joint[0, 0], stiff_joint[1, 1]])
+        damping_joint_list.append([damping_joint[0, 0], damping_joint[1, 1]])
     
-    # print("start_point :", start_point[0])  
-    # print("end_point :", start_point[1])
+    params_list = np.hstack((stiff_joint_list, damping_joint_list))
+    print("params_list :", params_list.shape)
+    if save_path:
+        np.savetxt('../control/data/font_data/' + word_name + '/' + 'params_list_' + str(stroke_name) + '.txt',
+                   params_list, fmt='%.05f')
     
-    x_list = np.linspace(start_point[0], target_point[0], N)
-    y_list = np.linspace(start_point[1], target_point[1], N)
-    
-    point = start_point
-    angle_list = []
-    for i in range(N):
-        point[0] = x_list[i]
-        point[1] = y_list[i]
-        angle = IK(point)
-        angle_list.append(angle)
-        
-    return np.array(angle_list), N
+    return params_list
 
-
-def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_name='Stroke Path'):
-    """
-        check the planned path
-    """
-    t_list = np.linspace(0.0, period, angle_list.shape[0])
-    print("task points :", task_points)
-    plt.figure(figsize=(15, 4))
-    
-    plt.title(fig_name)
-    
-    plt.subplot(1, 3, 1)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-    plt.plot(traj[:, 1], traj[:, 0], marker='o', linewidth=linewidth)
-    plt.plot(image_points[:, 0], image_points[:, 1], linewidth=linewidth - 2)
-    
-    plt.xlim([0, 128])
-    plt.ylim([0, 128])
-    plt.xlabel('$x_1$')
-    plt.ylabel('$x_2$')
-    # plt.axis('equal')
-    plt.tight_layout()
-    
-    plt.subplot(1, 3, 2)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-    plt.plot(task_points[:, 0], task_points[:, 1], linewidth=linewidth + 2, color='r')
-    # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
-    plt.scatter(task_points[0, 0], task_points[0, 1], s=100, c='b', marker='o')
-    # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
-    # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
-    plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0., 0.13 + WIDTH])
-    plt.xlabel('$x_1$(m)')
-    plt.ylabel('$x_2$(m)')
-    
-    plt.subplot(1, 3, 3)
-    plt.plot(t_list, angle_list[:, 0], linewidth=linewidth, label='$q_1$')
-    # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
-    plt.plot(t_list, angle_list[:, 1], linewidth=linewidth, label='$q_2$')
-    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
-    
-    plt.xlabel('Time (s)')
-    plt.ylabel('One-loop Angle (rad)')
-    plt.legend()
-    
-    plt.show()
-
-
-def plot_word_path(period_list, traj_list, image_points_list, task_points_list, word_angle_list, word_folder='../control/data', word_name='Stroke Path'):
-    """
-        plot one word path
-    """
-    plt.figure(figsize=(15, 4))
-    plt.title(word_name)
-
-    plt.subplot(1, 3, 1)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-    for i in range(len(traj_list)):
-        # traj_list[i].transpose((0, 1)).copy()
-        plt.plot(traj_list[i][:, 1], traj_list[i][:, 0], marker='o', linewidth=linewidth)
-        plt.plot(image_points_list[i][:, 0], image_points_list[i][:, 1], linewidth=linewidth - 2)
-
-    plt.xlim([0, 128])
-    plt.ylim([0, 128])
-    plt.xlabel('$x_1$')
-    plt.ylabel('$x_2$')
-
-    plt.subplot(1, 3, 2)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-    for i in range(len(traj_list)):
-        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2, color='r')
-        # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
-        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
-        # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
-        # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
-    plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0.13, 0.13 + WIDTH])
-    plt.xlabel('$x_1$(m)')
-    plt.ylabel('$x_2$(m)')
-
-    plt.subplot(1, 3, 3)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    total_period = sum(period_list)
-    print("total_period :", total_period)
-    for i in range(len(traj_list)):
-        if i == 0:
-            start_period = 0.0
-            # t_list = np.linspace(0.0, period_list[i], word_angle_list[i].shape[0])
-        else:
-            start_period = sum(period_list[:i])
-
-        t_list = np.linspace(start_period, period_list[i] + start_period, word_angle_list[i].shape[0])
-        print("period :", start_period, period_list[i] + start_period)
-        
-        plt.plot(t_list, word_angle_list[i][:, 0], linewidth=linewidth, label='$q_1$')
-        # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
-        plt.plot(t_list, word_angle_list[i][:, 1], linewidth=linewidth, label='$q_2$')
-        # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
-
-    plt.xlabel('Time (s)')
-    plt.ylabel('One-loop Angle (rad)')
-    # plt.legend()
-    plt.tight_layout()
-    
-    plt.show()
-    
-    fig = plt.figure(figsize=(4, 4))
-    plt.subplot(1, 1, 1)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
-
-    for i in range(len(traj_list)):
-        # rotate_task_point = task_points_list[i].transpose((1, 0))
-        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
-        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
-        plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i+1), rotation=90)
-
-    plt.ylim([-WIDTH/2, WIDTH/2])
-    plt.xlim([0.13, 0.13 + WIDTH])
-    # plt.xlabel('$x_1$(m)')
-    # plt.ylabel('$x_2$(m)')
-    plt.tight_layout()
-
-    img_path = fig2data(fig)
-    # img = img_path.transpose(Image.ROTATE_90)  # 将图片旋转90度
-    # img_path.show()
-    img_show = np.rot90(img_path, -1)
-    cv2.imwrite(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
-    # cv2.imshow(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
-    # cv2.waitKey(0)
-    # plt.imshow(img_show)
-    # plt.show()
-
-
-def real_stroke_path(task_points_list=None):
-    
-    fig = plt.figure(figsize=(4, 4)) 
-    plt.subplot(1, 1, 1) 
-    plt.subplots_adjust(wspace=0.2, hspace=0.2) 
-    
-    for i in range(len(task_points_list)): 
-        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
-        # plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
-        # plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
-    
-    plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0.13, 0.13 + WIDTH])
-    # plt.xlabel('$x_1$(m)')
-    # plt.ylabel('$x_2$(m)')
-    # plt.axis('off')
-    plt.tight_layout()
-    
-    img_path = fig2data(fig)
-    # img = img_path.transpose(Image.ROTATE_90)  # 将图片旋转90度
-    # img_path.show()
-    img_show = np.rot90(img_path, -1)
-    # cv2.imwrite(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
-    # plt.show()
-    cv2.imshow("Real path :", img_show)
-    cv2.waitKey(0)
-    
 
 def generate_stroke_path(traj, inter_type=1, inverse=True,
                   center_shift=np.array([-WIDTH/2, 0.23]),
@@ -461,7 +323,7 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
         print("!!!!!! angle 1 is out of range !!!!!")
         print("max angle 2 :::", max_angle_2)
         exit()
-
+    
     way_points = np.vstack((angle_1_list_e, angle_2_list_e)).transpose()
     print('+' * 50)
     print("Check success with way_points :", way_points.shape[0])
@@ -476,7 +338,9 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
 
 
 def generate_word_path(
-        traj_list, 
+        traj_list,
+        stiffness,
+        damping,
         inter_list=None, 
         inverse_list=None, 
         center_shift=np.array([0.23, -WIDTH/2]), 
@@ -492,8 +356,9 @@ def generate_word_path(
     word_image_points = []
     word_task_points = []
     period_list = []
+    word_params_list = []
     for stroke_index in range(len(traj_list)):
-        # get one stroke
+        """ get one stroke """
         traj = traj_list[stroke_index]
         print('=' * 20)
         print('stroke index :', stroke_index)
@@ -510,15 +375,23 @@ def generate_word_path(
                 stroke_name=stroke_index
             )
         
+        stiffness_list = np.tile(stiffness, (stroke_angle_list.shape[0], 1))
+        damping_list = np.tile(damping, (stroke_angle_list.shape[0], 1))
+        params_list = generate_stroke_stiffness_path(stroke_angle_list, stiffness_list, damping_list,
+                                       save_path=save_path, word_name=word_name, stroke_name=stroke_index)
+        
         word_angle_list.append(stroke_angle_list)
         word_image_points.append(stroke_image_points)
         word_task_points.append(stroke_task_points.copy())
         period_list.append(period)
+        word_params_list.append(params_list[:, :2])
         
     if plot_show:
         plot_word_path(period_list, traj_list, word_image_points, word_task_points, word_angle_list,
                        word_folder='../control/data/font_data',
                        word_name=word_name)
+        
+        plot_torque(word_params_list, period_list)
 
 
 def check_path(root_path='', plot_show=True, font_name='J_font',
@@ -677,6 +550,195 @@ def check_path(root_path='', plot_show=True, font_name='J_font',
     return np.array(angle_1_list_e), np.array(angle_2_list_e)
 
 
+def path_planning(start_point, target_point, velocity=0.04):
+    """
+        path planning
+    """
+    dist = np.linalg.norm((start_point - target_point), ord=2)
+    T = dist / velocity
+    N = int(T / Ts)
+    
+    # print("start_point :", start_point[0])
+    # print("end_point :", start_point[1])
+    
+    x_list = np.linspace(start_point[0], target_point[0], N)
+    y_list = np.linspace(start_point[1], target_point[1], N)
+    
+    point = start_point
+    angle_list = []
+    for i in range(N):
+        point[0] = x_list[i]
+        point[1] = y_list[i]
+        angle = IK(point)
+        angle_list.append(angle)
+    
+    return np.array(angle_list), N
+
+
+def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_name='Stroke Path'):
+    """
+        check the planned path
+    """
+    t_list = np.linspace(0.0, period, angle_list.shape[0])
+    print("task points :", task_points)
+    plt.figure(figsize=(15, 4))
+    
+    plt.title(fig_name)
+    
+    plt.subplot(1, 3, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    plt.plot(traj[:, 1], traj[:, 0], marker='o', linewidth=linewidth)
+    plt.plot(image_points[:, 0], image_points[:, 1], linewidth=linewidth - 2)
+    
+    plt.xlim([0, 128])
+    plt.ylim([0, 128])
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    # plt.axis('equal')
+    plt.tight_layout()
+    
+    plt.subplot(1, 3, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    plt.plot(task_points[:, 0], task_points[:, 1], linewidth=linewidth + 2, color='r')
+    # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
+    plt.scatter(task_points[0, 0], task_points[0, 1], s=100, c='b', marker='o')
+    # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
+    # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlabel('$x_1$(m)')
+    plt.ylabel('$x_2$(m)')
+    
+    plt.subplot(1, 3, 3)
+    plt.plot(t_list, angle_list[:, 0], linewidth=linewidth, label='$q_1$')
+    # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+    plt.plot(t_list, angle_list[:, 1], linewidth=linewidth, label='$q_2$')
+    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    
+    plt.xlabel('Time (s)')
+    plt.ylabel('One-loop Angle (rad)')
+    plt.legend()
+    
+    plt.show()
+
+
+def plot_word_path(period_list, traj_list, image_points_list, task_points_list, word_angle_list,
+                   word_folder='../control/data', word_name='Stroke Path'):
+    """
+        plot one word path
+    """
+    plt.figure(figsize=(15, 4))
+    plt.title(word_name)
+    
+    plt.subplot(1, 3, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(traj_list)):
+        # traj_list[i].transpose((0, 1)).copy()
+        plt.plot(traj_list[i][:, 1], traj_list[i][:, 0], marker='o', linewidth=linewidth)
+        plt.plot(image_points_list[i][:, 0], image_points_list[i][:, 1], linewidth=linewidth - 2)
+    
+    plt.xlim([0, 128])
+    plt.ylim([0, 128])
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    
+    plt.subplot(1, 3, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(traj_list)):
+        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2, color='r')
+        # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
+        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
+        # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0.13, 0.13 + WIDTH])
+    plt.xlabel('$x_1$(m)')
+    plt.ylabel('$x_2$(m)')
+    
+    plt.subplot(1, 3, 3)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    total_period = sum(period_list)
+    print("total_period :", total_period)
+    for i in range(len(traj_list)):
+        if i == 0:
+            start_period = 0.0
+            # t_list = np.linspace(0.0, period_list[i], word_angle_list[i].shape[0])
+        else:
+            start_period = sum(period_list[:i])
+        
+        t_list = np.linspace(start_period, period_list[i] + start_period, word_angle_list[i].shape[0])
+        print("period :", start_period, period_list[i] + start_period)
+        
+        plt.plot(t_list, word_angle_list[i][:, 0], linewidth=linewidth, label='$q_1$')
+        # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+        plt.plot(t_list, word_angle_list[i][:, 1], linewidth=linewidth, label='$q_2$')
+        # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+    
+    plt.xlabel('Time (s)')
+    plt.ylabel('One-loop Angle (rad)')
+    # plt.legend()
+    plt.tight_layout()
+    
+    plt.show()
+    
+    fig = plt.figure(figsize=(4, 4))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(traj_list)):
+        # rotate_task_point = task_points_list[i].transpose((1, 0))
+        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
+        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
+    
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0.13, 0.13 + WIDTH])
+    # plt.xlabel('$x_1$(m)')
+    # plt.ylabel('$x_2$(m)')
+    plt.tight_layout()
+    
+    img_path = fig2data(fig)
+    # img = img_path.transpose(Image.ROTATE_90)  # 将图片旋转90度
+    # img_path.show()
+    img_show = np.rot90(img_path, -1)
+    cv2.imwrite(word_folder + '/' + word_name + '/' + word_name + '.png', img_show)
+    # cv2.imshow(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
+    # cv2.waitKey(0)
+    # plt.imshow(img_show)
+    # plt.show()
+
+
+def real_stroke_path(task_points_list=None):
+    fig = plt.figure(figsize=(4, 4))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    for i in range(len(task_points_list)):
+        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
+        # plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        # plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
+    
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0.13, 0.13 + WIDTH])
+    # plt.xlabel('$x_1$(m)')
+    # plt.ylabel('$x_2$(m)')
+    # plt.axis('off')
+    plt.tight_layout()
+    
+    img_path = fig2data(fig)
+    # img = img_path.transpose(Image.ROTATE_90)  # 将图片旋转90度
+    # img_path.show()
+    img_show = np.rot90(img_path, -1)
+    # cv2.imwrite(word_folder + '/' + word_name + '/' + word_name +'.png', img_show)
+    # plt.show()
+    cv2.imshow("Real path :", img_show)
+    cv2.waitKey(0)
+
+
 def plot_torque(torque_list, period_list):
     """
         torque_list
@@ -684,8 +746,9 @@ def plot_torque(torque_list, period_list):
     fig = plt.figure(figsize=(4, 4))
     plt.subplot(1, 1, 1)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
-
+    
     total_period = sum(period_list)
+    print('*' * 50)
     print("total_period :", total_period)
     for i in range(len(torque_list)):
         if i == 0:
@@ -702,7 +765,7 @@ def plot_torque(torque_list, period_list):
     # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
     
     plt.xlabel('Time (s)')
-    plt.ylabel('Torque (Nm)')
+    plt.ylabel('Stiffness (Nm/rad)')
     # plt.legend()
     plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
     plt.tight_layout()

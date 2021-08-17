@@ -505,7 +505,6 @@ if __name__ == "__main__":
 
     # motor_control.set_position(0.0, np.int32(500))   
 
-    
     # impedance_params = np.array([35.0, 35, 0.8, 0.1])  
     # move_to_target_point(np.array([0.34, -0.03]), impedance_params, velocity=0.04)  
 

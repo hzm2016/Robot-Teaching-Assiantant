@@ -244,23 +244,27 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--generate_path',
-                        default=False,
+                        default=True,
                         help='enables useful debug settings')
     
     parser.add_argument('--plot_real_path',
-                        default=True,
+                        default=False,
                         help='enables useful debug settings')
      
     parser.add_argument('--record_video',
                         default=False,
                         help='enables useful debug settings')
+    
+    parser.add_argument('--stiff_test',
+                        default=False,
+                        help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='mu',
+                        default='yi',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='木',
+                        default='一',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
@@ -319,9 +323,12 @@ if __name__ == "__main__":
         # # inverse_list[5] = False
         # inter_list[5] = 2
         # =======================================
-    
+        stiffness = np.array([300, 250])
+        damping = np.array([10, 8])
         generate_word_path(
             traj_list,
+            stiffness,
+            damping,
             inter_list,
             inverse_list,
             center_shift=np.array([0.15, -WIDTH / 2]),
@@ -364,6 +371,43 @@ if __name__ == "__main__":
 
         # real_stroke_path(task_points_list=task_point_list)
         plot_torque(torque_list, period_list)
+
+    if args.stiff_test:
+        stroke_list_file = glob.glob(
+            args.root_path + 'font_data' + '/' + args.folder_name + '/' + 'angle_list*.txt')
+
+        num_stroke = len(stroke_list_file)
+        print("num_stroke :", num_stroke)
+    
+        word_angle_list = []
+        task_point_list = []
+        torque_list = []
+        period_list = []
+
+        stiff_task = np.diag(np.array([300, 250]))
+        damping_task = np.diag(np.array([100, 100]))
+        stiff_joint = np.zeros(2)
+        stiff_joint_list = []
+        for str_index in range(num_stroke):
+            angle_list = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                                    'angle_list_' + str(str_index) + '.txt', delimiter=' ', skiprows=1)
+
+            period_list.append(angle_list.shape[0])
+
+            for i in range(angle_list.shape[0]):
+                stiff_joint, _ = Stiff_convert(angle_list[i, :], stiff_task, damping_task)
+                stiff_joint_list.append([stiff_joint[0, 0], stiff_joint[1, 1]])
+
+            # np.savetxt('../control/data/font_data/' + args.word_name + '/' + 'params_list_' + str(stroke_name) + '.txt',
+            #            way_points, fmt='%.05f')
+        
+        str_index = 0
+        angle_list = np.loadtxt(args.root_path + 'font_data' + '/' + args.folder_name + '/' +
+                                'angle_list_' + str(str_index) + '.txt', delimiter=' ', skiprows=1)
+        
+        stiff_plot = np.array(stiff_joint_list)[np.newaxis, :]
+        print("shape :", stiff_plot.shape)
+        plot_torque(stiff_plot, period_list)
     
     # from control.path_planning.plot_path import *
     # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
