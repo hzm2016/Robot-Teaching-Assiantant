@@ -161,28 +161,42 @@ def plot_real_2d_path(
     FONT_SIZE = 28 
     linewidth = 4 
     
-    angle_list_e = np.loadtxt(root_path + file_name, delimiter=delimiter, skiprows=skiprows)
+    angle_list = np.loadtxt(root_path + file_name, delimiter=delimiter, skiprows=skiprows)
 
-    angle_list_1_e = angle_list_e[:, 0]
-    angle_list_2_e = angle_list_e[:, 1]
+    angle_list_1_e = angle_list[:, 0] 
+    angle_list_2_e = angle_list[:, 3] 
+
+    angle_list_1_t = angle_list[:, 1] 
+    angle_list_2_t = angle_list[:, 4] 
+
+    d_angle_list_1_t = angle_list[:, 2] 
+    d_angle_list_2_t = angle_list[:, 5] 
 
     fig = plt.figure(figsize=(20, 8))
     
     plt.subplot(1, 2, 1)
     plt.subplots_adjust(wspace=0, hspace=0)
 
-    plt.plot(angle_list_1_e, linewidth=linewidth, label='angle 1')
-    plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2') 
+    plt.plot(angle_list_1_e, linewidth=linewidth, label='angle_1_e') 
+    plt.plot(angle_list_1_t, linewidth=linewidth, label='angle_1_t')
+    plt.plot(angle_list_2_e, linewidth=linewidth, label='angle_2_e') 
+    plt.plot(angle_list_2_t, linewidth=linewidth, label='angle_2_t')
 
     plt.xlabel('time($t$)', fontsize=FONT_SIZE)
     plt.ylabel('$rad', fontsize=FONT_SIZE)
     plt.legend()
 
-    plt.subplot(1, 2, 2)
-    x = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
-    y = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+    plt.subplot(1, 2, 2) 
+
+    x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+    y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+
+    x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
+    y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
     
-    plt.plot(x, y, linewidth=linewidth) 
+    plt.plot(x_e, y_e, linewidth=linewidth, label='desired') 
+    plt.plot(x_t, y_t, linewidth=linewidth, label='real') 
+
     plt.xlabel('x(m)', fontsize=FONT_SIZE)  
     plt.ylabel('y(m)', fontsize=FONT_SIZE)  
     plt.ylim([-WIDTH/2, WIDTH/2])  

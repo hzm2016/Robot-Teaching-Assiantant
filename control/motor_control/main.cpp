@@ -698,8 +698,6 @@ int rotate_to_target(
 
 
 int run_one_loop(
-// double stiffness_1, double stiffness_2,  
-// double damping_1, double damping_2,  
 py::array_t<double> theta_1_target, py::array_t<double> theta_2_target, 
 py::array_t<double> stiff_1_target, py::array_t<double> stiff_2_target, 
 py::array_t<double> damping_1_target, py::array_t<double> damping_2_target, 
@@ -750,11 +748,11 @@ string angle_path_name, string torque_path_name
 
     string output_torque = torque_path_name;   
     ofstream OutFileTorque(output_torque);   
-    OutFileTorque << "torque_1" << " " << "torque_2" << "\n";  
+    OutFileTorque << "torque_1" << " " << "torque_1_t" << " " << "torque_2" << " " << "torque_2_t" << "\n";  
 
     string output_angle = angle_path_name;   
     ofstream OutFileAngle(output_angle);  
-    OutFileAngle << "angle_1" << " " << "angle_2" << "\n";  
+    OutFileAngle << "angle_1_e" << " " << "angle_1_t" << " " << "d_theta_1_t" << " " << "angle_2_e" << " " << "angle_2_t" << " " << "d_theta_2_t" << "\n";   
 
     ////////////////////////////////////////////////////////
     // Impedance Parameters ::: input 
@@ -921,11 +919,15 @@ string angle_path_name, string torque_path_name
             ////////////////////////////////////////////////////////
             // Save Data
             ////////////////////////////////////////////////////////
-            OutFileAngle << theta_1_t << " " << theta_2_t << "\n";   
+            // OutFileAngle << theta_1_t << " " << theta_2_t << "\n";   
 
-            OutFileTorque << torque_1_o << " " << torque_2_o << "\n";    
+            OutFileAngle << theta_e_list[0] << " " << theta_t_list[0] << " " << d_theta_t_list[0] << " " << theta_e_list[1] << " " << theta_t_list[1] << " " << d_theta_t_list[1] << "\n";   
 
-            // OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n";  
+            // OutFileTorque << torque_1_o << " " << torque_2_o << "\n";   
+
+            OutFileTorque << torque_1/ctl_ratio_1 << " " << torque_1_t << " " << torque_2/ctl_ratio_2 << " " << torque_2_t << "\n";  
+
+            // OutFileVel << d_theta_1_t << "," << d_theta_2_t << "\n";   
             
             if (run_on==0) 
             {
