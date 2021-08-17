@@ -479,16 +479,18 @@ def load_word_path(word_name=None):
 if __name__ == "__main__":  
 
     write_name = 'yi' 
-    # word_path, word_params = load_word_path(word_name=write_name)  
-    # # print("word_params :", word_params[0][0, :])  
-    # write_word(word_path, word_params=word_params, word_name=write_name)   
+    word_path, word_params = load_word_path(word_name=write_name)  
+    # print("word_params :", word_params[0][0, :]) 
+    eval_times = 2
+    for i in range(eval_times): 
+        write_word(word_path, word_params=word_params, word_name=write_name)   
 
-    plot_real_2d_path(
-        root_path='./data/font_data/yi/',
-        file_name='real_angle_list_0.txt',
-        delimiter=' ',
-        skiprows=1
-    )  
+    # plot_real_2d_path(
+    #     root_path='./data/font_data/yi/',
+    #     file_name='real_angle_list_0.txt',
+    #     delimiter=' ',
+    #     skiprows=1
+    # )  
 
     # motor_stop() 
 
