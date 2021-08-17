@@ -23,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.316907, -0.206659, 1.982736])  
+Angle_initial = np.array([-0.374125, -0.206659, 1.759272])  
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -427,70 +427,43 @@ def motor_stop():
     motor_control.motor_3_stop() 
 
 
-def load_word_path(word_name=None):
+def load_word_path(word_name=None, joint_params=None):
 
     word_file = './data/font_data' + '/' + word_name + '/' 
     stroke_list_file = glob.glob(word_file + 'angle_list_*txt')
     print("Load stroke data %d", len(stroke_list_file)) 
 
-    word_path = []
+    word_path = [] 
     word_params = [] 
     for i in range(len(stroke_list_file)):
-        way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ') 
-        params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')    
+        way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
+        if joint_params is not None:  
+            params_list = np.tile(joint_params, (way_points.shape[0], 1))  
+        else:
+            params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')   
+         
         N_way_points = way_points.shape[0]   
         print("N_way_points :", N_way_points)   
         word_path.append(way_points.copy())  
         word_params.append(params_list.copy())  
 
-    # way_points = np.loadtxt('angle_list_0.txt', delimiter=' ')    
-    # N_way_points = way_points.shape[0]   
-    # print("N_way_points :", N_way_points)   
-    # word_path.append(way_points.copy())  
-
-    # way_points = np.loadtxt('angle_list_1.txt', delimiter=' ')    
-    # N_way_points = way_points.shape[0]   
-    # print("N_way_points :", N_way_points)   
-    # word_path.append(way_points.copy())  
-
-    # # way_points = np.loadtxt('angle_list_1_2.txt', delimiter=' ')    
-    # # N_way_points = way_points.shape[0]   
-    # # print("N_way_points :", N_way_points)
-    # # word_path.append(way_points.copy()) 
-
-    # way_points = np.loadtxt('angle_list_2.txt', delimiter=' ')    
-    # N_way_points = way_points.shape[0]   
-    # print("N_way_points :", N_way_points)  
-    # word_path.append(way_points.copy()) 
-
-    # way_points = np.loadtxt('angle_list_3.txt', delimiter=' ')    
-    # N_way_points = way_points.shape[0]   
-    # print("N_way_points :", N_way_points)  
-    # word_path.append(way_points.copy()) 
-
-    # way_points = np.loadtxt('angle_list_4.txt', delimiter=' ')    
-    # N_way_points = way_points.shape[0]   
-    # print("N_way_points :", N_way_points)  
-    # word_path.append(way_points.copy()) 
-
     return word_path, word_params
 
 
 if __name__ == "__main__":  
-
     write_name = 'yi' 
-    word_path, word_params = load_word_path(word_name=write_name)  
+    word_path, word_params = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 8, 1.2]))  
     # print("word_params :", word_params[0][0, :]) 
     eval_times = 2
     for i in range(eval_times): 
-        write_word(word_path, word_params=word_params, word_name=write_name)   
+        write_word(word_path, word_params=word_params, word_name=write_name)  
 
-    # plot_real_2d_path(
-    #     root_path='./data/font_data/yi/',
-    #     file_name='real_angle_list_0.txt',
-    #     delimiter=' ',
-    #     skiprows=1
-    # )  
+    plot_real_2d_path(
+        root_path='./data/font_data/yi/',
+        file_name='real_angle_list_0.txt',
+        delimiter=' ',
+        skiprows=1
+    )  
 
     # motor_stop() 
 
