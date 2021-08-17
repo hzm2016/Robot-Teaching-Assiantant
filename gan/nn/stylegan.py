@@ -507,6 +507,7 @@ class StyledGenerator(nn.Module):
         return style
 
 
+
 class Discriminator(nn.Module):
     def __init__(self, fused=True, from_rgb_activate=False):
         super().__init__()

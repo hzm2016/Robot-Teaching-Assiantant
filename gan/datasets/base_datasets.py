@@ -30,6 +30,22 @@ class ImageDataset(Dataset):
         return max(len(self.files_A), len(self.files_B))
 
 
+class CharDataset(Dataset):
+    def __init__(self, root, transforms_=None, unaligned=False, mode='train'):
+        self.transform = transforms.Compose(transforms_)
+        self.unaligned = unaligned
+
+        self.files_A = sorted(glob.glob(os.path.join(root, '%s/A' % mode) + '/*.*'))
+
+    def __getitem__(self, index):
+
+        item_A = self.transform(Image.open(self.files_A[index % len(self.files_A)]))
+        return {'A': item_A, 'label': torch.tensor(index)}
+
+    def __len__(self):
+        return len(self.files_A)
+
+
 if __name__ == '__main__':
 
     dir_root = 'datasets/seq/train'

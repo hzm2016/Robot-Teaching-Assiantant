@@ -6,14 +6,22 @@ from tqdm import tqdm
 from PIL import Image
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
-from gan.nn.modules import Generator, Discriminator
+from gan.nn import StyledGenerator2, Discriminator
 from gan.utils import ReplayBuffer, to_cuda, Logger
 from gan.datasets import ImageDataset
 from .basegan import GAN
 from torch.utils.data import DataLoader
 
 
-class CycleGAN(GAN):
+def accumulate(model1, model2, decay=0.999):
+    par1 = dict(model1.named_parameters())
+    par2 = dict(model2.named_parameters())
+
+    for k in par1.keys():
+        par1[k].data.mul_(decay).add_(par2[k].data, alpha=1 - decay)
+
+
+class StyleCycleGAN(GAN):
 
     def __init__(self, args, mode='train') -> None:
         super().__init__()
@@ -34,19 +42,19 @@ class CycleGAN(GAN):
 
     def init_networks(self, args):
 
-        self.G_A2B = Generator(args.input_nc, args.output_nc)
-        self.G_B2A = Generator(args.output_nc, args.input_nc)
+        self.G_A2B = StyledGenerator2(128, 512)
+        self.G_B2A = StyledGenerator2(128, 512)
 
-        self.D_A = Discriminator(args.input_nc)
-        self.D_B = Discriminator(args.output_nc)
+        self.D_A = Discriminator(128)
+        self.D_B = Discriminator(128)
 
     def init_network_inference(self, args):
 
-        self.G_A2B = Generator(args.get('INPUT_NC'), args.get('OUTPUT_NC'))
-        self.G_B2A = Generator(args.get('OUTPUT_NC'), args.get('INPUT_NC'))
+        self.G_A2B = StyledGenerator2(128, 512)
+        self.G_B2A = StyledGenerator2(128, 512)
 
-        self.D_A = Discriminator(args.get('INPUT_NC'))
-        self.D_B = Discriminator(args.get('OUTPUT_NC'))
+        self.D_A = Discriminator(128)
+        self.D_B = Discriminator(128)
 
     def to_cuda(self):
         to_cuda([self.G_A2B, self.G_B2A, self.D_A, self.D_B])
@@ -75,8 +83,8 @@ class CycleGAN(GAN):
 
     def init_loss(self, args):
 
-        self.criterion_GAN = torch.nn.L1Loss()
-        self.criterion_cycle = torch.nn.L1Loss()
+        self.criterion_GAN = torch.nn.MSELoss()
+        self.criterion_cycle = torch.nn.MSELoss()
 
         self.fake_A_buffer = ReplayBuffer()
         self.fake_B_buffer = ReplayBuffer()
@@ -96,10 +104,10 @@ class CycleGAN(GAN):
 
         # Cycle loss
         recovered_A = self.G_B2A(fake_B)
-        loss_cycle_ABA = self.criterion_cycle(recovered_A, A)*15.0
+        loss_cycle_ABA = self.criterion_cycle(recovered_A, A)*10.0
 
         recovered_B = self.G_A2B(fake_A)
-        loss_cycle_BAB = self.criterion_cycle(recovered_B, B)*15.0
+        loss_cycle_BAB = self.criterion_cycle(recovered_B, B)*10.0
 
         # Sum all losses
         loss_G = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB
@@ -132,7 +140,6 @@ class CycleGAN(GAN):
         self.G_A2B.train()
         self.D_A.train()
         self.D_B.train()
-
         Tensor = torch.cuda.FloatTensor if self.cuda else torch.Tensor
         frequency = self.args.frequency
         output_dir = self.args.output_dir
