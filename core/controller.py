@@ -323,8 +323,8 @@ if __name__ == "__main__":
         # # inverse_list[5] = False
         # inter_list[5] = 2
         # =======================================
-        stiffness = np.array([300, 250])
-        damping = np.array([10, 8])
+        stiffness = np.array([400, 500])
+        damping = np.array([10, 10])
         generate_word_path(
             traj_list,
             stiffness,
