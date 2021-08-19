@@ -22,6 +22,9 @@ class CycleGAN(GAN):
         if mode == 'inference':
             self.init_network_inference(args)
             self.cuda = args.get('CUDA')
+        elif mode == 'test':
+            self.init_networks(args)
+            self.cuda = args.cuda
         else:
             self.init_networks(args)
             self.cuda = args.cuda
@@ -159,6 +162,10 @@ class CycleGAN(GAN):
                            '/{}_{}.pth'.format('G_A2B', epoch))
                 torch.save(self.G_B2A.state_dict(), output_dir +
                            '/{}_{}.pth'.format('G_B2A', epoch))
+                torch.save(self.D_A.state_dict(), output_dir +
+                           '/{}_{}.pth'.format('D_A', epoch))
+                torch.save(self.D_B.state_dict(), output_dir +
+                           '/{}_{}.pth'.format('D_B', epoch))
 
             self.G_scheduler.step()
             self.D_scheduler.step()
@@ -193,3 +200,5 @@ class CycleGAN(GAN):
             # Save image files
             save_image(fake_A, self.args.output_dir + '/A/%04d.png' % (i+1))
             save_image(fake_B, self.args.output_dir + '/B/%04d.png' % (i+1))
+
+

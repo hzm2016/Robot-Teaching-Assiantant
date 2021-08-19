@@ -66,20 +66,8 @@ class Generator(nn.Module):
         self.output_layer = nn.Sequential(*output_layer)
         self.upsampler = nn.Sequential(*model)
 
-        if conditional:
-            self.style_encoder = Encoder(input_nc)
-            post_process = [nn.Conv2d(512, 256, 1, stride=1),
-                            nn.InstanceNorm2d(out_features),
-                            nn.ReLU(inplace=True)]
-
-            self.post_process = nn.Sequential(*post_process)
-
-    def forward(self, x, y=None):
+    def forward(self, x):
         feat_x = self.encoder(x)
-        if y is not None:
-            feat_y = self.style_encoder(y)
-            feat_x = torch.cat((feat_x, feat_y), dim=1)
-            feat_x = self.post_process(feat_x)
         feat_x = self.upsampler(feat_x)
         output = self.output_layer(feat_x)
         return output
@@ -137,7 +125,6 @@ class SequentialGenerator(nn.Module):
 
         self.output_layer = nn.Sequential(*output_layer)
         self.upsampler = nn.Sequential(*model)
-        self.convlstm = ConvLSTMCell(512)
 
     def forward(self, x, y=None):
         feat_x = self.encoder(x)

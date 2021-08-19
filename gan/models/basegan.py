@@ -1,7 +1,14 @@
 import torch
 import itertools
 from gan.utils import LambdaLR
+import torch.nn.functional as F
 
+
+def d_logistic_loss(real_pred, fake_pred):
+    real_loss = F.softplus(-real_pred)
+    fake_loss = F.softplus(fake_pred)
+
+    return real_loss.mean() + fake_loss.mean()
 
 class GAN(object):
 
@@ -31,6 +38,18 @@ class GAN(object):
 
         # Total loss
         loss_D = (loss_D_real + loss_D_fake)*0.5
+
+        return loss_D
+    
+    def discriminator_logistic(self, d_net, real, fake, fake_buffer):
+        # Real loss
+        pred_real = d_net(real)
+
+        fake = fake_buffer.push_and_pop(fake)
+        pred_fake = d_net(fake.detach())
+
+        # Total loss
+        loss_D = d_logistic_loss(pred_real, pred_fake)
 
         return loss_D
 
