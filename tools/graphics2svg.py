@@ -26,18 +26,21 @@ def svg_2_img(out_path, path_list):
 
     transform = [r'<g transform="scale(1, -1) translate(0, -900)">', r'</g>']
 
-    for index in range(len(path_list)):
+    # for index in range(len(path_list)):
 
-        img_name = osp.join(out_path, str(index)) + '.jpg'
-        svg_name = osp.join(out_path, str(index)) + '.svg'
-        paths = path_list[index]
+    # img_name = osp.join(out_path, str(1)) + '.jpg'
+    # svg_name = osp.join(out_path, str(1)) + '.svg'
+        # paths = path_list[index]
+    
+    img_name = out_path
+    svg_name = out_path.replace('jpg','svg')
         
-        path_str = wsvg(paths,filename=svg_name,dimensions=(1024,1024))#,viewbox='0 0 1024 1024')
-        path_str_list = path_str.split('\n')
-        path_str_list.insert(2, transform[0])
-        path_str_list.insert(-2, transform[1])
-        path_str = list_to_str(path_str_list)
-        svg2png(bytestring=path_str,write_to=img_name,background_color='white',output_width=128, output_height=128)
+    path_str = wsvg(path_list,filename=svg_name,dimensions=(1024,1024))#,viewbox='0 0 1024 1024')
+    path_str_list = path_str.split('\n')
+    path_str_list.insert(2, transform[0])
+    path_str_list.insert(-2, transform[1])
+    path_str = list_to_str(path_str_list)
+    svg2png(bytestring=path_str,write_to=img_name,background_color='white',output_width=128, output_height=128)
 
 def svg2img(paths,out_path='./example'):
 
@@ -77,11 +80,11 @@ def main():
     """
 
     input_file = './tools/src/graphics.txt'
-    output_dir = './imgs/imgs_part_2'
+    output_dir = './imgs/D'
 
     input_lines = open(input_file,'r').readlines()
 
-    for line in tqdm(input_lines[:100]):
+    for idx, line in enumerate(tqdm(input_lines)):
 
         char_info = eval(line)
 
@@ -89,10 +92,8 @@ def main():
         medians = char_info['medians']
         char = char_info['character']
 
-        out_path = osp.join(output_dir, char)
-
-        os.makedirs(out_path, exist_ok = True)
-
+        out_path = osp.join(output_dir, str(idx)) + '.jpg'
+        # os.makedirs(out_path, exist_ok = True)
         svg = _parse_strokes(strokes)
         svg_2_img(out_path, svg)
 
