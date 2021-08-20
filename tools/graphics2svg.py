@@ -42,7 +42,7 @@ def svg_2_img(out_path, path_list):
     path_str = list_to_str(path_str_list)
     svg2png(bytestring=path_str,write_to=img_name,background_color='white',output_width=128, output_height=128)
 
-def svg2img(paths,out_path='./example'):
+def svg2img(paths):
 
     paths = parse_path(paths)
 

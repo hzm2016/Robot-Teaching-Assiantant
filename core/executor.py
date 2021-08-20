@@ -63,6 +63,7 @@ class Executor(object):
 
         self.font_type = args.get('TTF_FILE')
         self.font_size = args.get('FONT_SIZE', 128)
+        self.stylelization = args.get('STYLELIZATION',False)
         assert self.font_type is not None, 'Please provide a font file'
 
         if args.get('PRE_PROCESS', None):
@@ -88,16 +89,14 @@ class Executor(object):
 
     def __init_network(self, args):
 
-        self.gan = load_class(self.gan_type)(
-            args['GAN_PARAM'], mode='inference')
-        self.dis = load_class(self.dis_type)(
-            args['GAN_PARAM'], mode='inference')
+        self.gan = load_class(self.gan_type)(128, 512)
+        self.dis = load_class(self.dis_type)(128, 512)
 
         mapping_device = 'cpu'
         if self.cuda:
             self.gan = self.gan.cuda()
             self.dis = self.dis.cuda()
-            mapping_device = 'gpu'
+            mapping_device = 'cuda'
 
         if self.gan_path is not None:
             self.gan.load_state_dict(
@@ -108,6 +107,8 @@ class Executor(object):
             self.dis.load_state_dict(
                 {k.replace('module.', ''): v for k, v in torch.load(self.dis_path,
                                                                     map_location=torch.device(mapping_device)).items()})
+
+        logging.info('Finish Loading networks')
 
     def interact(self, traj, score=None):
         """TO DO: interaction part
@@ -139,9 +140,6 @@ class Executor(object):
             source_image = np.array(stroke2img(
                 self.font_type, stroke, self.font_size))
             return self.__generate_written_traj(written_character, source_image)
-
-    def stylization(self, img, written_img=None):
-        pass
 
     def __reset_learner(self,):
         """ Reset learner model
@@ -271,14 +269,17 @@ class Executor(object):
         mask = self.__filter(points, mask, tail, head, 2)
         mask = self.__filter(points, mask, tail, tail, 3)
 
-        filtered_points = np.array(points)[list(map(bool, mask))].tolist()
+        filtered_points = np.array(points,dtype=tuple)[list(map(bool, mask))].tolist()
 
         filtered_points = sorted(filtered_points, key=len)
 
         if len(filtered_points) == 1:
-            return filtered_points
+            return filtered_points[0]
 
         # Only take the two longest list of stroke
+        if len(filtered_points) < 2:
+            return filtered_points[0]
+
         filtered_points = filtered_points[-2:]
 
         a = filtered_points[0]
@@ -307,6 +308,27 @@ class Executor(object):
 
         return np.linalg.norm(np.array(a)-np.array(b))
 
+    def stylelize(self, img):
+        
+        if self.cuda:
+            source_image = self.pre_process(img).unsqueeze(0).cuda()
+        else:
+            source_image = self.pre_process(img).unsqueeze(0)
+
+        styled_image = self.gan(source_image)
+
+        styled_image = 0.5*(styled_image.data + 1.0)
+        grid = torchvision.utils.make_grid(styled_image)
+        # Add 0.5 after unnormalizing to [0, 255] to round to nearest integer
+
+        styled_image = grid.mul(255).add_(0.5).clamp_(
+            0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
+
+        styled_image = cv2.cvtColor(
+            styled_image, cv2.COLOR_BGR2GRAY)
+
+        return styled_image
+
     def pipeline(self,):
         """ Full pipeline
         Obtain target character -> generate target character's trajectory -> Interact with learner -> Get learner output
@@ -314,7 +336,7 @@ class Executor(object):
 
         while True:
 
-            character = input('Please provide a character you want to learn: ')
+            character = '猴' #input('Please provide a character you want to learn: ')
             written_image = None
 
             if len(character) > 1:
@@ -338,8 +360,12 @@ class Executor(object):
             #     strokes = self.char_list[ch]['strokes']
 
             img_list = []
-            for stroke in strokes:
-                img_list.append(svg2img(stroke))
+            if self.stylelization:
+                for stroke in strokes:
+                    img_list.append(self.stylelize(svg2img(stroke)))
+            else:
+                for stroke in strokes:
+                    img_list.append(svg2img(stroke))
 
             while not self.learner.satisfied:
 
@@ -355,7 +381,10 @@ class Executor(object):
                         traj, traj_img = skeletonize(~img)
                         img_ske_list.append(traj_img)
                         if len(traj) > 1:
+                            for k in traj:
+                                print(k)
                             traj = [self.merge_keypoints(traj)]
+
                         traj_list.append(traj)
 
                     for idx, traj in enumerate(traj_list):

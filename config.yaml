@@ -4,17 +4,14 @@ PRE_PROCESS: default
 INPUT_CHANNEL: 1
 OUTPUT_CHANNEL: 1
 
-GAN_MODEL_TYPE: gan.models.CycleGAN
-DIS_MODEL_TYPE: gan.models.CycleGAN
+GAN_MODEL_TYPE: gan.nn.StyledGenerator2
+DIS_MODEL_TYPE: gan.nn.StyledGenerator2
 GAN_PARAM: 
   INPUT_NC: 1
   OUTPUT_NC: 1 
-  CUDA: False
-
   
-# GAN_MODEL_PATH: ./saved_model/199_netG_S2P.pth
-# DIS_MODEL_PATH: ./saved_model/199_netD_P.pth
-
+GAN_MODEL_PATH: /home/cunjun/Robot-Teaching-Assiantant/stylecyle-12/G_A2B_119.pth
+DIS_MODEL_PATH: /home/cunjun/Robot-Teaching-Assiantant/stylecyle-12/G_B2A_119.pth
 FONT_SIZE: 128
 MAX_PADDING: 0
 
@@ -22,14 +19,14 @@ NUM_REFERENCE_POINTS: 4
 TTF_FILE: ./tools/ttf/font1.ttf
 GRAPHICS_TXT: ./tools/src/graphics.txt
 
-CUDA: False
+CUDA: True
 SAVE_TRAJ: True
 GENERATIION_ONLY: True
+STYLELIZATION: True
 
 FEEDBACK:
   WITH_FEEDBACK: True
   POST_PRORCESS:
     { BINARIZE: 128}
-
 
 SHOW_VIDEO: False
