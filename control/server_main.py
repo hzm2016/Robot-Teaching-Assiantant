@@ -23,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.379417, -0.223754, 2.091240])  
+Angle_initial = np.array([-0.396512, -0.118477, 0.261318])  
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -40,16 +40,16 @@ def reset_and_calibration():
     return angle_initial  
 
 
-def get_demo_writting(): 
+def get_demo_writting():  
     """ 
         zero impedance control
     """
-    buff_size = np.zeros((100, 2)) 
-    impedance_params = np.array([35.0, 25.0, 0.4, 0.1])
+    buff_size = np.zeros((100, 2))  
+    impedance_params = np.array([35.0, 25.0, 0.4, 0.1]) 
 
     set_pen_down()  
     motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], 
-    2.0, 2.0, 0.0, 0.0, buff_size)  
+    2.0, 8.0, 0.0, 0.0, buff_size)  
 
 
 def get_observation(angle_initial=Angle_initial): 
@@ -435,8 +435,12 @@ def load_word_path(word_name=None, joint_params=None):
 
     word_path = [] 
     word_params = [] 
-    for i in range(len(stroke_list_file)):
+    real_path = [] 
+    for i in range(len(stroke_list_file)): 
         way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
+
+        real_way_points = np.loadtxt(word_file + 'real_angle_list_' + str(i) + '.txt', delimiter=' ')  
+
         if joint_params is not None:  
             params_list = np.tile(joint_params, (way_points.shape[0], 1))  
         else:
@@ -445,14 +449,15 @@ def load_word_path(word_name=None, joint_params=None):
         N_way_points = way_points.shape[0]   
         print("N_way_points :", N_way_points)   
         word_path.append(way_points.copy())  
-        word_params.append(params_list.copy())  
+        word_params.append(params_list.copy()) 
+        real_path.append(real_way_points) 
 
-    return word_path, word_params
+    return word_path, word_params, real_path
 
 
 if __name__ == "__main__":  
-    # write_name = 'chuan' 
-    # word_path, word_params = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))  
+    write_name = 'chuan' 
+    # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))  
     # # print("word_params :", word_params[0][0, :]) 
     # eval_times = 1
     # for i in range(eval_times): 
@@ -460,10 +465,18 @@ if __name__ == "__main__":
 
     # plot_real_2d_path(
     #     root_path='./data/font_data/' + write_name + '/',
-    #     file_name='real_angle_list_0.txt',
+    #     file_name='real_angle_list_',
+    #     stroke_num=3,
     #     delimiter=' ',
     #     skiprows=1
     # )  
+
+    plot_real_2d_demo_path(
+    root_path='',
+    file_name=write_name,
+    delimiter=',',
+    skiprows=1
+    )
 
     # torque_list = np.loadtxt('./data/font_data/yi/real_torque_list_0.txt', delimiter=' ', skiprows=1)
 
@@ -528,8 +541,7 @@ if __name__ == "__main__":
 
     # motor_stop() 
 
-    get_demo_writting()  
-
+    # get_demo_writting() 
 
     # motor_control.Jacobian(0.0, 0.0) 
 
