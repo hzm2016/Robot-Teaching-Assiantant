@@ -454,15 +454,15 @@ if __name__ == "__main__":
     # write_name = 'yi' 
     # word_path, word_params = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 8, 0.8]))  
     # # print("word_params :", word_params[0][0, :]) 
-    # eval_times = 1
+    # eval_times = 1 
     # for i in range(eval_times): 
-    #     write_word(word_path, word_params=word_params, word_name=write_name)  
+    #     write_word(word_path, word_params=word_params, word_name=write_name)   
 
     # plot_real_2d_path(
-    #     root_path='./data/font_data/yi/',
-    #     file_name='real_angle_list_0.txt',
-    #     delimiter=' ',
-    #     skiprows=1
+    #     root_path='./data/font_data/yi/', 
+    #     file_name='real_angle_list_0.txt', 
+    #     delimiter=' ', 
+    #     skiprows=1 
     # )  
 
     # torque_list = np.loadtxt('./data/font_data/yi/real_torque_list_0.txt', delimiter=' ', skiprows=1)
