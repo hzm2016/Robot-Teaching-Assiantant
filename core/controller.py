@@ -1,5 +1,5 @@
 from tools import skeletonize
-from .utils import hungarian_matching
+from utils import hungarian_matching
 import numpy as np
 import cv2
 import argparse
@@ -10,6 +10,7 @@ import os
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import *
+from control.path_planning.plot_path import *
 # from control.vision_capture.main_functions import capture_image, show_video, record_video
 
 
@@ -244,7 +245,7 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--generate_path',
-                        default=True,
+                        default=False,
                         help='enables useful debug settings')
     
     parser.add_argument('--plot_real_path',
@@ -408,6 +409,18 @@ if __name__ == "__main__":
         stiff_plot = np.array(stiff_joint_list)[np.newaxis, :]
         print("shape :", stiff_plot.shape)
         plot_torque(stiff_plot, period_list)
+    
+    plot_real_2d_path(
+        root_path='./data/font_data/yi/',
+        file_name='real_angle_list_0.txt',
+        delimiter=' ',
+        skiprows=1,
+        # root_path='./data/font_data/' + write_name + '/',
+        # file_name='real_angle_list_0.txt',
+        # delimiter=' ',
+        # skiprows=1
+    )
+    
     
     # from control.path_planning.plot_path import *
     # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')

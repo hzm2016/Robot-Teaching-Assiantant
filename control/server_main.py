@@ -1,37 +1,37 @@
 from matplotlib.pyplot import title
 from numpy.lib import NumpyVersion
-from protocol.task_interface import *
+from .protocol.task_interface import *
 import numpy as np
 import math
 import os
 from motor_control import motor_control
-from path_planning.plot_path import * 
-from path_planning.path_generate import * 
+from .path_planning.plot_path import *
+from .path_planning.path_generate import *
 import ctypes 
 import time 
 import glob 
 
-np.set_printoptions(precision=5) 
+np.set_printoptions(precision=5)
 
-L_1 = 0.3  
-L_2 = 0.25   
-action_dim = 3   
-DIST_THREHOLD = 0.05    
+L_1 = 0.3
+L_2 = 0.25
+action_dim = 3
+DIST_THREHOLD = 0.05
 
 # initial angle (rad) ::: 
-Initial_angle = np.array([-1.31, 1.527])  
+Initial_angle = np.array([-1.31, 1.527])
 
-Initial_point = np.array([0.32299, -0.23264])  
+Initial_point = np.array([0.32299, -0.23264])
 
-Angle_initial = np.array([-0.379417, -0.223754, 2.091240])  
+Angle_initial = np.array([-0.379417, -0.223754, 2.091240])
 
 # impedance params :  
-Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
+Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])
 
 
 def reset_and_calibration(): 
-    print("Please make sure two links are at zero position !!!") 
-    angle_initial = np.zeros(3) 
+    print("Please make sure two links are at zero position !!!")
+    angle_initial = np.zeros(3)
     
     angle_initial[0] = motor_control.read_initial_angle_1()  
     angle_initial[1] = motor_control.read_initial_angle_2()  
@@ -91,10 +91,10 @@ def move_to_target_point(target_point, impedance_params=Move_Impedance_Params, v
     angle_list, N = path_planning(curr_point, target_point, velocity=velocity)  
     # angle_list = np.loadtxt('angle_list.txt', delimiter=',', skiprows=1)  
 
-    N = angle_list.shape[0]  
+    N = angle_list.shape[0]
 
     # angle_array = ctypes.c_float * 5
-    angle_1_list = angle_list[:, 0].copy() 
+    angle_1_list = angle_list[:, 0].copy()
     angle_2_list = angle_list[:, 1].copy()  
 
     dist_threshold = 0.05
@@ -436,7 +436,7 @@ def load_word_path(word_name=None, joint_params=None):
     word_path = [] 
     word_params = [] 
     for i in range(len(stroke_list_file)):
-        way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
+        way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')
         if joint_params is not None:  
             params_list = np.tile(joint_params, (way_points.shape[0], 1))  
         else:
@@ -532,7 +532,7 @@ if __name__ == "__main__":
 
     # motor_stop() 
 
-    get_demo_writting()  
+    # get_demo_writting()
 
 
     # motor_control.Jacobian(0.0, 0.0) 
