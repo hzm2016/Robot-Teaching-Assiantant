@@ -456,7 +456,7 @@ def load_word_path(word_name=None, joint_params=None):
 
 
 if __name__ == "__main__":  
-    write_name = 'chuan' 
+    write_name = 'yi' 
     # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))  
     # # print("word_params :", word_params[0][0, :]) 
     # eval_times = 1
@@ -466,7 +466,7 @@ if __name__ == "__main__":
     # plot_real_2d_path(
     #     root_path='./data/font_data/' + write_name + '/',
     #     file_name='real_angle_list_',
-    #     stroke_num=3,
+    #     stroke_num=2,
     #     delimiter=' ',
     #     skiprows=1
     # )  
