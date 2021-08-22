@@ -23,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.374125, -0.206659, 1.759272])  
+Angle_initial = np.array([-0.379417, -0.223754, 2.091240])  
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])  
@@ -97,7 +97,7 @@ def move_to_target_point(target_point, impedance_params=Move_Impedance_Params, v
     angle_1_list = angle_list[:, 0].copy() 
     angle_2_list = angle_list[:, 1].copy()  
 
-    dist_threshold = 0.05 
+    dist_threshold = 0.05
     done = motor_control.move_to_target_point(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],  
         angle_1_list, angle_2_list, N,   
         Angle_initial[0], Angle_initial[1],   
@@ -126,7 +126,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     # ######################################################
     _server.wait_encoder_request()  
     curr_angle, curr_point = get_observation(angle_initial)  
-    _server.send_encoder_check(angle_initial)  
+    _server.send_encoder_check(angle_initial)
 
     # move_to_target_point(Initial_angle)  
 
@@ -192,7 +192,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
         initial_angle = np.zeros(2)
         initial_angle[0] = way_points[0, 0]
         initial_angle[1] = way_points[0, 1]
-        start_point = forward_ik(initial_angle) 
+        start_point = forward_ik(initial_angle)
         move_impedance_params=np.array([20.0, 16.0, 0.1, 0.1])
 
         move_to_target_point(start_point, move_impedance_params, velocity=0.05)  
@@ -208,7 +208,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     # send movement_done command 
     _server.send_movement_done() 
     
-    _server.close() 
+    _server.close()
 
 
 def write_word(word_path, word_params=None, word_name='yi'): 
@@ -450,20 +450,24 @@ def load_word_path(word_name=None, joint_params=None):
     return word_path, word_params
 
 
-if __name__ == "__main__":  
-    # write_name = 'yi' 
-    # word_path, word_params = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 8, 0.8]))  
+if __name__ == "__main__":
+    # write_name = 'chuan'
+    # word_path, word_params = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))  
     # # print("word_params :", word_params[0][0, :]) 
     # eval_times = 1 
-    # for i in range(eval_times): 
-    #     write_word(word_path, word_params=word_params, word_name=write_name)   
+    # for i in range(eval_times):
+    #     write_word(word_path, word_params=word_params, word_name=write_name)
 
     # plot_real_2d_path(
-    #     root_path='./data/font_data/yi/', 
-    #     file_name='real_angle_list_0.txt', 
-    #     delimiter=' ', 
-    #     skiprows=1 
-    # )  
+    #     root_path='./data/font_data/yi/',
+    #     file_name='real_angle_list_0.txt',
+    #     delimiter=' ',
+    #     skiprows=1,
+    #     root_path='./data/font_data/' + write_name + '/',
+    #     file_name='real_angle_list_0.txt',
+    #     delimiter=' ',
+    #     skiprows=1
+    # )
 
     # torque_list = np.loadtxt('./data/font_data/yi/real_torque_list_0.txt', delimiter=' ', skiprows=1)
 
@@ -495,39 +499,41 @@ if __name__ == "__main__":
     # plt.tight_layout() 
     # plt.show() 
 
-    angle_list = np.loadtxt('./data/font_data/yi/real_angle_list_0.txt', delimiter=' ', skiprows=1)
+    # angle_list = np.loadtxt('./data/font_data/yi/real_angle_list_0.txt', delimiter=' ', skiprows=1)  
+    # angle_list = np.loadtxt('demonstrated_angle_list.txt', delimiter=',', skiprows=1)  
 
-    fig = plt.figure(figsize=(20, 8))  
-    plt.subplot(1, 2, 1)  
-    plt.subplots_adjust(wspace=2, hspace=0)  
+    # fig = plt.figure(figsize=(20, 8))  
+    # plt.subplot(1, 2, 1)  
+    # plt.subplots_adjust(wspace=2, hspace=0)  
     
-    plt.plot(angle_list[:, 2], linewidth=linewidth, label='Input')  
-    # plt.plot(torque_list[:, 1], linewidth=linewidth, label='Output')  
-    # plt.xlim([0, 128])  
-    # plt.ylim([0, 128])  
-    plt.xlabel('time($t$)')    
-    plt.ylabel('$q_1$(rad)')    
-    # plt.axis('equal') 
-    plt.legend() 
+    # plt.plot(angle_list[:, 0], linewidth=linewidth, label='Input')  
+    # plt.plot(angle_list[:, 2], linewidth=linewidth, label='Output')  
+    # # plt.xlim([0, 128])  
+    # # plt.ylim([0, 128])  
+    # plt.xlabel('time($t$)')    
+    # plt.ylabel('$q_1$(rad)')    
+    # # plt.axis('equal') 
+    # plt.legend()   
     
-    plt.subplot(1, 2, 2)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    # plt.subplot(1, 2, 2)
+    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
-    plt.plot(angle_list[:, 5], linewidth=linewidth, label='Input')  
-    # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Output')  
+    # plt.plot(angle_list[:, 1], linewidth=linewidth, label='Input')  
+    # plt.plot(angle_list[:, 3], linewidth=linewidth, label='Output')  
     
-    # plt.xlim([0., 0.6])
-    # plt.ylim([0., 0.6])
-    plt.xlabel('time($t$)') 
-    plt.ylabel('$q_2$(rad)')   
-    plt.legend()
+    # # plt.xlim([0., 0.6])
+    # # plt.ylim([0., 0.6])
+    # plt.xlabel('time($t$)') 
+    # plt.ylabel('$q_2$(rad)')   
+    # plt.legend()
 
-    plt.tight_layout() 
-    plt.show() 
+    # plt.tight_layout() 
+    # plt.show() 
 
     # motor_stop() 
 
-    # get_demo_writting()  
+    get_demo_writting()  
+
 
     # motor_control.Jacobian(0.0, 0.0) 
 
