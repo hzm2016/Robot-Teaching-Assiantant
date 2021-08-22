@@ -21,7 +21,7 @@ using namespace std;
 using namespace Eigen;
 
 #include <pybind11/numpy.h>
-namespace py = pybind11;
+namespace py = pybind11; 
 
 // #define PI 3.1415926 
 // const double ctl_ratio_1 = -2000.0/32;     
@@ -220,7 +220,7 @@ py::array_t<double> buff_size)
     // double damping_2 = damping_2;     
 
     double ratio_ctl_1 = -2000/32;   
-    double ratio_ctl_2 = 2000/32;   
+    double ratio_ctl_2 = -2000/32;   
 
     run_on = 1;   
 
