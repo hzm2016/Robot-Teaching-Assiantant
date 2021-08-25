@@ -13,7 +13,7 @@ def main(args):
     try:
         configs = yaml.safe_load(configs)
     except yaml.YAMLError as exc:
-        print(exc)    
+        print(exc)
     runner = Executor(configs)
     runner.pipeline()
 

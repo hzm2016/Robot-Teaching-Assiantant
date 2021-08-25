@@ -2,16 +2,18 @@ import numpy as np
 np.set_printoptions(precision=5)
 np.set_printoptions(suppress=True)
 import matplotlib.pyplot as plt
+
 import math
 import seaborn as sns
+sns.set_theme()
+sns.set(font_scale=0.5)
+
 import copy
 import cv2
 import PIL.Image as Image
 
 from scipy.signal import savgol_filter
 import scipy.interpolate as spi
-
-sns.set_theme()
 
 # writing space
 WIDTH = 0.360
@@ -172,7 +174,7 @@ def forward_ik_path(angle_list, transfer_to_img=True):
 
 
 def generate_stroke_stiffness_path(angle_list, stiffness_list, damping_list,
-                                   save_path=False, word_name='yi', stroke_name=0):
+                                   save_path=False, save_root='', word_name='yi', stroke_name=0):
     """
     :param angle_list:
     :param stiffness_list:
@@ -191,7 +193,7 @@ def generate_stroke_stiffness_path(angle_list, stiffness_list, damping_list,
     params_list = np.hstack((stiff_joint_list, damping_joint_list))
     print("params_list :", params_list.shape)
     if save_path:
-        np.savetxt('../control/data/font_data/' + word_name + '/' + 'params_list_' + str(stroke_name) + '.txt',
+        np.savetxt(save_root + '/' + word_name + '/' + 'params_list_' + str(stroke_name) + '.txt',
                    params_list, fmt='%.05f')
     
     return params_list
@@ -199,7 +201,7 @@ def generate_stroke_stiffness_path(angle_list, stiffness_list, damping_list,
 
 def generate_stroke_path(traj, inter_type=1, inverse=True,
                   center_shift=np.array([-WIDTH/2, 0.23]),
-                  velocity=0.04, Ts=0.001, plot_show=False, save_path=False, word_name=None, stroke_name=0):
+                  velocity=0.04, Ts=0.001, filter_size=17, plot_show=False, save_path=False, word_name=None, stroke_name=0):
     """
          generate stroke trajectory from list
          velocity ::: 0.04m/s
@@ -213,8 +215,8 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
 
     path_data = np.zeros_like(traj)
     
-    path_data[:, 0] = savgol_filter(traj[:, 0], 17, 3, mode='nearest')
-    path_data[:, 1] = savgol_filter(traj[:, 1], 17, 3, mode='nearest')
+    path_data[:, 0] = savgol_filter(traj[:, 0], filter_size, 3, mode='nearest')
+    path_data[:, 1] = savgol_filter(traj[:, 1], filter_size, 3, mode='nearest')
     
     # M = N//len(traj)
     # x_list = []
@@ -243,7 +245,6 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
     end_point = np.array([path_data[-1, 1], path_data[-1, 0]])
     dir = end_point - start_point
     angle = math.atan2(dir[1], dir[0])
-    print("angle :", angle)
     
     if angle > -math.pi/4 and angle < 0:
         inter_type = 2
@@ -339,7 +340,7 @@ def generate_stroke_path(traj, inter_type=1, inverse=True,
         plot_stroke_path(period, traj, image_points, task_points, way_points)
      
     if save_path:
-        np.savetxt('../control/data/font_data/' + word_name + '/' + 'angle_list_' + str(stroke_name) + '.txt', way_points, fmt='%.05f')
+        np.savetxt('control/data/font_data/' + word_name + '/' + 'angle_list_' + str(stroke_name) + '.txt', way_points, fmt='%.05f')
 
     return way_points, image_points, task_points, period
 
@@ -351,9 +352,11 @@ def generate_word_path(
         inter_list=None, 
         inverse_list=None, 
         center_shift=np.array([0.23, -WIDTH/2]), 
-        velocity=0.04, 
+        velocity=0.04,
+        filter_size=17,
         plot_show=False, 
-        save_path=False, 
+        save_path=False,
+        save_root='control/font_data',
         word_name='tian'): 
     """
         generate word path
@@ -376,6 +379,7 @@ def generate_word_path(
                 inverse=inverse_list[stroke_index],
                 center_shift=center_shift,
                 velocity=velocity,
+                filter_size=filter_size,
                 plot_show=False,
                 save_path=save_path,
                 word_name=word_name,
@@ -385,7 +389,7 @@ def generate_word_path(
         stiffness_list = np.tile(stiffness, (stroke_angle_list.shape[0], 1))
         damping_list = np.tile(damping, (stroke_angle_list.shape[0], 1))
         params_list = generate_stroke_stiffness_path(stroke_angle_list, stiffness_list, damping_list,
-                                       save_path=save_path, word_name=word_name, stroke_name=stroke_index)
+                                       save_path=save_path, save_root=save_root, word_name=word_name, stroke_name=stroke_index)
         
         word_angle_list.append(stroke_angle_list)
         word_image_points.append(stroke_image_points)
@@ -395,166 +399,10 @@ def generate_word_path(
         
     if plot_show:
         plot_word_path(period_list, traj_list, word_image_points, word_task_points, word_angle_list,
-                       word_folder='../control/data/font_data',
+                       word_folder=save_root,
                        word_name=word_name)
         
-        plot_torque(word_params_list, period_list)
-
-
-def check_path(root_path='', plot_show=True, font_name='J_font',
-               center_shift=np.array([-WIDTH/2, 0.0]), type=2, period=10, Ts=0.001):
-
-    angle_1_range = np.array([-np.pi/2, np.pi/2])
-    angle_2_range = np.array([-np.pi * 3/4, np.pi * 3/4])
-
-    plt.rcParams['font.size'] = 16
-    
-    sns.set_theme()
-    
-    linewidth = 3
-    N = np.array(period/Ts).astype(int)
-    path_data = np.loadtxt(root_path + '/' + font_name + '/2_font_' + str(type) +'.txt')
-    print("path_data :::", path_data[:, 0])
-    print("path_data :::", path_data[:, 1])
-
-    # # need to check which dimension can be applied for interp
-    x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
-    # x_list = path(1, 2):(path(end, 2) - path(1, 2)) / (N - 1): path(end, 2)
-    y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
-    print("x_list :::", x_list)
-    print("y_list :::", y_list)
-    # traj = path_data
-    # N = np.array(period / Ts).astype(int)
-    # M = N // len(traj)
-    # x_list = []
-    # y_list = []
-    # for i in range(len(traj)-1):
-    #     # need to check which dimension can be applied for interp
-    #     x_list_i = np.linspace(path_data[i, 1], path_data[i + 1, 1], M)
-    #     y_list_i = np.interp(x_list_i.copy(), path_data[i:i + 1, 1], path_data[i:i + 1, 0])
-    #     x_list.append(x_list_i.copy())
-    #     y_list.append(y_list_i.copy())
-
-    # transform to Catersian space
-    # ratio = 128/0.6
-    ratio = IMAGE_WIDTH / WIDTH
-
-    # center_shift = center_shift
-
-    x_1_list = np.array(x_list).flatten() / ratio + center_shift[0]
-    x_2_list = np.array(y_list).flatten() / ratio + center_shift[1]
-    
-    # x_1_list = x_list / ratio
-    # x_2_list = y_list / ratio
-
-    angle_1_list_e = []
-    angle_2_list_e = []
-
-    angle_vel_1_list_e = []
-    angle_vel_2_list_e = []
-
-    Length = [0.30, 0.150, 0.25, 0.125]
-    L1 = Length[0]
-    L2 = Length[2]
-
-    x_1_list = np.hstack([x_1_list, x_1_list[::-1]])
-    x_2_list = np.hstack([x_2_list, x_2_list[::-1]])
-
-    print("x_1_list :::", x_1_list)
-    print("x_2_list :::", x_2_list)
-    t_list = np.linspace(0.0, 2*period, len(x_1_list))
-    for t in range(1, len(x_1_list)):
-        x2 = x_1_list[t]
-        x1 = x_2_list[t]
-
-        # Inverse kinematics
-        L = x1**2 + x2**2
-
-        gamma = math.atan2(x2, x1)
-
-        cos_belta = (L1**2 + L - L2**2) / (2 * L1 * np.sqrt(L))
-
-        if cos_belta > 1:
-            angle_1 = gamma
-        elif cos_belta < -1:
-            angle_1 = gamma - np.pi
-        else:
-            angle_1 = gamma - math.acos(cos_belta)
-
-        angle_1_list_e.append(np.round(angle_1, 5).copy())
-
-        cos_alpha = (L1**2 - L + L2**2) / (2 * L1 * L2)
-
-        if cos_alpha > 1:
-            angle_2 = np.pi
-        elif cos_alpha < -1:
-            angle_2 = 0
-        else:
-            angle_2 = np.pi - math.acos(cos_alpha)
-
-        angle_2_list_e.append(np.round(angle_2, 5).copy())
-        
-        if t == 1:
-            angle_vel_1_list_e.append(0.0)
-            angle_vel_2_list_e.append(0.0)
-        else:
-            angle_vel_1_list_e.append((angle_1_list_e[t-1] - angle_1_list_e[t-2])/0.001)
-            angle_vel_2_list_e.append((angle_2_list_e[t-1] - angle_2_list_e[t-2])/0.001)
-
-    max_angle_1 = np.max(angle_1_list_e)
-    max_angle_2 = np.max(angle_2_list_e)
-    if max_angle_1 < angle_1_range[0] or max_angle_1 > angle_1_range[1]:
-        print("!!!!!! angle 1 is out of range !!!!!")
-        print("max angle 1 :::", max_angle_1)
-    if max_angle_2 < angle_2_range[0] or max_angle_2 > angle_2_range[1]:
-        print("!!!!!! angle 1 is out of range !!!!!")
-        print("max angle 2 :::", max_angle_2)
-
-    if plot_show:
-        fig = plt.figure(figsize=(15, 4))
-        plt.subplot(1, 3, 1)
-        plt.subplots_adjust(wspace=2, hspace=0)
-    
-        plt.plot(path_data[:, 1], path_data[:, 0], marker='o', linewidth=linewidth)
-        plt.plot(x_list, y_list, linewidth=linewidth - 2)
-        plt.xlim([0, 128])
-        plt.ylim([0, 128])
-        plt.xlabel('$x_1$')
-        plt.ylabel('$x_2$')
-        # plt.axis('equal')
-        plt.tight_layout()
-    
-        plt.subplot(1, 3, 2)
-        plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-        plt.plot(x_1_list, x_2_list, linewidth=linewidth + 2, color='r')
-    
-        plt.xlim([-WIDTH/2., WIDTH/2])
-        plt.ylim([0., WIDTH])
-        plt.xlabel('$x_1$(m)')
-        plt.ylabel('$x_2$(m)')
-    
-        plt.subplot(1, 3, 3)
-        plt.plot(t_list[1:], angle_1_list_e, linewidth=linewidth, label='$q_1$')
-        plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
-        plt.plot(t_list[1:], angle_2_list_e, linewidth=linewidth, label='$q_2$')
-        plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
-        
-        plt.xlabel('Time (s)')
-        plt.ylabel('One-loop Angle (rad)')
-        plt.legend()
-    
-        plt.show()
-    
-    # np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) +'_angle_1.txt', np.round(np.array(angle_1_list_e), 4))
-    # np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) + '_angle_2.txt', np.round(np.array(angle_2_list_e), 4))
-    
-    np.savetxt(root_path + '/' + font_name + '/2_font_' + str(type) + '_angle_list.txt',
-               np.hstack([np.array(angle_1_list_e).reshape(-1, 1), np.array(angle_2_list_e).reshape(-1, 1)]), delimiter=",")
-    
-    print("angle 1 list :::", len(angle_1_list_e))
-    print("angle 2 list :::", len(angle_2_list_e))
-    return np.array(angle_1_list_e), np.array(angle_2_list_e)
+        # plot_torque(word_params_list, period_list)
 
 
 def path_planning(start_point, target_point, velocity=0.04):
@@ -587,6 +435,7 @@ def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_na
         check the planned path
     """
     t_list = np.linspace(0.0, period, angle_list.shape[0])
+    plt.rcParams['font.size'] = 8
     print("task points :", task_points)
     plt.figure(figsize=(15, 4))
     
@@ -750,7 +599,7 @@ def plot_torque(torque_list, period_list):
     """
         torque_list
     """
-    fig = plt.figure(figsize=(4, 4))
+    fig = plt.figure(figsize=(10, 10))
     plt.subplot(1, 1, 1)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
@@ -775,6 +624,21 @@ def plot_torque(torque_list, period_list):
     plt.ylabel('Stiffness (Nm/rad)')
     # plt.legend()
     plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
-    plt.tight_layout()
+    # plt.tight_layout()
     
     plt.show()
+    
+
+def contact_two_stroke(angle_list_1, angle_list_2,
+                       params_list_1, params_list_2, inverse=False):
+    
+    if inverse:
+        final_angle_list = np.vstack((angle_list_1, angle_list_2))
+        final_params_list = np.vstack((params_list_1, params_list_2))
+    else:
+        final_angle_list = np.vstack((angle_list_1, np.flipud(angle_list_2)))
+        final_params_list = np.vstack((params_list_1, np.flipud(params_list_2)))
+
+    print("Final angle shape :", final_angle_list.shape)
+    print("Final params shape :", final_params_list.shape)
+    return final_angle_list, final_params_list
