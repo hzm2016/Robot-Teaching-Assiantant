@@ -1,5 +1,5 @@
 from tools import skeletonize
-from .utils import hungarian_matching
+from utils import hungarian_matching
 import numpy as np
 import cv2
 import argparse
@@ -11,7 +11,9 @@ import os
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import *
 from control.path_planning.plot_path import *
-# from control.vision_capture.main_functions import capture_image, show_video, record_video
+from control.vision_capture.main_functions import capture_image, show_video, record_video
+import seaborn as sns
+sns.set(font_scale=1.5)
 
 
 def draw_points(points, canvas_size=256):
@@ -47,7 +49,6 @@ def draw_matching(points_1, points_2, matching, canvas_size=256):
 class Controller(object):
 
     def __init__(self, args, img_processor=None, impedance_level=0) -> None:
-        self.args = args
 
         self.root_path = '../control/data/'
         self.show_video = True
@@ -261,11 +262,11 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--folder_name',
-                        default='yi',
+                        default='xing',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_name',
-                        default='一',
+                        default='行',
                         help='enables useful debug settings')
     
     parser.add_argument('--font_type',
@@ -274,7 +275,7 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--root_path',
-                        default='../control/data/',
+                        default='control/data/',
                         help='enables useful debug settings')
 
     args = parser.parse_args()
@@ -334,8 +335,10 @@ if __name__ == "__main__":
             inverse_list,
             center_shift=np.array([0.15, -WIDTH / 2]),
             velocity=0.08,
+            filter_size=13,
             plot_show=True,
             save_path=True,
+            save_root=args.root_path + 'font_data',
             word_name=args.folder_name
         )
 
@@ -409,9 +412,22 @@ if __name__ == "__main__":
         stiff_plot = np.array(stiff_joint_list)[np.newaxis, :]
         print("shape :", stiff_plot.shape)
         plot_torque(stiff_plot, period_list)
+
+    root_path = args.root_path + 'font_data/' + args.folder_name
+    angle_list_1 = np.loadtxt(root_path + '/angle_list_5.txt', delimiter=' ')
+    angle_list_2 = np.loadtxt(root_path + '/angle_list_6.txt', delimiter=' ')
+    
+    params_list_1 = np.loadtxt(root_path + '/params_list_5.txt', delimiter=' ')
+    params_list_2 = np.loadtxt(root_path + '/params_list_6.txt', delimiter=' ')
+    
+    angle_list, params_list = contact_two_stroke(angle_list_1, angle_list_2,
+                       params_list_1, params_list_2, inverse=True)
+    
+    np.savetxt(root_path + '/angle_list_5.txt', angle_list, fmt='%.05f')
+    np.savetxt(root_path + '/params_list_5.txt', params_list, fmt='%.05f')
     
     # plot_real_2d_path(
-    #     root_path='../control/data/font_data/ren/',
+    #     root_path='control/data/font_data/ren/',
     #     file_name='real_angle_list_',
     #     delimiter=' ',
     #     skiprows=1,
@@ -429,14 +445,14 @@ if __name__ == "__main__":
     #     skiprows=1
     # )
 
-    write_name = 'ren'
-    from control.server_main import load_word_path
-    word_path, word_params, real_path = load_word_path(root_path='../control/data/font_data', word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))
-    print(real_path.shape)
-
-    plot_real_osc_2d_demo_path(
-        real_path
-    )
+    # write_name = 'ren'
+    # from control.server_main import load_word_path
+    # word_path, word_params, real_path = load_word_path(root_path='../control/data/font_data', word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))
+    # print(real_path.shape)
+    #
+    # plot_real_osc_2d_demo_path(
+    #     real_path
+    # )
     
     # from control.path_planning.plot_path import *
     # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')

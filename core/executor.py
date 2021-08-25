@@ -336,7 +336,8 @@ class Executor(object):
 
         while True:
 
-            character = '猴' #input('Please provide a character you want to learn: ')
+            character = '行'
+            # input('Please provide a character you want to learn: ')
             written_image = None
 
             if len(character) > 1:
