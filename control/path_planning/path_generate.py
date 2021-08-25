@@ -26,6 +26,8 @@ action_dim = 2
 ANGLE_1_RANGE = np.array([-1.90, 1.90])
 ANGLE_2_RANGE = np.array([-2.2, 2.5])
 
+center_shift=np.array([0.15, -WIDTH / 2])
+
 Length = [0.30, 0.150, 0.25, 0.125]
 L1 = Length[0]
 L2 = Length[2]
@@ -151,7 +153,7 @@ def Stiff_convert(theta, stiffness, damping):
     return stiff_joint, damping_joint
 
 
-def forward_ik_path(angle_list):  
+def forward_ik_path(angle_list, transfer_to_img=True):
     """
         calculate osc point
     """
@@ -161,6 +163,11 @@ def forward_ik_path(angle_list):
         point_list[i, 0] = L1 * math.cos(angle_list[i, 0]) + L2 * math.cos(angle_list[i, 0] + angle_list[i, 1])
         point_list[i, 1] = L1 * math.sin(angle_list[i, 0]) + L2 * math.sin(angle_list[i, 0] + angle_list[i, 1])
     
+    point_list = point_list - center_shift
+    if transfer_to_img:
+        point_list[:, 0] *= 128/WIDTH
+        point_list[:, 1] *= 128/HEIGHT
+        
     return point_list
 
 

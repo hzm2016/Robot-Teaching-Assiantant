@@ -10,8 +10,8 @@ GAN_PARAM:
   INPUT_NC: 1
   OUTPUT_NC: 1 
   
-GAN_MODEL_PATH: /home/cunjun/Robot-Teaching-Assiantant/stylecyle-12/G_A2B_119.pth
-DIS_MODEL_PATH: /home/cunjun/Robot-Teaching-Assiantant/stylecyle-12/G_B2A_119.pth
+GAN_MODEL_PATH: /home/zhimin/code/8_nus/robotic-teaching/gan/G_A2B_119.pth
+DIS_MODEL_PATH: /home/zhimin/code/8_nus/robotic-teaching/gan/G_B2A_119.pth
 FONT_SIZE: 128
 MAX_PADDING: 0
 

@@ -4,7 +4,7 @@ from .protocol.task_interface import *
 import numpy as np
 import math
 import os
-from motor_control import motor_control
+# from motor_control import motor_control
 from .path_planning.plot_path import *
 from .path_planning.path_generate import *
 import ctypes 
@@ -428,9 +428,9 @@ def motor_stop():
     motor_control.motor_3_stop() 
 
 
-def load_word_path(word_name=None, joint_params=None):
+def load_word_path(root_path='./data/font_data', word_name=None, joint_params=None):
 
-    word_file = './data/font_data' + '/' + word_name + '/' 
+    word_file = root_path + '/' + word_name + '/'
     stroke_list_file = glob.glob(word_file + 'angle_list_*txt')
     print("Load stroke data %d", len(stroke_list_file)) 
 
@@ -440,7 +440,7 @@ def load_word_path(word_name=None, joint_params=None):
     for i in range(len(stroke_list_file)): 
         way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
 
-        real_way_points = np.loadtxt(word_file + 'real_angle_list_' + str(i) + '.txt', delimiter=' ')  
+        real_way_points = np.loadtxt(word_file + 'real_angle_list_' + str(i) + '.txt', delimiter=' ', skiprows=1)
 
         if joint_params is not None:  
             params_list = np.tile(joint_params, (way_points.shape[0], 1))  
@@ -450,15 +450,32 @@ def load_word_path(word_name=None, joint_params=None):
         N_way_points = way_points.shape[0]   
         print("N_way_points :", N_way_points)   
         word_path.append(way_points.copy())  
-        word_params.append(params_list.copy()) 
-        real_path.append(real_way_points) 
+        word_params.append(params_list.copy())
+        
+        import scipy
+        # truth_data = scipy.signal.resample(real_way_points, 100)
+        # down_sample = scipy.signal.resample(real_way_points, 100)
+        down_sample = real_way_points
+        
+        idx = np.arange(0, down_sample.shape[0], down_sample.shape[0]/100).astype('int64')
+        real_angle_list = np.zeros((idx.shape[0], 2))
+        desired_angle_list = np.zeros((idx.shape[0], 2))
+        # real_angle_list[:, 0] = scipy.signal.resample(down_sample[:, 1], 100)
+        # real_angle_list[:, 1] = scipy.signal.resample(down_sample[:, 4], 100)
+        real_angle_list[:, 0] = down_sample[idx, 1]
+        real_angle_list[:, 1] = down_sample[idx, 4]
+        
+        real_2d_path = forward_ik_path(real_angle_list)
+        print(real_2d_path)
+        real_path.append(real_2d_path.copy())
+        # np.array(real_path).reshape(np.array(real_path).shape[0] * np.array(real_path).shape[1], 2)
+        
+    return word_path, word_params, np.array(real_path)
 
-    return word_path, word_params, real_path
 
-
-if __name__ == "__main__":  
-    write_name = 'yi' 
-    # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))  
+if __name__ == "__main__":
+    write_name = 'yi'
+    word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))
 
     # # print("word_params :", word_params[0][0, :]) 
     # eval_times = 1 
@@ -477,12 +494,12 @@ if __name__ == "__main__":
     #     skiprows=1
     # )
 
-    plot_real_2d_demo_path(
-    root_path='',
-    file_name=write_name,
-    delimiter=',',
-    skiprows=1
-    )
+    # plot_real_2d_demo_path(
+    # root_path='',
+    # file_name=write_name,
+    # delimiter=',',
+    # skiprows=1
+    # )
 
     # torque_list = np.loadtxt('./data/font_data/yi/real_torque_list_0.txt', delimiter=' ', skiprows=1)
 
