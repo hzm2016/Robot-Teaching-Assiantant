@@ -13,7 +13,7 @@ using namespace std;
 
 #include <Eigen/Dense>  
 
-using namespace Eigen; 
+using namespace Eigen;  
 
 #include "gyems_can_functions.h" 
 #include "renishaw_can_functions.hpp" 
@@ -123,13 +123,13 @@ double read_link_angle_2(double q_2_initial)
 }  
 
 
-int vic_optimization(
+int vic_optimization( 
 double stiffness, double damping,  
 double q_1_target, double q_2_target,  
 double q_1_initial, double q_2_initial,  
 double theta_1_initial, double theta_2_initial,  
-double dist_threshold  
-)
+double dist_threshold   
+) 
 {
     ////////////////////////////////////////////////////////
     //// Initial Encoder and SEA Motor CAN
@@ -424,6 +424,7 @@ void load_path_data(double *theta_1_list, double *theta_2_list)
     input_angle_list.close();   
 } 
 
+
 int motor_two_link_stop()
 {
     ////////////////////////////////////////////
@@ -472,4 +473,10 @@ int motor_3_stop()
     printf("Motor stop !!! and final pos: %f\n", theta_3_t);   
     
     return 1; 
+}
+
+
+double mean_filter(double theta_t) 
+{
+    
 }

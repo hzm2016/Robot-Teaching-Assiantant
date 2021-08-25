@@ -42,7 +42,7 @@ sigint_1_step(int dummy) {
 }
 
 
-double set_position(double theta_3_initial, int32_t angle)   
+int set_position(double theta_3_initial, int32_t angle)   
 {
     ////////////////////////////////////////////
     // Read motor angle 3 
@@ -82,7 +82,7 @@ double set_position(double theta_3_initial, int32_t angle)
     
     // motor_3.pack_stop_cmd(1); 
 
-    return theta_3_t;   
+    return 1;  
 }
 
 
@@ -90,8 +90,8 @@ double set_two_link_position(double theta_1_initial, double theta_2_initial,
 int32_t angle_1, int32_t angle_2)   
 {
     ////////////////////////////////////////////
-    // Read motor angle 3 
-    ////////////////////////////////////////////
+    // Read motor angle 3  
+    //////////////////////////////////////////// 
     CANDevice can1((char *) "can1");  
     can1.begin();  
 
@@ -107,16 +107,16 @@ int32_t angle_1, int32_t angle_2)
     motor_2.begin();   
 
     double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1 - theta_2_initial);   
-    printf("Motor 2 position: %f\n", theta_2);    
-    printf("Motor 1 position: %f\n", theta_1);   
+    printf("Motor 1 position: %f%f\n", theta_1, theta_1/PI*180);   
+    printf("Motor 2 position: %f%f\n", theta_2, theta_2/PI*180);    
     // printf("Motor 3 position: %f\n", theta_3_t/3.14*180);   
 
     // int32_t angle = theta_3_t + 10; 
     uint16_t max_speed = 20; 
-    int32_t angle_fixed = 200; 
+    int32_t angle_fixed = 200;  
 
-    motor_1.pack_position_2_cmd(2, angle_1, max_speed); 
-    motor_2.pack_position_2_cmd(1, angle_2, max_speed); 
+    motor_1.pack_position_2_cmd(2, angle_1, max_speed);  
+    motor_2.pack_position_2_cmd(1, angle_2, max_speed);  
 
     // motor_3.read_encoder(1); 
     // motor_3.readcan(); 
@@ -146,11 +146,11 @@ double &torque_1, double &torque_2)
     /////////////////////////////////////////////////////
     // calculate torque control command 
     ///////////////////////////////////////////////////// 
-    // double stiffness_1 = params[0]
-    // double stiffness_2 = params[1]
+    // double stiffness_1 = params[0]   
+    // double stiffness_2 = params[1]   
 
-    // double damping_1 = params[2]  
-    // double damping_2 = params[3]  
+    // double damping_1 = params[2]   
+    // double damping_2 = params[3]   
 
     torque_1 = clip(-1 * params[0] * (theta_e_list[0] - theta_t_list[0]) - params[2] * (d_theta_e_list[0] - d_theta_t_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
     torque_2 = clip(-1 * params[1] * (theta_e_list[1] - theta_t_list[1]) - params[3] * (d_theta_e_list[1] - d_theta_t_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
@@ -706,15 +706,6 @@ double theta_1_initial, double theta_2_initial, int num_episodes,
 string angle_path_name, string torque_path_name  
 )  
 {
-    //////////////////////////////////////////////////////// 
-    // give way points :::: 
-    //////////////////////////////////////////////////////// 
-    // double K_p_1 = stiffness_1;  
-	// double K_d_1 = damping_1;  
-
-    // double K_p_2 = stiffness_2;  
-	// double K_d_2 = damping_2;  
-
     ////////////////////////////////////////////////////////
     // Initial hardware ::: can device
     ////////////////////////////////////////////////////////
@@ -757,8 +748,8 @@ string angle_path_name, string torque_path_name
     ////////////////////////////////////////////////////////
     // Impedance Parameters ::: input 
     ////////////////////////////////////////////////////////
-    double torque_lower_bound = -2.0;   
-    double torque_upper_bound = 2.0;   
+    double torque_lower_bound = -2.5;   
+    double torque_upper_bound = 2.5;   
 
     // double params_list[Num_waypoints][4]; 
     // double params[4] = {stiffness_1, stiffness_2, damping_1, damping_2};  
@@ -772,11 +763,11 @@ string angle_path_name, string torque_path_name
     double d_theta_1_t = 0.0;   
     double d_theta_2_t = 0.0;    
 
-    double theta_e_list[2] = {0.0, 0.0}; 
-    double theta_1_e = 0.0;   
-    double theta_2_e = 0.0;   
+    double theta_e_list[2] = {0.0, 0.0};    
+    double theta_1_e = 0.0;    
+    double theta_2_e = 0.0;    
 
-    double d_theta_e_list[2] = {0.0, 0.0}; 
+    double d_theta_e_list[2] = {0.0, 0.0};    
     double d_theta_1_e = 0.0;    
     double d_theta_2_e = 0.0;    
 
@@ -796,8 +787,8 @@ string angle_path_name, string torque_path_name
     double torque_1 = 0.0;   
     double torque_2 = 0.0;   
 
-    double torque_1_t = 0.0;  
-    double torque_2_t = 0.0;  
+    double torque_1_t = 0.0;   
+    double torque_2_t = 0.0;   
 
     double pos_1 = 0.0;  
     double pos_2 = 0.0;  

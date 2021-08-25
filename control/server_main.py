@@ -1,15 +1,17 @@
 from matplotlib.pyplot import title
 from numpy.lib import NumpyVersion
-from .protocol.task_interface import *
+from protocol.task_interface import *
 import numpy as np
 import math
 import os
-# from motor_control import motor_control
-from .path_planning.plot_path import *
-from .path_planning.path_generate import *
+from motor_control import motor_control
+from path_planning.plot_path import *
+from path_planning.path_generate import *
 import ctypes 
 import time 
 import glob 
+import scipy
+sns.set(font_scale=1.5)
 
 np.set_printoptions(precision=5)
 
@@ -24,7 +26,7 @@ Initial_angle = np.array([-1.31, 1.527])
 Initial_point = np.array([0.32299, -0.23264])
 
 
-Angle_initial = np.array([-0.379417, -0.223754, 2.091240])
+Angle_initial = np.array([-0.312634, -0.126007, 0.901006]) 
 
 # impedance params :  
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])
@@ -260,18 +262,18 @@ def write_stroke(stroke_points=None,
     start_point = forward_ik(initial_angle)    
 
     # move to target point
-    set_pen_up()  
+    done = set_pen_up()  
     # time.sleep(0.5) 
 
-    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)  
+    done = move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)  
     # time.sleep(0.5) 
 
-    set_pen_down()   
+    done = set_pen_down()   
     # time.sleep(0.5)
     
     # params_list = np.tile(impedance_params, (Num_way_points, 1))  
     if stroke_params is None:
-        exit()
+        exit() 
     else:
         params_list = stroke_params   
 
@@ -289,10 +291,10 @@ def write_stroke(stroke_points=None,
     # time.sleep(0.5) 
 
     # move to target point 
-    set_pen_up()  
+    done = set_pen_up()  
     # time.sleep(0.5)  
 
-    move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)  
+    done = move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)  
 
     print("Write stroke once done !!!")  
     print("*" * 50)  
@@ -406,8 +408,10 @@ def set_pen_up():
     """ 
     # motor_control.motor_3_stop()
     up_angle = np.int32(9000) 
-    motor_control.set_position(0.0, up_angle)  
+    done = motor_control.set_position(0.0, up_angle)  
     time.sleep(1.0) 
+
+    return done
 
 
 def set_pen_down():  
@@ -416,8 +420,10 @@ def set_pen_down():
     """ 
     # motor_control.motor_3_stop()
     down_angle = np.int32(11200)   
-    motor_control.set_position(0.0, down_angle)   
-    time.sleep(1.0)
+    done = motor_control.set_position(0.0, down_angle)   
+    time.sleep(2.0) 
+
+    return done 
 
 
 def motor_stop():
@@ -435,58 +441,56 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
     print("Load stroke data %d", len(stroke_list_file)) 
 
     word_path = [] 
-    word_params = []
+    word_params = [] 
     real_path = []
     for i in range(len(stroke_list_file)): 
         way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
 
-        real_way_points = np.loadtxt(word_file + 'real_angle_list_' + str(i) + '.txt', delimiter=' ', skiprows=1)
+        # real_way_points = np.loadtxt(word_file + 'real_angle_list_' + str(i) + '.txt', delimiter=' ', skiprows=1)
 
         if joint_params is not None:  
-            params_list = np.tile(joint_params, (way_points.shape[0], 1))  
+            params_list = np.tile(joint_params, (way_points.shape[0], 1))   
         else:
             params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')   
          
         N_way_points = way_points.shape[0]   
         print("N_way_points :", N_way_points)   
         word_path.append(way_points.copy())  
-        word_params.append(params_list.copy())
+        word_params.append(params_list.copy())  
         
-        import scipy
         # truth_data = scipy.signal.resample(real_way_points, 100)
         # down_sample = scipy.signal.resample(real_way_points, 100)
-        down_sample = real_way_points
+        # down_sample = real_way_points
         
-        idx = np.arange(0, down_sample.shape[0], down_sample.shape[0]/100).astype('int64')
-        real_angle_list = np.zeros((idx.shape[0], 2))
-        desired_angle_list = np.zeros((idx.shape[0], 2))
+        # idx = np.arange(0, down_sample.shape[0], down_sample.shape[0]/100).astype('int64')
+        # real_angle_list = np.zeros((idx.shape[0], 2))
+        # desired_angle_list = np.zeros((idx.shape[0], 2))
+        # real_angle_list[:, 0] = down_sample[idx, 1]
+        # real_angle_list[:, 1] = down_sample[idx, 4]
         # real_angle_list[:, 0] = scipy.signal.resample(down_sample[:, 1], 100)
         # real_angle_list[:, 1] = scipy.signal.resample(down_sample[:, 4], 100)
-        real_angle_list[:, 0] = down_sample[idx, 1]
-        real_angle_list[:, 1] = down_sample[idx, 4]
         
-        real_2d_path = forward_ik_path(real_angle_list)
-        print(real_2d_path)
-        real_path.append(real_2d_path.copy())
+        # real_2d_path = forward_ik_path(real_angle_list)
+        # print(real_2d_path)
+        # real_path.append(real_2d_path.copy())
         # np.array(real_path).reshape(np.array(real_path).shape[0] * np.array(real_path).shape[1], 2)
         
     return word_path, word_params, np.array(real_path)
 
 
-if __name__ == "__main__":
-    write_name = 'yi'
-    word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))
-
-    # # print("word_params :", word_params[0][0, :]) 
-    # eval_times = 1 
-    # for i in range(eval_times):
-    #     write_word(word_path, word_params=word_params, word_name=write_name)
+if __name__ == "__main__": 
+    write_name = 'xing'  
+    eval_times = 1  
+    # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.1]))
+    
+    # for i in range(eval_times): 
+    #     write_word(word_path, word_params=word_params, word_name=write_name) 
 
     # plot_real_2d_path(
-    #     root_path='./data/font_data/' + write_name + '/',
-    #     file_name='real_angle_list_',
-    #     stroke_num=2,
-    #     delimiter=' ',
+    #     root_path='./data/font_data/' + write_name + '/', 
+    #     file_name='real_angle_list_', 
+    #     stroke_num=6, 
+    #     delimiter=' ', 
     #     skiprows=1
     # )
 
@@ -497,7 +501,7 @@ if __name__ == "__main__":
     # skiprows=1
     # )
 
-    # torque_list = np.loadtxt('./data/font_data/yi/real_torque_list_0.txt', delimiter=' ', skiprows=1)
+    # torque_list = np.loadtxt('./data/font_data/xing/real_angle_list_5.txt', delimiter=' ', skiprows=1)
 
     # fig = plt.figure(figsize=(20, 8))  
     # plt.subplot(1, 2, 1)  
@@ -505,6 +509,7 @@ if __name__ == "__main__":
     
     # plt.plot(torque_list[:, 0], linewidth=linewidth, label='Input')  
     # plt.plot(torque_list[:, 1], linewidth=linewidth, label='Output')  
+    # plt.plot(torque_list[:, 2], linewidth=linewidth, label='vel_1')  
     # # plt.xlim([0, 128])  
     # # plt.ylim([0, 128])  
     # plt.xlabel('time($t$)')    
@@ -515,8 +520,9 @@ if __name__ == "__main__":
     # plt.subplot(1, 2, 2)
     # plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
-    # plt.plot(torque_list[:, 2], linewidth=linewidth, label='Input')  
-    # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Output')  
+    # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Input')  
+    # plt.plot(torque_list[:, 4], linewidth=linewidth, label='Output')  
+    # plt.plot(torque_list[:, 5], linewidth=linewidth, label='vel_2')  
     
     # # plt.xlim([0., 0.6])
     # # plt.ylim([0., 0.6])
@@ -528,49 +534,49 @@ if __name__ == "__main__":
     # plt.show() 
 
     # angle_list = np.loadtxt('./data/font_data/yi/real_angle_list_0.txt', delimiter=' ', skiprows=1)  
-    # angle_list = np.loadtxt('demonstrated_angle_list.txt', delimiter=',', skiprows=1)  
+    angle_list = np.loadtxt('chuan_demonstrated_angle_list.txt', delimiter=',', skiprows=1)  
 
-    # fig = plt.figure(figsize=(20, 8))  
-    # plt.subplot(1, 2, 1)  
-    # plt.subplots_adjust(wspace=2, hspace=0)  
+    fig = plt.figure(figsize=(20, 8))  
+    plt.subplot(1, 2, 1)  
+    plt.subplots_adjust(wspace=2, hspace=0)  
     
-    # plt.plot(angle_list[:, 0], linewidth=linewidth, label='Input')  
-    # plt.plot(angle_list[:, 2], linewidth=linewidth, label='Output')  
-    # # plt.xlim([0, 128])  
-    # # plt.ylim([0, 128])  
-    # plt.xlabel('time($t$)')    
-    # plt.ylabel('$q_1$(rad)')    
-    # # plt.axis('equal') 
-    # plt.legend()   
+    plt.plot(angle_list[:, 0], linewidth=linewidth, label='Input')  
+    plt.plot(angle_list[:, 2], linewidth=linewidth, label='Output')  
+    # plt.xlim([0, 128])  
+    # plt.ylim([0, 128])  
+    plt.xlabel('time($t$)')    
+    plt.ylabel('$q_1$(rad)')    
+    # plt.axis('equal') 
+    plt.legend()   
     
-    # plt.subplot(1, 2, 2)
-    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    plt.subplot(1, 2, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
-    # plt.plot(angle_list[:, 1], linewidth=linewidth, label='Input')  
-    # plt.plot(angle_list[:, 3], linewidth=linewidth, label='Output')  
+    plt.plot(angle_list[:, 1], linewidth=linewidth, label='Input')  
+    plt.plot(angle_list[:, 3], linewidth=linewidth, label='Output')  
     
-    # # plt.xlim([0., 0.6])
-    # # plt.ylim([0., 0.6])
-    # plt.xlabel('time($t$)') 
-    # plt.ylabel('$q_2$(rad)')   
-    # plt.legend()
+    # plt.xlim([0., 0.6])
+    # plt.ylim([0., 0.6])
+    plt.xlabel('time($t$)') 
+    plt.ylabel('$q_2$(rad)')   
+    plt.legend()
 
-    # plt.tight_layout() 
-    # plt.show() 
+    plt.tight_layout() 
+    plt.show() 
 
     # motor_stop() 
 
-    # get_demo_writting()
+    # get_demo_writting() 
 
     # motor_control.Jacobian(0.0, 0.0) 
 
     """ calibrate position for each start up """ 
-    Angle_initial = reset_and_calibration() 
+    # Angle_initial = reset_and_calibration()  
 
     # angle, point = get_observation(angle_initial=Angle_initial)  
 
-    # impedance_params = np.array([35.0, 35, 0.8, 0.1])  
-    # move_to_target_point(np.array([0.34, -0.23]), impedance_params, velocity=0.04)  
+    # impedance_params = np.array([45.0, 35, 5.8, 0.1])  
+    # move_to_target_point(np.array([0.34, -0.03]), impedance_params, velocity=0.04)  
 
     # set_pen_up()
 

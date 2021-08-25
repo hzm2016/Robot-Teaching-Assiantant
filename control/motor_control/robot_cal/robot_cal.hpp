@@ -32,7 +32,9 @@ double theta_1_initial, double theta_2_initial,
 double dist_threshold  
 ); 
 
-double read_initial_angle_1(); 
+double mean_filter(double theta_t);  
+
+double read_initial_angle_1();  
 
 double read_initial_angle_2(); 
 
