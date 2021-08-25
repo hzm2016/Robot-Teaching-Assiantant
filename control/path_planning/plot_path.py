@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 import numpy as np
-from path_planning.path_generate import *
+# from path_planning.path_generate import *
 from matplotlib.animation import FuncAnimation
 
 """ ================================= Plot result ===================================== """
@@ -254,14 +254,12 @@ def plot_torque_path(
     plt.show()
 
 
-
 def plot_real_2d_demo_path(
     root_path='./motor_control/bin/data/',
     file_name='',
     delimiter=',',
     skiprows=1
 ):
-
     """ 
         plot angle trajectory and cartesian path 
     """
@@ -313,7 +311,37 @@ def plot_real_2d_demo_path(
     # plt.legend()
 
     plt.show()
+
+
+def plot_real_osc_2d_demo_path(
+    osc_list
+):
+    """
+            plot angle trajectory and cartesian path
+        """
+    FONT_SIZE = 28
+    linewidth = 4
     
+    fig = plt.figure(figsize=(10, 10))
+    osc_list = np.array(osc_list)
+    
+    plt.subplot(1, 1, 1)
+    for i in range(osc_list.shape[0]):
+        # x_e = osc_list[i, :, 0]
+        # y_e = osc_list[i, :, 1]
+        x_e = osc_list[i][:, 0]
+        y_e = osc_list[i][:, 1]
+        plt.plot(x_e, y_e, linewidth=linewidth, label='desired')
+        # plt.plot(x_t, y_t, linewidth=linewidth, label='real')
+    
+    plt.xlabel('x(m)', fontsize=FONT_SIZE)
+    plt.ylabel('y(m)', fontsize=FONT_SIZE)
+    plt.ylim([0, 128])
+    plt.xlim([0, 128])
+    
+    plt.show()
+    
+
 if __name__ == "__main__":
     
     

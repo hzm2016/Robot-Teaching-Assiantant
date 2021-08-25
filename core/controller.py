@@ -10,6 +10,7 @@ import os
 # task interface
 from control.protocol.task_interface import TCPTask
 from control.path_planning.path_generate import *
+from control.path_planning.plot_path import *
 # from control.vision_capture.main_functions import capture_image, show_video, record_video
 
 
@@ -116,7 +117,7 @@ class Controller(object):
         # cv2.imwrite('in_pts_vis.jpg', in_pts_vis)
 
         matching = self.key_point_matching(tgt_pts, in_pts)
-        print("matching :", matching)
+        # print("matching :", matching)
         matching_vis = draw_matching(tgt_pts, in_pts, matching)
         cv2.imwrite('matching_vis.jpg', matching_vis)
 
@@ -244,7 +245,7 @@ if __name__ == "__main__":
                         help='enables useful debug settings')
 
     parser.add_argument('--generate_path',
-                        default=True,
+                        default=False,
                         help='enables useful debug settings')
     
     parser.add_argument('--plot_real_path',
@@ -408,6 +409,34 @@ if __name__ == "__main__":
         stiff_plot = np.array(stiff_joint_list)[np.newaxis, :]
         print("shape :", stiff_plot.shape)
         plot_torque(stiff_plot, period_list)
+    
+    # plot_real_2d_path(
+    #     root_path='../control/data/font_data/ren/',
+    #     file_name='real_angle_list_',
+    #     delimiter=' ',
+    #     skiprows=1,
+    #     # root_path='./data/font_data/' + write_name + '/',
+    #     # file_name='real_angle_list_0.txt',
+    #     # delimiter=' ',
+    #     # skiprows=1
+    # )
+    
+    # plot_real_2d_path(
+    #     root_path='../control/data/font_data/ren/',
+    #     file_name='real_angle_list_',
+    #     stroke_num=2,
+    #     delimiter=' ',
+    #     skiprows=1
+    # )
+
+    write_name = 'ren'
+    from control.server_main import load_word_path
+    word_path, word_params, real_path = load_word_path(root_path='../control/data/font_data', word_name=write_name, joint_params=np.array([45, 40, 9, 0.3]))
+    print(real_path.shape)
+
+    plot_real_osc_2d_demo_path(
+        real_path
+    )
     
     # from control.path_planning.plot_path import *
     # plot_real_2d_path(root_path='../control/', file_name='real_angle_list.txt')
