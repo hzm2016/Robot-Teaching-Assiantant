@@ -149,8 +149,8 @@ double &torque_1, double &torque_2)
     // double stiffness_1 = params[0]
     // double stiffness_2 = params[1]
 
-    // double damping_1 = params[2] 
-    // double damping_2 = params[3] 
+    // double damping_1 = params[2]  
+    // double damping_2 = params[3]  
 
     torque_1 = clip(-1 * params[0] * (theta_e_list[0] - theta_t_list[0]) - params[2] * (d_theta_e_list[0] - d_theta_t_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
     torque_2 = clip(-1 * params[1] * (theta_e_list[1] - theta_t_list[1]) - params[3] * (d_theta_e_list[1] - d_theta_t_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 

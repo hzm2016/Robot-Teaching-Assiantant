@@ -466,10 +466,6 @@ if __name__ == "__main__":
     #     write_word(word_path, word_params=word_params, word_name=write_name)
 
     # plot_real_2d_path(
-    #     root_path='./data/font_data/yi/',
-    #     file_name='real_angle_list_0.txt',
-    #     delimiter=' ',
-    #     skiprows=1,
     #     root_path='./data/font_data/' + write_name + '/',
     #     file_name='real_angle_list_',
     #     stroke_num=2,
@@ -477,12 +473,12 @@ if __name__ == "__main__":
     #     skiprows=1
     # )
 
-    plot_real_2d_demo_path(
-    root_path='',
-    file_name=write_name,
-    delimiter=',',
-    skiprows=1
-    )
+    # plot_real_2d_demo_path(
+    # root_path='',
+    # file_name=write_name,
+    # delimiter=',',
+    # skiprows=1
+    # )
 
     # torque_list = np.loadtxt('./data/font_data/yi/real_torque_list_0.txt', delimiter=' ', skiprows=1)
 
@@ -552,7 +548,7 @@ if __name__ == "__main__":
     # motor_control.Jacobian(0.0, 0.0) 
 
     """ calibrate position for each start up """ 
-    # Angle_initial = reset_and_calibration() 
+    Angle_initial = reset_and_calibration() 
 
     # angle, point = get_observation(angle_initial=Angle_initial)  
 
