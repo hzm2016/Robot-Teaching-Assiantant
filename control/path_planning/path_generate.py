@@ -397,6 +397,7 @@ def generate_word_path(
         period_list.append(period)
         word_params_list.append(params_list[:, :2])
         
+        
     if plot_show:
         plot_word_path(period_list, traj_list, word_image_points, word_task_points, word_angle_list,
                        word_folder=save_root,
@@ -480,6 +481,13 @@ def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_na
     plt.show()
 
 
+def rotate_point(angle, x_list, y_list):
+    x_rotated = x_list * math.cos(angle) + y_list * math.sin(angle)
+    y_rotated = y_list * math.cos(angle) - x_list * math.sin(angle)
+    
+    return x_rotated, y_rotated
+
+
 def plot_word_path(period_list, traj_list, image_points_list, task_points_list, word_angle_list,
                    word_folder='../control/data', word_name='Stroke Path'):
     """
@@ -493,11 +501,21 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     
     for i in range(len(traj_list)):
         # traj_list[i].transpose((0, 1)).copy()
-        plt.plot(traj_list[i][:, 1], traj_list[i][:, 0], marker='o', linewidth=linewidth)
-        plt.plot(image_points_list[i][:, 0], image_points_list[i][:, 1], linewidth=linewidth - 2)
+        # plt.plot(traj_list[i][:, 1], traj_list[i][:, 0], marker='o', linewidth=linewidth)
+        # plt.plot(image_points_list[i][:, 0], image_points_list[i][:, 1], linewidth=linewidth - 2)
+        
+        traj_x_rotated, traj_y_rotated = rotate_point(math.pi/2, traj_list[i][:, 1], traj_list[i][:, 0])
+        # print("x_rotated :", traj_x_rotated, "y_rotated :", traj_y_rotated)
+        plt.plot(traj_x_rotated, traj_y_rotated, marker='o', linewidth=linewidth)
+        image_x_rotated, image_y_rotated = rotate_point(math.pi / 2, image_points_list[i][:, 0], image_points_list[i][:, 1])
+        # plt.plot(traj_list[i][:, 0], traj_list[i][:, 1], marker='o', linewidth=linewidth)
+        plt.plot(image_x_rotated, image_y_rotated, linewidth=linewidth - 2)
+        
+        # if i == range(len(traj_list) - 1):
+        #     len(traj_list)
     
     plt.xlim([0, 128])
-    plt.ylim([0, 128])
+    plt.ylim([-128, 0])
     plt.xlabel('$x_1$')
     plt.ylabel('$x_2$')
     
@@ -505,13 +523,24 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
     for i in range(len(traj_list)):
-        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2, color='r')
-        # plt.plot(x_inner, y_inner, linewidth=linewidth + 2, color='r')
-        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        # plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2, color='r')
+        # plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+        
+        rotated_task_points_x_list, rotated_task_points_y_list = \
+            rotate_point(math.pi / 2, task_points_list[i][:, 0], task_points_list[i][:, 1])
+        plt.plot(rotated_task_points_x_list, rotated_task_points_y_list, linewidth=linewidth + 2, color='r')
+        if i == len(traj_list) -1:
+            pass
+        else:
+            plt.scatter(rotated_task_points_x_list[0], rotated_task_points_y_list[0], s=100, c='b', marker='o')
+        
+        # rotated_task_points_x_list, rotated_task_points_y_list = \
+        #     rotate_point(math.pi / 2, task_points_list[i][:, 0], task_points_list[i][:, 1])
         # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
         # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
-    plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0.13, 0.13 + WIDTH])
+    
+    # plt.ylim([-WIDTH / 2, WIDTH / 2])
+    # plt.xlim([0.13, 0.13 + WIDTH])
     plt.xlabel('$x_1$(m)')
     plt.ylabel('$x_2$(m)')
     
@@ -538,6 +567,7 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     plt.ylabel('One-loop Angle (rad)')
     # plt.legend()
     plt.tight_layout()
+    plt.savefig(word_folder + '/' + word_name + '/' + word_name + '_traj.png')
     
     plt.show()
     
@@ -545,14 +575,23 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     plt.subplot(1, 1, 1)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
-    for i in range(len(traj_list)):
+    for i in range(len(traj_list)-1):
         # rotate_task_point = task_points_list[i].transpose((1, 0))
-        plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
-        plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
-        plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
+        if i == len(traj_list)-2:
+            task_points_list_x_last = np.hstack((task_points_list[i][:, 0], task_points_list[i+1][:, 0]))
+            task_points_list_y_last = np.hstack((task_points_list[i][:, 1], task_points_list[i + 1][:, 1]))
+            plt.plot(task_points_list_x_last, task_points_list_y_last, linewidth=linewidth + 2)
+            plt.scatter(task_points_list_x_last[0], task_points_list_y_last[0], s=100, c='b', marker='o')
+            plt.text(task_points_list_x_last[0], task_points_list_y_last[0], str(i + 1), rotation=90)
+        else:
+            plt.plot(task_points_list[i][:, 0], task_points_list[i][:, 1], linewidth=linewidth + 2)
+            plt.scatter(task_points_list[i][0, 0], task_points_list[i][0, 1], s=100, c='b', marker='o')
+            plt.text(task_points_list[i][0, 0], task_points_list[i][0, 1], str(i + 1), rotation=90)
     
     plt.ylim([-WIDTH / 2, WIDTH / 2])
     plt.xlim([0.13, 0.13 + WIDTH])
+    plt.yticks([-WIDTH / 2, 0, WIDTH / 2])
+    plt.xticks([0.13, 0.13 + WIDTH])
     # plt.xlabel('$x_1$(m)')
     # plt.ylabel('$x_2$(m)')
     plt.tight_layout()

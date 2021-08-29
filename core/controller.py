@@ -13,7 +13,7 @@ from control.path_planning.path_generate import *
 from control.path_planning.plot_path import *
 from control.vision_capture.main_functions import capture_image, show_video, record_video
 import seaborn as sns
-sns.set(font_scale=1.5)
+sns.set(font_scale=1.2)
 
 
 def draw_points(points, canvas_size=256):
@@ -284,8 +284,9 @@ if __name__ == "__main__":
         show_video()
     
     if args.record_video:
+        
         record_video(filepath=args.root_path + 'video/' + args.folder_name + '.svo')
-    
+     
     if args.capture_image:
         file_path = args.root_path + 'captured_images/' + args.folder_name
         if os.path.exists(file_path):
@@ -413,23 +414,24 @@ if __name__ == "__main__":
         print("shape :", stiff_plot.shape)
         plot_torque(stiff_plot, period_list)
 
-    root_path = args.root_path + 'font_data/' + args.folder_name
-    angle_list_1 = np.loadtxt(root_path + '/angle_list_5.txt', delimiter=' ')
-    angle_list_2 = np.loadtxt(root_path + '/angle_list_6.txt', delimiter=' ')
-    
-    params_list_1 = np.loadtxt(root_path + '/params_list_5.txt', delimiter=' ')
-    params_list_2 = np.loadtxt(root_path + '/params_list_6.txt', delimiter=' ')
-    
-    angle_list, params_list = contact_two_stroke(angle_list_1, angle_list_2,
-                       params_list_1, params_list_2, inverse=True)
-    
-    np.savetxt(root_path + '/angle_list_5.txt', angle_list, fmt='%.05f')
-    np.savetxt(root_path + '/params_list_5.txt', params_list, fmt='%.05f')
+    # root_path = args.root_path + 'font_data/' + args.folder_name
+    # angle_list_1 = np.loadtxt(root_path + '/angle_list_5.txt', delimiter=' ')
+    # angle_list_2 = np.loadtxt(root_path + '/angle_list_6.txt', delimiter=' ')
+    #
+    # params_list_1 = np.loadtxt(root_path + '/params_list_5.txt', delimiter=' ')
+    # params_list_2 = np.loadtxt(root_path + '/params_list_6.txt', delimiter=' ')
+    #
+    # angle_list, params_list = contact_two_stroke(angle_list_1, angle_list_2,
+    #                    params_list_1, params_list_2, inverse=False)
+    #
+    # np.savetxt(root_path + '/angle_list_5.txt', angle_list.copy(), fmt='%.05f')
+    # np.savetxt(root_path + '/params_list_5.txt', params_list.copy(), fmt='%.05f')
     
     # plot_real_2d_path(
-    #     root_path='control/data/font_data/ren/',
-    #     file_name='real_angle_list_',
+    #     root_path='control/data/font_data/xing/',
+    #     file_name='angle_list_',
     #     delimiter=' ',
+    #     stroke_num=6,
     #     skiprows=1,
     #     # root_path='./data/font_data/' + write_name + '/',
     #     # file_name='real_angle_list_0.txt',
@@ -437,13 +439,13 @@ if __name__ == "__main__":
     #     # skiprows=1
     # )
     
-    # plot_real_2d_path(
-    #     root_path='../control/data/font_data/ren/',
-    #     file_name='real_angle_list_',
-    #     stroke_num=2,
-    #     delimiter=' ',
-    #     skiprows=1
-    # )
+    plot_real_stroke_2d_path(
+        root_path='control/data/font_data/xing/',
+        file_name='angle_list_5',
+        stroke_num=2,
+        delimiter=' ',
+        skiprows=1
+    )
 
     # write_name = 'ren'
     # from control.server_main import load_word_path

@@ -94,6 +94,8 @@ def capture_image(file_path='', font_name='font_1', size=(128, 128)):
         cam.retrieve_image(mat, sl.VIEW.LEFT)
         cv2.imshow("ZED", mat.get_data())
         img = mat.get_data()
+
+        cv2.imwrite(file_path + '/' + font_name + '_original.png', img)
         
         cols, rows = img.shape[:2]
         M = cv2.getRotationMatrix2D((cols / 2, rows / 2), -2, 1)
