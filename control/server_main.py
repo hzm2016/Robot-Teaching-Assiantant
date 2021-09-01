@@ -21,15 +21,14 @@ action_dim = 3
 DIST_THREHOLD = 0.05
 
 # initial angle (rad) ::: 
-Initial_angle = np.array([-1.31, 1.527])
+Initial_angle = np.array([-1.31, 1.527]) 
 
-Initial_point = np.array([0.32299, -0.23264])
+Initial_point = np.array([0.32299, -0.23264])  
 
-
-Angle_initial = np.array([-0.312634, -0.126007, 0.901006]) 
+Angle_initial = np.array([-0.344848, 0.253177, 1.981514])   
 
 # impedance params :  
-Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.5])
+Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.2])
 
 
 def reset_and_calibration(): 
@@ -52,7 +51,7 @@ def get_demo_writting():
 
     set_pen_down()  
     motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], 
-    2.0, 8.0, 0.0, 0.0, buff_size)  
+    2.0, 2.0, 0.0, 0.0, buff_size)  
 
 
 def get_observation(angle_initial=Angle_initial): 
@@ -214,7 +213,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close()
 
 
-def write_word(word_path, word_params=None, word_name='yi'): 
+def write_word(word_path, word_params=None, word_name='yi', epi_times=0): 
     """
         write a word and plot :: 
     """
@@ -240,7 +239,8 @@ def write_word(word_path, word_params=None, word_name='yi'):
                      stroke_params=word_params[index],   
                      target_point=stroke_target_point,
                      word_name=word_name,
-                     stroke_name=str(index))  
+                     stroke_name=str(index),
+                     epi_time=epi_times)  
 
         motor_control.motor_3_stop() 
 
@@ -249,7 +249,8 @@ def write_stroke(stroke_points=None,
                 stroke_params=None, 
                 target_point=Initial_point, 
                 word_name='yi', 
-                stroke_name='0'): 
+                stroke_name='0',
+                epi_time=0): 
 
     # print("Write stroke !!!")  
     way_points = stroke_points  
@@ -277,8 +278,8 @@ def write_stroke(stroke_points=None,
     else:
         params_list = stroke_params   
 
-    stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '.txt' 
-    stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '.txt' 
+    stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '_' + str(epi_time) + '.txt' 
+    stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '_' + str(epi_time) + '.txt' 
     done = motor_control.run_one_loop(
                                     way_points[:, 0].copy(), way_points[:, 1].copy(),  
                                     params_list[:, 0].copy(), params_list[:, 1].copy(),  
@@ -480,11 +481,20 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
 if __name__ == "__main__": 
     write_name = 'xing'  
-    eval_times = 1  
-    # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.1]))
+    eval_times = 5  
+
+    # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.2])) 
     
     # for i in range(eval_times): 
-    #     write_word(word_path, word_params=word_params, word_name=write_name) 
+    #     write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)  
+
+    # plot_real_stroke_2d_path(
+    #     root_path='./data/font_data/xing/',
+    #     file_name='angle_list_5', 
+    #     stroke_num=5, 
+    #     delimiter=' ',
+    #     skiprows=1
+    # )
 
     # plot_real_2d_path(
     #     root_path='./data/font_data/' + write_name + '/', 
@@ -493,6 +503,15 @@ if __name__ == "__main__":
     #     delimiter=' ', 
     #     skiprows=1
     # )
+
+    plot_real_error_path(
+        root_path='./data/font_data/' + write_name + '/', 
+        file_name='real_angle_list_',  
+        stroke_num=6,  
+        epi_num=5, 
+        delimiter=' ', 
+        skiprows=1 
+    )
 
     # plot_real_2d_demo_path(
     # root_path='',
@@ -534,39 +553,39 @@ if __name__ == "__main__":
     # plt.show() 
 
     # angle_list = np.loadtxt('./data/font_data/yi/real_angle_list_0.txt', delimiter=' ', skiprows=1)  
-    angle_list = np.loadtxt('chuan_demonstrated_angle_list.txt', delimiter=',', skiprows=1)  
+    # # angle_list = np.loadtxt('chuan_demonstrated_angle_list.txt', delimiter=',', skiprows=1)  
 
-    fig = plt.figure(figsize=(20, 8))  
-    plt.subplot(1, 2, 1)  
-    plt.subplots_adjust(wspace=2, hspace=0)  
+    # fig = plt.figure(figsize=(20, 8))  
+    # plt.subplot(1, 2, 1)  
+    # plt.subplots_adjust(wspace=2, hspace=0)  
     
-    plt.plot(angle_list[:, 0], linewidth=linewidth, label='Input')  
-    plt.plot(angle_list[:, 2], linewidth=linewidth, label='Output')  
-    # plt.xlim([0, 128])  
-    # plt.ylim([0, 128])  
-    plt.xlabel('time($t$)')    
-    plt.ylabel('$q_1$(rad)')    
-    # plt.axis('equal') 
-    plt.legend()   
+    # plt.plot(angle_list[:, 0], linewidth=linewidth, label='Input')  
+    # plt.plot(angle_list[:, 1], linewidth=linewidth, label='Output')  
+    # # plt.xlim([0, 128])  
+    # # plt.ylim([0, 128])  
+    # plt.xlabel('time($t$)')    
+    # plt.ylabel('$q_1$(rad)')    
+    # # plt.axis('equal') 
+    # plt.legend()   
     
-    plt.subplot(1, 2, 2)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    # plt.subplot(1, 2, 2)
+    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
     
-    plt.plot(angle_list[:, 1], linewidth=linewidth, label='Input')  
-    plt.plot(angle_list[:, 3], linewidth=linewidth, label='Output')  
+    # plt.plot(angle_list[:, 1], linewidth=linewidth, label='Input')  
+    # plt.plot(angle_list[:, 3], linewidth=linewidth, label='Output')  
     
-    # plt.xlim([0., 0.6])
-    # plt.ylim([0., 0.6])
-    plt.xlabel('time($t$)') 
-    plt.ylabel('$q_2$(rad)')   
-    plt.legend()
+    # # plt.xlim([0., 0.6])
+    # # plt.ylim([0., 0.6])
+    # plt.xlabel('time($t$)') 
+    # plt.ylabel('$q_2$(rad)')   
+    # plt.legend()
 
-    plt.tight_layout() 
-    plt.show() 
+    # plt.tight_layout() 
+    # plt.show() 
 
     # motor_stop() 
 
-    # get_demo_writting() 
+    # get_demo_writting()  
 
     # motor_control.Jacobian(0.0, 0.0) 
 
@@ -575,8 +594,8 @@ if __name__ == "__main__":
 
     # angle, point = get_observation(angle_initial=Angle_initial)  
 
-    # impedance_params = np.array([45.0, 35, 5.8, 0.1])  
-    # move_to_target_point(np.array([0.34, -0.03]), impedance_params, velocity=0.04)  
+    # impedance_params = np.array([45.0, 30, 6.8, 0.1])  
+    # move_to_target_point(np.array([0.34, -0.23]), impedance_params, velocity=0.04)  
 
     # set_pen_up()
 

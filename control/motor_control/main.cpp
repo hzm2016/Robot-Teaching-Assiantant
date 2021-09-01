@@ -220,7 +220,7 @@ py::array_t<double> buff_size)
     // double damping_2 = damping_2;     
 
     double ratio_ctl_1 = -2000/32;   
-    double ratio_ctl_2 = -2000/32;   
+    double ratio_ctl_2 = 2000/32;   
 
     run_on = 1;   
 
@@ -274,7 +274,7 @@ py::array_t<double> buff_size)
         torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_1;   
         torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_2;   
 
-        pos_1 = motor_1.set_torque(2, 0.0, &d_theta_1_t, &torque_1_t);   
+        pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);   
         pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
 
         torque_1_o = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound);    

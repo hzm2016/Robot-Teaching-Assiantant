@@ -153,6 +153,7 @@ def plot_real_2d_path(
     root_path='./motor_control/bin/data/',
     file_name='',
     stroke_num=1, 
+    epi_time=0,
     delimiter=',',
     skiprows=1
 ):
@@ -176,17 +177,17 @@ def plot_real_2d_path(
     # plt.ylabel('$rad', fontsize=FONT_SIZE)
     # plt.legend()
 
+    
     plt.subplot(1, 1, 1) 
-
     for i in range(stroke_num): 
 
-        angle_list = np.loadtxt(root_path + file_name + str(i) + '.txt', delimiter=delimiter, skiprows=skiprows)
+        angle_list = np.loadtxt(root_path + file_name + str(i) + '_' + str(epi_time) + '.txt', delimiter=delimiter, skiprows=skiprows)
 
         angle_list_1_e = angle_list[:, 0] 
-        angle_list_2_e = angle_list[:, 1]
+        angle_list_2_e = angle_list[:, 3]
 
-        # angle_list_1_t = angle_list[:, 1]
-        # angle_list_2_t = angle_list[:, 4]
+        angle_list_1_t = angle_list[:, 1] 
+        angle_list_2_t = angle_list[:, 4] 
 
         # d_angle_list_1_t = angle_list[:, 2] 
         # d_angle_list_2_t = angle_list[:, 5] 
@@ -194,19 +195,110 @@ def plot_real_2d_path(
         x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
         y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
 
-        # x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
-        # y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
+        x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
+        y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
     
-        plt.plot(x_e, y_e, linewidth=linewidth, label='desired') 
-        # plt.plot(x_t, y_t, linewidth=linewidth, label='real')
+        # plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
+        # plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
+
+    # plt.subplot(1, 2, 1) 
+    # for i in range(stroke_num): 
+        # print(x_e - x_t)   
+        plt.plot(x_e-x_t, linewidth=linewidth, label='error')  
+        plt.plot(y_e-y_t, linewidth=linewidth, label='error')  
 
     plt.xlabel('x(m)', fontsize=FONT_SIZE)  
     plt.ylabel('y(m)', fontsize=FONT_SIZE)  
     plt.ylim([-WIDTH/2, WIDTH/2])  
     plt.xlim([0.13, 0.13 + WIDTH])  
     # plt.legend()
+    plt.savefig('xing' + str(epi_time) + '.png') 
+    plt.show() 
 
-    plt.show()
+
+def plot_real_error_path(
+    root_path='./motor_control/bin/data/', 
+    file_name='', 
+    stroke_num=1,  
+    epi_num=0, 
+    delimiter=' ', 
+    skiprows=1 
+):
+    """ 
+        plot angle trajectory and cartesian path 
+    """
+    FONT_SIZE = 28   
+    linewidth = 4  
+
+    error_x = np.zeros((stroke_num, epi_num)) 
+    error_y = np.zeros((stroke_num, epi_num)) 
+    for i in range(stroke_num): 
+        for j in range(epi_num):  
+            # print(root_path + file_name + str(i) + '_' + str(j) + '.txt')
+            angle_list = np.loadtxt(root_path + file_name + str(i) + '_' + str(j) + '.txt', delimiter=delimiter, skiprows=skiprows)
+            
+            angle_list_1_e = angle_list[:, 0]   
+            angle_list_2_e = angle_list[:, 3]   
+    
+            angle_list_1_t = angle_list[:, 1]   
+            angle_list_2_t = angle_list[:, 4]   
+
+            # d_angle_list_1_t = angle_list[:, 2] 
+            # d_angle_list_2_t = angle_list[:, 5] 
+
+            x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+            y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+
+            x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
+            y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
+
+
+            error_x[i, j] = sum(x_e - x_t)/x_t.shape[0]
+            error_y[i, j] = sum(y_e - y_t)/y_t.shape[0]
+
+        # plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
+        # plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
+    print(x_e - x_t)
+    print("x_t :", x_t.shape)
+
+    # plt.subplot(1, 2, 1) 
+    # for i in range(stroke_num): 
+        # print(x_e - x_t)   
+        # plt.plot(x_e-x_t, linewidth=linewidth, label='error')   
+        # plt.plot(y_e-y_t, linewidth=linewidth, label='error')   
+    
+    fig = plt.figure(figsize=(20, 8))
+    plt.subplot(1, 2, 1)  
+    for i in range(stroke_num): 
+        plt.plot(error_x[i, :], linewidth=linewidth, label='stroke_' + str(i)) 
+    plt.xlabel('train times', fontsize=FONT_SIZE)   
+    plt.ylabel('x(m)', fontsize=FONT_SIZE)  
+    plt.legend()
+
+    plt.subplot(1, 2, 2) 
+    for i in range(stroke_num): 
+        plt.plot(error_y[i, :], linewidth=linewidth, label='stroke_' + str(i)) 
+    
+    plt.xlabel('train times', fontsize=FONT_SIZE)   
+    plt.ylabel('y(m)', fontsize=FONT_SIZE)  
+    plt.subplots_adjust(wspace=0.2, hspace=0,3) 
+
+    # plt.plot(angle_list_1_e, linewidth=linewidth, label='angle_1_e') 
+    # plt.plot(angle_list_1_t, linewidth=linewidth, label='angle_1_t')
+    # plt.plot(angle_list_2_e, linewidth=linewidth, label='angle_2_e') 
+    # plt.plot(angle_list_2_t, linewidth=linewidth, label='angle_2_t')
+
+    # plt.xlabel('time($t$)', fontsize=FONT_SIZE)
+    # plt.ylabel('$rad', fontsize=FONT_SIZE)
+    # plt.legend()
+    # plt.xlabel('x(m)', fontsize=FONT_SIZE)   
+    # plt.ylabel('y(m)', fontsize=FONT_SIZE)  
+    # plt.ylim([-WIDTH/2, WIDTH/2])  
+    # plt.xlim([0.13, 0.13 + WIDTH])  
+    plt.legend()
+    # plt.savefig('xing' + str(epi_time) + '.png') 
+    plt.show() 
+
 
 
 def plot_real_stroke_2d_path(

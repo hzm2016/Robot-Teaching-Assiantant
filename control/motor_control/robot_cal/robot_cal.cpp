@@ -476,7 +476,7 @@ int motor_3_stop()
 }
 
 
-double mean_filter(double theta_t) 
-{
+// double mean_filter(double theta_t) 
+// {
     
-}
+// }
