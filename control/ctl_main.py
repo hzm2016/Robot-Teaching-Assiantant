@@ -1,13 +1,13 @@
 import cv2
 import sys
 import os
-from control.vision_capture.main_functions import *
-from control.path_planning.path_generate import *
-from control.path_planning.plot_path import *
-import socket
-import time
-from control.protocol.task_interface import *
-from control.protocol.config import config
+from control.vision_capture.main_functions import * 
+from control.path_planning.path_generate import * 
+from control.path_planning.plot_path import * 
+import socket 
+import time 
+from control.protocol.task_interface import * 
+from control.protocol.config import config 
 
 
 def run_main(show_video=False):
@@ -66,10 +66,10 @@ if __name__ == "__main__":
 	# path_data = np.loadtxt(root_path + '/' + font_name + '/1_font_' + str(type) + '.txt')
 	# way_points = generate_path(path_data, center_shift=np.array([0.16, -WIDTH/2]), velocity=10, Ts=0.001, plot_show=True)
 	
-	plot_real_2d_path(
-		root_path='',
-		file_name='angle_list.txt'
-	)
+	# plot_real_2d_path(
+	# 	root_path='',
+	# 	file_name='angle_list.txt'
+	# ) 
 	
 	# check_path(root_path='data/font_data', font_name='third',
 	#            type=3, period=10, Ts=0.001)

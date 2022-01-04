@@ -53,6 +53,7 @@ void split(const string& s, vector<string>& tokens, const string& delim)
     }  
 }  
 
+
 void Jacobian(double theta_1_t, double theta_2_t) 
 {
     // const <MatrixXd> J 
@@ -68,6 +69,7 @@ void Jacobian(double theta_1_t, double theta_2_t)
     printf("matrix :%f", clip(m(1, 1), -1, 1)); 
 }
 
+
 int read_initial_encode() 
 { 
     ////////////////////////////////////////////
@@ -77,7 +79,8 @@ int read_initial_encode()
 
     float encoder_arr[2];  
 
-	encoder.read_ang_encoder(encoder_arr);   
+	encoder.read_ang_encoder(encoder_arr);  
+     
   	double q_1 = (double) encoder_arr[1]*PI/180.0;  
   	double q_2 = (double) encoder_arr[0]*PI/180.0;  
     
@@ -85,7 +88,8 @@ int read_initial_encode()
     printf("Encoder 2 position: %f\n", q_2);  
 
     return 1;  
-} 
+}  
+
 
 double read_link_angle_1(double q_1_initial)   
 {

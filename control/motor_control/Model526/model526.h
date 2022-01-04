@@ -24,7 +24,8 @@
 
 /* Ports */
 #define S526_IOSIZE		0x40  /* 64 bytes */
-#define S526_DEFAULT_ADDRESS	0xd00 /* Set by the headers on the board */
+#define S526_DEFAULT_ADDRESS	0x2c0 //d00 //2c0
+ /* Set by the headers on the board */
 
 /* Registers */
 #define REG_TCR 0x00
@@ -114,13 +115,14 @@ void s526_digitalIO_write(int port, int set);
 //Function to initialize counter and encoder channels
 void s526_init_pulse_timer(int channel);
 int s526_counter_read(int channel);
-void s526_encoder_init(int channel_number);
-int s526_encoder_read(int channel_number);
+void s526_encoder_init(int channel_number); 
+int s526_encoder_read(int channel_number); 
 void s526_counter_set_control_status(int channel_number, int count_reset, int count_load,
                                      int count_arm, int latch_select, int intettupt_enable);
 //Function to read the encoder count
 //Function to initialize the analog output channels
-void s526_dac_init();
+void s526_dac_init(); 
+
 //Function to set the analog output
 void s526_dac_write(double *vals, int nvals);
 

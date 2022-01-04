@@ -163,7 +163,7 @@ void controller_renishaw::read_ang_encoder(float (&data_arr)[2]) {
     cout << "can write !!!" << endl;
 
     this->tx_msg.cframe.can_id  = 0x401;
-	can_read();
+	can_read(); 
 
     cout << "can read !!!" << endl; 
 

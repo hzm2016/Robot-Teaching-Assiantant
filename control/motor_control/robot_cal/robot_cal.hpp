@@ -36,9 +36,11 @@ double dist_threshold
 
 double read_initial_angle_1();  
 
-double read_initial_angle_2(); 
+double read_initial_angle_2();  
 
-double read_initial_angle_3(); 
+double read_initial_angle_3();  
+
+int read_initial_encode();  
 
 double read_angle_1(double theta_1_initial); 
 

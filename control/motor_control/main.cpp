@@ -6,8 +6,8 @@
 #include <pybind11/pybind11.h> 
 #include "gyems_can_functions.h" 
 #include "renishaw_can_functions.hpp" 
-
-#include "robot_cal.hpp" 
+#include "model526.h" 
+#include "robot_cal.hpp"  
 
 using namespace std; 
 
@@ -33,13 +33,46 @@ namespace py = pybind11;
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 
-int run_on;
+int run_on; 
 
 void 
-sigint_1_step(int dummy) {
+sigint_1_step(int dummy) { 
     if (run_on == 1) 
 		run_on = 0; 
 }
+
+
+double read_analog_encoder(){
+    ///////////////////////////////////////////////////////////////////////////
+	// Initialize Sensoray 526:
+	///////////////////////////////////////////////////////////////////////////
+
+    const int NUM_ADC_CHAN			= 6; 
+    
+    int32_t ADC_CHAN[NUM_ADC_CHAN]	= {0, 1, 2, 3, 4, 5};  
+    // int32_t ADC_CHAN[NUM_ADC_CHAN]	= {7, 6, 5, 4, 3, 2, 1, 0}; 
+
+    double adc_data[NUM_ADC_CHAN]	= {0, 0, 0, 0, 0, 0};  
+
+    cout << "initial s526 !!!" << endl;  
+
+    // s526_read_id();  
+
+	// // Initialize hardware: 
+	// s526_init();  
+
+    // cout << "initial DAC !!!" << endl; 
+    
+    // s526_adc_init(ADC_CHAN, NUM_ADC_CHAN); 
+
+    // cout << "Test ADC read !!!" << endl; 
+
+    // // Read ADC:
+    // s526_adc_read(ADC_CHAN, NUM_ADC_CHAN, adc_data); 
+
+    // printf("FT data:: Tz %f\t Ty: %f\t Tx: %f Fz %f\t Fy: %f\t Fx: %f\n", adc_data[0], adc_data[1], adc_data[2], adc_data[3], adc_data[4], adc_data[5]);
+
+} 
 
 
 int set_position(double theta_3_initial, int32_t angle)   
@@ -82,8 +115,8 @@ int set_position(double theta_3_initial, int32_t angle)
     
     // motor_3.pack_stop_cmd(1); 
 
-    return 1;  
-}
+    return 1;   
+}   
 
 
 double set_two_link_position(double theta_1_initial, double theta_2_initial, 
@@ -997,6 +1030,20 @@ PYBIND11_MODULE(motor_control, m) {
     m.def(
         "read_angle_3", &read_angle_3, R"pbdoc( 
         read angle 3
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
+
+    m.def(
+        "read_analog_encoder", &read_analog_encoder, R"pbdoc( 
+        read_analog_encoder
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
+
+    m.def(
+        "read_initial_encode", &read_initial_encode, R"pbdoc( 
+        read_initial_encode
 
         Some other explanation about the add function. 
     )pbdoc"); 

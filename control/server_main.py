@@ -5,7 +5,7 @@ import numpy as np
 import math
 import os
 from motor_control import motor_control
-from path_planning.plot_path import *
+# from path_planning.plot_path import *
 from path_planning.path_generate import *
 import ctypes 
 import time 
@@ -481,7 +481,12 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
 if __name__ == "__main__": 
     write_name = 'xing'  
-    eval_times = 5  
+    eval_times = 5 
+
+    # ===========================================================
+    motor_control.read_initial_encode() 
+
+    # motor_control.read_analog_encoder() 
 
     # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.2])) 
     
@@ -504,14 +509,14 @@ if __name__ == "__main__":
     #     skiprows=1
     # )
 
-    plot_real_error_path(
-        root_path='./data/font_data/' + write_name + '/', 
-        file_name='real_angle_list_',  
-        stroke_num=6,  
-        epi_num=5, 
-        delimiter=' ', 
-        skiprows=1 
-    )
+    # plot_real_error_path(
+    #     root_path='./data/font_data/' + write_name + '/', 
+    #     file_name='real_angle_list_',  
+    #     stroke_num=6,  
+    #     epi_num=5, 
+    #     delimiter=' ', 
+    #     skiprows=1 
+    # )
 
     # plot_real_2d_demo_path(
     # root_path='',
@@ -590,10 +595,10 @@ if __name__ == "__main__":
     # motor_control.Jacobian(0.0, 0.0) 
 
     """ calibrate position for each start up """ 
-    # Angle_initial = reset_and_calibration()  
+    # Angle_initial = reset_and_calibration()
 
-    # angle, point = get_observation(angle_initial=Angle_initial)  
-
+    # angle, point = get_observation(angle_initial=Angle_initial)
+    
     # impedance_params = np.array([45.0, 30, 6.8, 0.1])  
     # move_to_target_point(np.array([0.34, -0.23]), impedance_params, velocity=0.04)  
 

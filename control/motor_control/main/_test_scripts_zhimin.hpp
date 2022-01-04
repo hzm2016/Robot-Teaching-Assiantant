@@ -30,7 +30,7 @@
 
 extern "C" {
 	#include "model526.h"
-	#include "ftconfig.h" 
+	#include "ftconfig.h"  
 	#include "rtsetup.h"
 	#include "rtutils.h" 
 	#include "atidaq_help.h" 

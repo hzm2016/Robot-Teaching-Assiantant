@@ -10,6 +10,8 @@ static int s526_init_flag = 0;
 
 int s526_init() 
 { 
+    printf("Reading board id ...");
+    
     //Set permissions for the range of IO addresses 
     // int ret = ioperm(S526_ADDR, S526_IOSIZE, 1); 
     if(s526_init_flag == 0)
