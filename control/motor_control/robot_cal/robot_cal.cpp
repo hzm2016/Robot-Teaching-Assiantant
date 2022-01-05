@@ -77,15 +77,15 @@ int read_initial_encode()
     ////////////////////////////////////////////
     controller_renishaw encoder("can2");  
 
-    float encoder_arr[2];  
+    float encoder_arr[2];   
 
-	encoder.read_ang_encoder(encoder_arr);  
+	encoder.read_ang_encoder(encoder_arr);   
      
-  	double q_1 = (double) encoder_arr[1]*PI/180.0;  
-  	double q_2 = (double) encoder_arr[0]*PI/180.0;  
+  	double q_1 = (double) encoder_arr[1]*PI/180.0;   
+  	double q_2 = (double) encoder_arr[0]*PI/180.0;   
     
-    printf("Encoder 1 position: %f\n", q_1);  
-    printf("Encoder 2 position: %f\n", q_2);  
+    printf("Encoder 1 position: %f\n", q_1);   
+    printf("Encoder 2 position: %f\n", q_2);   
 
     return 1;  
 }  
@@ -288,7 +288,7 @@ double read_initial_angle_1()
     Gcan motor_1(can1);   
     motor_1.begin();   
     
-    double theta_1 = motor_1.read_sensor(2);   
+    double theta_1 = motor_1.read_sensor(1);   
     printf("Motor 1 original position: %f\n", theta_1);   
 
     return theta_1;   

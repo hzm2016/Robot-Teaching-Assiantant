@@ -79,15 +79,15 @@ int controller_renishaw::available()
 
     if (retval == -1) {
         perror("Error during pselect()");
-        return -1;
+        return -1; 
     }
     else if (retval) {
         // Data is available now. FD_ISSET(s, &rfds) will be true
-        return 1;
+        return 1; 
     }
     else {
-        // No Data is available
-        return 0;
+        // No Data is available 
+        return 0; 
     }
 }
 

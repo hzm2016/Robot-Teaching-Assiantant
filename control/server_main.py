@@ -5,8 +5,8 @@ import numpy as np
 import math
 import os
 from motor_control import motor_control
-# from path_planning.plot_path import *
-from path_planning.path_generate import *
+from path_planning.plot_path import * 
+from path_planning.path_generate import * 
 import ctypes 
 import time 
 import glob 
@@ -479,14 +479,26 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
     return word_path, word_params, np.array(real_path)
 
 
-if __name__ == "__main__": 
-    write_name = 'xing'  
+if __name__ == "__main__":  
+    write_name = 'xing'       
     eval_times = 5 
 
     # ===========================================================
-    motor_control.read_initial_encode() 
+    # motor_control.read_initial_encode() 
+    
+    # motor_control.read_initial_angle_1()  
+
+    # motor_control.read_initial_angle_2()  
 
     # motor_control.read_analog_encoder() 
+    
+    # motor_control.phri_get_demonstration(-0.393808, -0.500452, 1.0, 0.0, 0.0, 0.0, 10000) 
+
+    plot_torque_path(
+        root_path='./',
+        file_angle_name='demonstrated_angle_list.txt',
+        file_torque_name='demonstrated_torque_list.txt' 
+    )
 
     # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.2])) 
     
@@ -494,7 +506,7 @@ if __name__ == "__main__":
     #     write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)  
 
     # plot_real_stroke_2d_path(
-    #     root_path='./data/font_data/xing/',
+    #     root_path='./data/font_data/xing/', 
     #     file_name='angle_list_5', 
     #     stroke_num=5, 
     #     delimiter=' ',
@@ -522,7 +534,7 @@ if __name__ == "__main__":
     # root_path='',
     # file_name=write_name,
     # delimiter=',',
-    # skiprows=1
+    # skiprows=1 
     # )
 
     # torque_list = np.loadtxt('./data/font_data/xing/real_angle_list_5.txt', delimiter=' ', skiprows=1)

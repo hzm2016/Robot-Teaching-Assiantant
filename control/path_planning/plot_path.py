@@ -12,16 +12,16 @@ COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple'
           'darkgreen', 'tan', 'salmon', 'gold', 'lightpurple', 'darkred', 'darkblue']
 """ ================================================================================= """
 
-FONT_SIZE = 28 
-linewidth = 4 
+FONT_SIZE = 28  
+linewidth = 4  
 
-Length = [0.30, 0.15, 0.25, 0.125] 
-L_1 = Length[0] 
-L_2 = Length[2] 
+Length = [0.30, 0.15, 0.25, 0.125]  
+L_1 = Length[0]  
+L_2 = Length[2]  
 
 # writing space
-WIDTH = 0.370
-HEIGHT = 0.370
+WIDTH = 0.370  
+HEIGHT = 0.370  
 
 # plt.rcParams['font.family'] = 'Times New Roman'
 # plt.rcParams['font.size'] = FONT_SIZE 
@@ -281,7 +281,7 @@ def plot_real_error_path(
     
     plt.xlabel('train times', fontsize=FONT_SIZE)   
     plt.ylabel('y(m)', fontsize=FONT_SIZE)  
-    plt.subplots_adjust(wspace=0.2, hspace=0,3) 
+    plt.subplots_adjust(wspace=0.2, hspace=0) 
 
     # plt.plot(angle_list_1_e, linewidth=linewidth, label='angle_1_e') 
     # plt.plot(angle_list_1_t, linewidth=linewidth, label='angle_1_t')
@@ -438,11 +438,11 @@ def plot_real_2d_demo_path(
 
     angle_list = np.loadtxt(root_path + file_name + '_demonstrated_angle_list.txt', delimiter=delimiter, skiprows=skiprows)
 
-    angle_list_1_e = angle_list[:, 0] 
-    angle_list_2_e = angle_list[:, 2] 
+    angle_list_1_e = angle_list[:, 0]  
+    angle_list_2_e = angle_list[:, 2]  
 
-    # angle_list_1_t = angle_list[:, 1] 
-    # angle_list_2_t = angle_list[:, 4] 
+    # angle_list_1_t = angle_list[:, 1]   
+    # angle_list_2_t = angle_list[:, 4]   
 
     # d_angle_list_1_t = angle_list[:, 2] 
     # d_angle_list_2_t = angle_list[:, 5] 
@@ -453,8 +453,8 @@ def plot_real_2d_demo_path(
     # x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
     # y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
 
-    plt.plot(x_e, y_e, linewidth=linewidth, label='desired') 
-    # plt.plot(x_t, y_t, linewidth=linewidth, label='real') 
+    plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
+    # plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
 
     plt.xlabel('x(m)', fontsize=FONT_SIZE)  
     plt.ylabel('y(m)', fontsize=FONT_SIZE)  
@@ -500,7 +500,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     x, y = [], []
     line, = plt.plot([], [], '.-', color='orange')
-    nums = 50  # 需要的帧数
+    nums = 50  # 需要的帧数 
     
     
     # def init():
@@ -519,19 +519,20 @@ if __name__ == "__main__":
     #
     #
     # ani = FuncAnimation(fig, update, frames=nums,  # nums输入到frames后会使用range(nums)得到一系列step输入到update中去
-    #                     init_func=init, interval=500)
-    stroke_length = 3
-    for i in range(stroke_length):
-        angle_list = np.loadtxt('../data/font_data/chuan/angle_list_' + str(i) + '.txt', delimiter=' ')
-        N_way_points = angle_list.shape[0]
-        # print("N_way_points :", N_way_points)
-        # word_path.append(way_points.copy())
-        # angle_point_1 = way_points[-1, :]
-        # end_point = forward_ik(angle_point_1)
-        point_list = forward_ik_path(angle_list)
+    #                     init_func=init, interval=500) 
 
-        plt.plot(point_list[:, 0], linewidth=linewidth, label='x_1(m)')
-        plt.plot(point_list[:, 1], linewidth=linewidth, label='x_2(m)')
+    # stroke_length = 3
+    # for i in range(stroke_length): 
+    #     angle_list = np.loadtxt('../data/font_data/chuan/angle_list_' + str(i) + '.txt', delimiter=' ')
+    #     N_way_points = angle_list.shape[0]
+    #     # print("N_way_points :", N_way_points)
+    #     # word_path.append(way_points.copy())
+    #     # angle_point_1 = way_points[-1, :]
+    #     # end_point = forward_ik(angle_point_1)
+    #     point_list = forward_ik_path(angle_list)
+
+    #     plt.plot(point_list[:, 0], linewidth=linewidth, label='x_1(m)')
+    #     plt.plot(point_list[:, 1], linewidth=linewidth, label='x_2(m)')
         
-        plt.show()
-        plt.pause(1)
+    #     plt.show()
+    #     plt.pause(1)
