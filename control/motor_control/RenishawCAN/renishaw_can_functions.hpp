@@ -162,6 +162,7 @@ class controller_renishaw {
 public:
     /*constructor*/
     controller_renishaw(int writesocket_fd, int readsocket_f); 
+    
 	controller_renishaw(const char *can_iface_name); // TODO
 
     virtual ~controller_renishaw() {};

@@ -1,7 +1,7 @@
 #include "gyems_can_functions.h" 
 #include "renishaw_can_functions.hpp"
+#include "model526.h" 
 
-// #include <pybind11/pybind11.h>
 using namespace std; 
 #include <iostream>
 #include <fstream>
@@ -48,6 +48,21 @@ int add(int i, int j) {
 
 int main()
 {
+    std::cout << "Read ADC !!!" << std::endl; 
+    const int NUM_ADC_CHAN			= 6; 
+    
+    int32_t ADC_CHAN[NUM_ADC_CHAN]	= {0, 1, 2, 3, 4, 5};  
+    // int32_t ADC_CHAN[NUM_ADC_CHAN]	= {7, 6, 5, 4, 3, 2, 1, 0}; 
+
+    double adc_data[NUM_ADC_CHAN]	= {0, 0, 0, 0, 0, 0};  
+
+    cout << "initial s526 !!!" << endl;  
+
+    // Initialize hardware: 
+	// s526_init();  
+
+    // s526_read_id();  
+
     ////////////////////////////////////////////////////////
     // Initial hardware ::: can device
     ////////////////////////////////////////////////////////
@@ -65,18 +80,18 @@ int main()
 
     // std::cout << "Enable Motors Done!!!" << std::endl; 
 
-    std::cout << "Initial Can2 for Encoder !!!" << std::endl;  
-    controller_renishaw encoder("can2"); 
+    // std::cout << "Initial Test Code !!!" << std::endl;  
+    // controller_renishaw encoder("can2"); 
 
-    float encoder_arr[2];  
+    // float encoder_arr[2];  
+	// encoder.read_ang_encoder(encoder_arr);  
 
-	encoder.read_ang_encoder(encoder_arr); 
-  	double theta_1 = (double) encoder_arr[1]*3.14/180.0; 
-    std::cout << "Theta 1 !!!" << theta_1 <<std::endl; 
+  	// double theta_1 = (double) encoder_arr[1]*3.14/180.0; 
+    // std::cout << "Theta 1 !!!" << theta_1 <<std::endl; 
   	
-    double theta_2 = (double) encoder_arr[0]*3.14/180.0; 
-    std::cout << "Theta 2 !!!" << theta_2 <<std::endl; 
-    std::cout << "Encoder Reading !!!" << std::endl; 
+    // double theta_2 = (double) encoder_arr[0]*3.14/180.0; 
+    // std::cout << "Theta 2 !!!" << theta_2 <<std::endl; 
+    // std::cout << "Encoder Reading !!!" << std::endl; 
     
     ////////////////////////////////////////////////////////
     // Load path from txt file

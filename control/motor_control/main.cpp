@@ -6,6 +6,7 @@
 #include <pybind11/pybind11.h> 
 #include "gyems_can_functions.h" 
 #include "renishaw_can_functions.hpp" 
+
 #include "model526.h" 
 #include "robot_cal.hpp"  
 
@@ -73,6 +74,16 @@ double read_analog_encoder(){
     // printf("FT data:: Tz %f\t Ty: %f\t Tx: %f Fz %f\t Fy: %f\t Fx: %f\n", adc_data[0], adc_data[1], adc_data[2], adc_data[3], adc_data[4], adc_data[5]);
 
 } 
+
+
+int read_encoder_angles()
+{
+    double encoder_values[2] = {0.0, 0.0}; 
+    read_initial_encode(encoder_values); 
+    printf("encoder1: %f, encoder2: %f", encoder_values[0], encoder_values[1]); 
+
+    return 1; 
+}
 
 
 int set_position(double theta_3_initial, int32_t angle)   
@@ -203,8 +214,8 @@ py::array_t<double> buff_size)
     CANDevice can1((char *) "can1");   
     can1.begin();  
 
-    int motor_id_1 = 1; 
-    int motor_id_2 = 1; 
+    // int motor_id_1 = 1; 
+    // int motor_id_2 = 1; 
 
     Gcan motor_1(can1);   
     Gcan motor_2(can0);   
@@ -256,8 +267,8 @@ py::array_t<double> buff_size)
     // double damping_1 = damping_1;     
     // double damping_2 = damping_2;     
 
-    double ratio_ctl_1 = -2000/32;   
-    double ratio_ctl_2 = 2000/32;   
+    // double ratio_ctl_1 = -2000/32;   
+    // double ratio_ctl_2 = 2000/32;   
 
     run_on = 1;   
 
@@ -308,8 +319,8 @@ py::array_t<double> buff_size)
         // theta_list[index_buff][1] = theta_2_t;    
 
         /// zero impedance control   
-        torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_1;   
-        torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_2;   
+        torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
+        torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
 
         // pos_1 = motor_1.set_torque(2, torque_1, &d_theta_1_t, &torque_1_t);    
         // pos_2 = motor_2.set_torque(1, torque_2, &d_theta_2_t, &torque_2_t);    
@@ -366,19 +377,35 @@ py::array_t<double> buff_size)
     CANDevice can1((char *) "can1");   
     can1.begin();  
 
-    int motor_id_1 = 1; 
-    int motor_id_2 = 1; 
-
     Gcan motor_1(can1);   
     Gcan motor_2(can0);   
     motor_1.begin();   
     motor_2.begin();   
 
-    printf("Get demonstration start !!!!\n");  
+    ////////////////////////////////////////////
+    // Read original encoder
+    ////////////////////////////////////////////
+    controller_renishaw encoder("can2");  
+    float encoder_arr[2];  
 
-    ////////////////////////////////////////////////////////
-    // One loop control demonstration
-    ////////////////////////////////////////////////////////
+    double theta_1_t = 0.0;   
+    double theta_2_t = 0.0;   
+
+    double q_1_t = 0.0;   
+    double q_2_t = 0.0;  
+
+    double d_theta_1_t = 0.0;    
+    double d_theta_2_t = 0.0;   
+
+	encoder.read_ang_encoder(encoder_arr);  
+     
+  	q_1_t = (double) encoder_arr[1]*PI/180.0;   
+  	q_2_t = (double) encoder_arr[0]*PI/180.0;   
+
+    // ////////////////////////////////////////////////////////
+    // // One loop control demonstration
+    // ////////////////////////////////////////////////////////
+    printf("Get demonstration start !!!!\n");  
 
     string output_torque = "demonstrated_torque_list.txt";    
     ofstream OutFileTorque(output_torque);    
@@ -386,13 +413,7 @@ py::array_t<double> buff_size)
 
     string output_angle = "demonstrated_angle_list.txt";    
     ofstream OutFileAngle(output_angle);    
-    OutFileAngle << "angle_1" << "," << "velocity_1" << " " << "angle_2" << "," << "velocity_2" << "\n";      
-
-    double theta_1_t = 0.0;   
-    double theta_2_t = 0.0;   
-
-    double d_theta_1_t = 0.0;    
-    double d_theta_2_t = 0.0;    
+    OutFileAngle << "theta_1_t" << "," << "d_theta_1_t" << "," << "q_1_t" << "," << "theta_2_t" << "," << "d_theta_2_t" << "," << "q_2_t" << "\n";       
 
     double torque_1 = 0.0;  
     double torque_2 = 0.0;  
@@ -406,11 +427,11 @@ py::array_t<double> buff_size)
     double torque_1_t = 0.0;   
     double torque_2_t = 0.0;   
 
-    double torque_lower_bound = -0.4;      
-    double torque_upper_bound = 0.4;    
-
     double pos_1 = 0.0;   
     double pos_2 = 0.0;   
+
+    double torque_lower_bound = -0.4;      
+    double torque_upper_bound = 0.4;    
 
     // double stiffness_1 = stiffness_1;   
     // double stiffness_2 = stiffness_2;    
@@ -419,8 +440,8 @@ py::array_t<double> buff_size)
     // double damping_1 = damping_1;     
     // double damping_2 = damping_2;     
 
-    double ratio_ctl_1 = -2000/32;   
-    double ratio_ctl_2 = 2000/32;   
+    // double ratio_ctl_1 = -2000/32;   
+    // double ratio_ctl_2 = 2000/32;   
 
     run_on = 1;   
 
@@ -461,12 +482,16 @@ py::array_t<double> buff_size)
         // Catch a Ctrl-C event:   
         signal(SIGINT, sig_h);   
         
+        // get sensing data
         theta_1_t = motor_1.read_sensor(motor_id_1) - theta_1_initial;   
-        theta_2_t = motor_2.read_sensor(motor_id_2) - theta_2_initial; 
-        // theta_2_t = -1 * (motor_2.read_sensor(motor_id_2) + theta_1_t - theta_2_initial);   
+        theta_2_t = motor_2.read_sensor(motor_id_2) - theta_2_initial;  
+
+        encoder.read_ang_encoder(encoder_arr);  
+    
+        q_1_t = (double) encoder_arr[1]*PI/180.0;   
+        q_2_t = (double) encoder_arr[0]*PI/180.0;   
 
         // index_buff = index%buff_length;   
-
         // theta_list[index_buff][0] = theta_1_t;   
         // theta_list[index_buff][1] = theta_2_t;  
 
@@ -474,8 +499,8 @@ py::array_t<double> buff_size)
         printf("torque_2_t: %f\n", torque_2_t);     
 
         /// zero impedance control   
-        torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_1;   
-        torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_2;   
+        torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
+        torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
 
         pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);    
         pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
@@ -490,7 +515,7 @@ py::array_t<double> buff_size)
         // theta_list[index_buff*result_buf.shape[1] + 0] = theta_1_t;    
         // theta_list[index_buff*result_buf.shape[1] + 1] = theta_2_t;    
 
-        OutFileAngle << theta_1_t << "," << d_theta_1_t << "," << theta_2_t << "," << d_theta_2_t << "\n";  
+        OutFileAngle << theta_1_t << "," << d_theta_1_t << "," << q_1_t << ","<< theta_2_t << "," << d_theta_2_t << ","  << q_2_t <<"\n";  
 
         OutFileTorque << torque_1_o << "," << torque_1_t << "," << torque_2_o << "," << torque_2_t << "\n";   
 
@@ -579,8 +604,8 @@ double dist_threshold
  
     double dist = 1.0;   
 
-    double ratio_ctl_1 = -2000/32; 
-    double ratio_ctl_2 = -2000/32; 
+    // double ratio_ctl_1 = -2000/32; 
+    // double ratio_ctl_2 = -2000/32; 
 
     py::buffer_info q_1_list_buf = q_1_target.request();    
     py::buffer_info q_2_list_buf = q_2_target.request();    
@@ -610,8 +635,8 @@ double dist_threshold
         /////////////////////////////////////////////////////  
         // calculate torque control command    
         ///////////////////////////////////////////////////// 
-        torque_1 = clip(-1 * stiffness_1 * (q_1_list[index] - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_1; 
-        torque_2 = clip(-1 * stiffness_2 * (q_2_list[index] - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ratio_ctl_2; 
+        torque_1 = clip(-1 * stiffness_1 * (q_1_list[index] - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+        torque_2 = clip(-1 * stiffness_2 * (q_2_list[index] - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 
         torque_1_o = clip(-1 * stiffness_1 * (q_1_list[index] - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t), torque_lower_bound, torque_upper_bound);  
         torque_2_o = clip(-1 * stiffness_2 * (q_2_list[index] - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t), torque_lower_bound, torque_upper_bound);  
@@ -835,8 +860,6 @@ int rotate_to_target(
 
     double torque_lower_bound = -1.0;      
     double torque_upper_bound = 1.0;      
-
-    double ctl_ratio = 2000.0/32;   
 
     double theta_t = 0.0;   
 
@@ -1213,9 +1236,16 @@ PYBIND11_MODULE(motor_control, m) {
         Some other explanation about the add function. 
     )pbdoc"); 
 
+    // m.def(
+    //     "read_initial_encode", &read_initial_encode, R"pbdoc( 
+    //     read_initial_encode
+
+    //     Some other explanation about the add function. 
+    // )pbdoc"); 
+
     m.def(
-        "read_initial_encode", &read_initial_encode, R"pbdoc( 
-        read_initial_encode
+        "read_encoder_angles", &read_encoder_angles, R"pbdoc( 
+        read_encoder_angles
 
         Some other explanation about the add function. 
     )pbdoc"); 

@@ -180,10 +180,10 @@ void controller_renishaw::read_ang_encoder(float (&data_arr)[2]) {
 	received_position2[2] = this->tx_msg.cframe.data[6];
 	received_position2[3] = this->tx_msg.cframe.data[7]; 
 
-    printf("read data 0:::%d \n", received_position[0]); 
-    printf("read data 1:::%d \n", received_position[1]); 
-    printf("read data 2:::%d \n", received_position[2]); 
-    printf("read data 3:::%d \n", received_position[3]); 
+    // printf("read data 0:::%d \n", received_position[0]); 
+    // printf("read data 1:::%d \n", received_position[1]); 
+    // printf("read data 2:::%d \n", received_position[2]); 
+    // printf("read data 3:::%d \n", received_position[3]); 
 
 	bytes2Float(received_position,&position1);   
 	bytes2Float(received_position2,&position2);  

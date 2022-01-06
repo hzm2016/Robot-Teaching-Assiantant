@@ -13,10 +13,19 @@
 #include<cstring> 
 
 #define PI 3.1415926 
+
+const double ctl_ratio = 2000.0/32;   
+
 const double ctl_ratio_1 = -2000.0/32;     
-const double ctl_ratio_2 = 2000.0/32;  
+const double ctl_ratio_2 = 2000.0/32;   
+
 const double d_t = 0.001; 
 const double L_1 = 0.30, L_2 = 0.25;  
+
+////////// define the motor id to control ////////
+const int motor_id_1 = 1;    
+const int motor_id_2 = 1;    
+//////////////////////////////////////////////////
 
 double clip(double angle, double lower_bound, double upper_bound); 
 
@@ -40,13 +49,13 @@ double read_initial_angle_2();
 
 double read_initial_angle_3();  
 
-int read_initial_encode();  
+int read_initial_encode(double encoder_angle[2]);  
 
-double read_angle_1(double theta_1_initial); 
+double read_angle_1(double theta_1_initial);  
 
-double read_angle_2(double theta_2_initial, double theta_1_t); 
+double read_angle_2(double theta_2_initial, double theta_1_t);  
 
-double read_angle_3(double theta_3_initial); 
+double read_angle_3(double theta_3_initial);  
 
 void load_path_data(double *theta_1_list, double *theta_2_list); 
 

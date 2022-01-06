@@ -19,73 +19,23 @@ using namespace Eigen;
 #include "renishaw_can_functions.hpp" 
 #include "robot_cal.hpp"
 
- 
 
-double clip(double angle, double lower_bound, double upper_bound)
-{
-    double clip_angle; 
-
-    if (angle < lower_bound)
-    {
-        clip_angle = lower_bound; 
-    } 
-    else if(angle > upper_bound)
-    {
-        clip_angle = upper_bound; 
-    }
-    else
-    {
-        clip_angle = angle; 
-    }
-    return clip_angle; 
-}
-
-
-void split(const string& s, vector<string>& tokens, const string& delim)
-{
-    tokens.clear(); 
-    size_t lastPos = s.find_first_not_of(delim, 0); 
-    size_t pos = s.find(delim, lastPos); 
-    while (lastPos != string::npos) {
-        tokens.emplace_back(s.substr(lastPos, pos - lastPos)); 
-        lastPos = s.find_first_not_of(delim, pos); 
-        pos = s.find(delim, lastPos); 
-    }  
-}  
-
-
-void Jacobian(double theta_1_t, double theta_2_t) 
-{
-    // const <MatrixXd> J 
-    MatrixXd m(2,2); 
-
-
-    m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t); 
-    m(0, 1) = L_1 * cos(theta_2_t) + L_2 * cos(theta_1_t + theta_2_t);  
-
-    m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t); 
-    m(1, 1) = L_2 * sin(theta_2_t);  
-
-    printf("matrix :%f", clip(m(1, 1), -1, 1)); 
-}
-
-
-int read_initial_encode() 
+int read_initial_encode(double encoder_angle[2]) 
 { 
     ////////////////////////////////////////////
     // Read original encoder
     ////////////////////////////////////////////
     controller_renishaw encoder("can2");  
 
-    float encoder_arr[2];   
+    float encoder_arr[2];  
 
-	encoder.read_ang_encoder(encoder_arr);   
+	encoder.read_ang_encoder(encoder_arr);  
      
-  	double q_1 = (double) encoder_arr[1]*PI/180.0;   
-  	double q_2 = (double) encoder_arr[0]*PI/180.0;   
+  	encoder_angle[0] = (double) encoder_arr[1]*PI/180.0;   
+  	encoder_angle[1] = (double) encoder_arr[0]*PI/180.0;   
     
-    printf("Encoder 1 position: %f\n", q_1);   
-    printf("Encoder 2 position: %f\n", q_2);   
+    printf("Encoder 1 position: %f\n", encoder_angle[0]);   
+    printf("Encoder 2 position: %f\n", encoder_angle[1]);    
 
     return 1;  
 }  
@@ -349,6 +299,7 @@ double read_angle_1(double theta_1_initial)
     return theta_1;   
 }
 
+
 double read_angle_2(double theta_2_initial, double theta_1_t)   
 {
     ////////////////////////////////////////////
@@ -366,6 +317,7 @@ double read_angle_2(double theta_2_initial, double theta_1_t)
 
     return theta_2;   
 }
+
 
 double read_angle_3(double theta_3_initial)    
 {
@@ -477,6 +429,55 @@ int motor_3_stop()
     printf("Motor stop !!! and final pos: %f\n", theta_3_t);   
     
     return 1; 
+}
+
+
+double clip(double angle, double lower_bound, double upper_bound)
+{
+    double clip_angle; 
+
+    if (angle < lower_bound)
+    {
+        clip_angle = lower_bound; 
+    } 
+    else if(angle > upper_bound)
+    {
+        clip_angle = upper_bound; 
+    }
+    else
+    {
+        clip_angle = angle; 
+    }
+    return clip_angle; 
+}
+
+
+void split(const string& s, vector<string>& tokens, const string& delim)
+{
+    tokens.clear(); 
+    size_t lastPos = s.find_first_not_of(delim, 0); 
+    size_t pos = s.find(delim, lastPos); 
+    while (lastPos != string::npos) {
+        tokens.emplace_back(s.substr(lastPos, pos - lastPos)); 
+        lastPos = s.find_first_not_of(delim, pos); 
+        pos = s.find(delim, lastPos); 
+    }  
+}  
+
+
+void Jacobian(double theta_1_t, double theta_2_t) 
+{
+    // const <MatrixXd> J 
+    MatrixXd m(2,2); 
+
+
+    m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t); 
+    m(0, 1) = L_1 * cos(theta_2_t) + L_2 * cos(theta_1_t + theta_2_t);  
+
+    m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t); 
+    m(1, 1) = L_2 * sin(theta_2_t);  
+
+    printf("matrix :%f", clip(m(1, 1), -1, 1)); 
 }
 
 
