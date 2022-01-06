@@ -11,8 +11,8 @@ import ctypes
 import time 
 import glob 
 import scipy
-sns.set(font_scale=1.5)
 
+sns.set(font_scale=1.5)
 np.set_printoptions(precision=5)
 
 L_1 = 0.3
@@ -142,8 +142,8 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     way_points = [] 
 
     if Load_path:
-        os.remove(r'angle_list.txt')
-        data_file = open('angle_list.txt', 'w') 
+        os.remove(r'data/real_path_data/angle_list.txt')
+        data_file = open('data/real_path_data/angle_list.txt', 'w')
     
     way_point = None
     while way_point != "SEND_DONE":
@@ -206,9 +206,8 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
         time.sleep(2.0)
         move_to_target_point(Initial_point, move_impedance_params, velocity=0.05)  
 
-
     # send movement_done command 
-    _server.send_movement_done() 
+    _server.send_movement_done()
     
     _server.close()
 
@@ -322,8 +321,7 @@ def eval_writting(run_on=True, Load_path=False):
         print("Load stroke path !!!") 
         stroke_angle = np.loadtxt('angle_list_0.txt', delimiter=' ')    
         # N_way_points = stroke_angle.shape[0]   
-        # print("N_way_points :", N_way_points)  
-    
+        # print("N_way_points :", N_way_points)
 
     # ######################################################
     # ############## Wait impedance parameters  ############
@@ -441,7 +439,7 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
     stroke_list_file = glob.glob(word_file + 'angle_list_*txt')
     print("Load stroke data %d", len(stroke_list_file)) 
 
-    word_path = [] 
+    word_path = []
     word_params = [] 
     real_path = []
     for i in range(len(stroke_list_file)): 
@@ -496,8 +494,8 @@ if __name__ == "__main__":
 
     plot_sea_angle_torque_path(
         root_path='./',
-        file_angle_name='demonstrated_angle_list.txt',
-        file_torque_name='demonstrated_torque_list.txt' 
+        file_angle_name='data/real_path_data/demonstrated_angle_list.txt',
+        file_torque_name='data/real_path_data/demonstrated_torque_list.txt'
     )
 
     # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.2])) 
