@@ -142,8 +142,8 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     way_points = [] 
 
     if Load_path:
-        os.remove(r'angle_list.txt')
-        data_file = open('angle_list.txt', 'w') 
+        os.remove(r'data/real_path_data/angle_list.txt')
+        data_file = open('data/real_path_data/angle_list.txt', 'w')
     
     way_point = None
     while way_point != "SEND_DONE":
@@ -496,8 +496,8 @@ if __name__ == "__main__":
 
     plot_torque_path(
         root_path='./',
-        file_angle_name='demonstrated_angle_list.txt',
-        file_torque_name='demonstrated_torque_list.txt' 
+        file_angle_name='data/real_path_data/demonstrated_angle_list.txt',
+        file_torque_name='data/real_path_data/demonstrated_torque_list.txt'
     )
 
     # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.2])) 
