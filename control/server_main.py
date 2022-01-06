@@ -1,5 +1,5 @@
-from matplotlib.pyplot import title
-from numpy.lib import NumpyVersion
+# from matplotlib.pyplot import title
+# from numpy.lib import NumpyVersion
 from protocol.task_interface import *
 import numpy as np
 import math
@@ -480,11 +480,11 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
 
 if __name__ == "__main__":  
-    write_name = 'xing'       
-    eval_times = 5 
+    # write_name = 'xing'       
+    # eval_times = 5 
 
     # ===========================================================
-    # motor_control.read_initial_encode() 
+    # motor_control.read_encoder_angles()  
     
     # motor_control.read_initial_angle_1()  
 
@@ -492,9 +492,9 @@ if __name__ == "__main__":
 
     # motor_control.read_analog_encoder() 
     
-    # motor_control.phri_get_demonstration(-0.393808, -0.500452, 1.0, 0.0, 0.0, 0.0, 10000) 
+    # motor_control.phri_get_demonstration(-0.390407, -0.486933, 0.0, 0.0, 0.0, 0.0, 10000) 
 
-    plot_torque_path(
+    plot_sea_angle_torque_path(
         root_path='./',
         file_angle_name='demonstrated_angle_list.txt',
         file_torque_name='demonstrated_torque_list.txt' 
