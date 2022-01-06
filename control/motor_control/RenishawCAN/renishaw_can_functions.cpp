@@ -100,7 +100,7 @@ int controller_renishaw::can_read()
     
 	nbytes = read(this->write_socket, &(tx_msg.cframe), sizeof(struct can_frame)); 
 	
-    cout << "read can id" << tx_msg.cframe.can_id << endl; 
+    // cout << "read can id" << tx_msg.cframe.can_id << endl; 
 
     // Paranoid check:
 	/*
@@ -120,7 +120,7 @@ int controller_renishaw::can_write()
 	nbytes = write(this->write_socket, &(tx_msg.cframe), sizeof(struct can_frame));
 
     // cout << tx_msg.cframe.data[0] << endl;
-    cout << "write can id \n" << tx_msg.cframe.can_id << endl; 
+    // cout << "write can id \n" << tx_msg.cframe.can_id << endl; 
 
 	if (nbytes < 0)	{ 
 		printf("\n\ncontroller_renishaw::can_write(): errno = %d [%s]\n", errno, strerror(errno));
@@ -150,8 +150,8 @@ void controller_renishaw::bytes2Float(uint8_t * bytes_temp, float* float_variabl
   thing.bytes[2] = bytes_temp[2]; 
   thing.bytes[3] = bytes_temp[3]; 
   *(float_variable) = thing.a; 
-  printf("b2f float = %f, bytes_temp: %x %x %x %x \n",thing.a, bytes_temp[0],bytes_temp[1],bytes_temp[2],bytes_temp[3]);
-  printf("b2f *float = %f, thing.bytes: %x %x %x %x \n",*(float_variable), thing.bytes[0],thing.bytes[1],thing.bytes[2],thing.bytes[3]);
+//   printf("b2f float = %f, bytes_temp: %x %x %x %x \n",thing.a, bytes_temp[0],bytes_temp[1],bytes_temp[2],bytes_temp[3]);
+//   printf("b2f *float = %f, thing.bytes: %x %x %x %x \n",*(float_variable), thing.bytes[0],thing.bytes[1],thing.bytes[2],thing.bytes[3]);
 		
 }
 
@@ -160,12 +160,12 @@ void controller_renishaw::read_ang_encoder(float (&data_arr)[2]) {
     this->tx_msg.cframe.can_id  = 0x400;
     can_write();
 
-    cout << "can write !!!" << endl;
+    // cout << "can write !!!" << endl;
 
     this->tx_msg.cframe.can_id  = 0x401;
 	can_read(); 
 
-    cout << "can read !!!" << endl; 
+    // cout << "can read !!!" << endl; 
 
 	uint8_t received_position[4],received_position2[4];
   	float position1,position2;
@@ -185,8 +185,8 @@ void controller_renishaw::read_ang_encoder(float (&data_arr)[2]) {
     // printf("read data 2:::%d \n", received_position[2]); 
     // printf("read data 3:::%d \n", received_position[3]); 
 
-	bytes2Float(received_position,&position1);   
-	bytes2Float(received_position2,&position2);  
+	bytes2Float(received_position, &position1);   
+	bytes2Float(received_position2, &position2);  
  
   	data_arr[0]=position1;  
   	data_arr[1]=position2;	

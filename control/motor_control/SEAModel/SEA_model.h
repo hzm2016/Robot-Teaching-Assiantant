@@ -23,6 +23,9 @@ double
 tau_est_SEA_model(double pre_ex_length, double offset_angle, double diff_angle_sea);
 
 double
+k_est_SEA_model(double pre_ex_length, double offset_angle, double diff_angle_sea); 
+
+double
 diff_h_theta_ord1(double pre_ex_length, double offset_angle, double diff_angle_sea);
 
 double

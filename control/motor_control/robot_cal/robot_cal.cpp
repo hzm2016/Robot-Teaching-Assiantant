@@ -1,14 +1,14 @@
-#include <iostream> 
-#include <fstream> 
-#include <string>
-#include <vector>
-#include <stdlib.h> 
+#include <iostream>  
+#include <fstream>  
+#include <string>  
+#include <vector>  
+#include <stdlib.h>  
 
 using namespace std; 
 
 #include <unistd.h>   
 #include <signal.h>   
-#include <cmath>  
+#include <cmath>   
 #include <stdio.h>   
 
 #include <Eigen/Dense>  
@@ -34,9 +34,8 @@ int read_initial_encode(double encoder_angle[2])
   	encoder_angle[0] = (double) encoder_arr[1]*PI/180.0;   
   	encoder_angle[1] = (double) encoder_arr[0]*PI/180.0;   
     
-    printf("Encoder 1 position: %f\n", encoder_angle[0]);   
-    printf("Encoder 2 position: %f\n", encoder_angle[1]);    
-
+    // printf("Encoder 1 position: %f\n", encoder_angle[0]);   
+    // printf("Encoder 2 position: %f\n", encoder_angle[1]);    
     return 1;  
 }  
 
@@ -238,7 +237,7 @@ double read_initial_angle_1()
     Gcan motor_1(can1);   
     motor_1.begin();   
     
-    double theta_1 = motor_1.read_sensor(1);   
+    double theta_1 = motor_1.read_sensor(motor_id_1);   
     printf("Motor 1 original position: %f\n", theta_1);   
 
     return theta_1;   
@@ -257,7 +256,7 @@ double read_initial_angle_2()
     motor_2.begin();   
 
     // double theta_2 = motor_2.read_sensor(1);   
-    double theta_2 = motor_2.read_sensor(1);  
+    double theta_2 = motor_2.read_sensor(motor_id_2);  
     printf("Motor 2 original position: %f\n", theta_2);   
 
     return theta_2;   
@@ -293,8 +292,8 @@ double read_angle_1(double theta_1_initial)
     Gcan motor_1(can1);   
     motor_1.begin();  
     
-    double theta_1 = motor_1.read_sensor(2) - theta_1_initial;    
-    // printf("Motor 1 position: %f\n", theta_1);   
+    double theta_1 = motor_1.read_sensor(motor_id_1) - theta_1_initial;    
+    printf("Motor 1 position: %f\n", theta_1);   
 
     return theta_1;   
 }
@@ -306,14 +305,15 @@ double read_angle_2(double theta_2_initial, double theta_1_t)
     // Read motor angle 2
     ////////////////////////////////////////////
 
-    CANDevice can0((char *) "can0");   
+    CANDevice can0((char *) "can0");    
     can0.begin();   
 
     Gcan motor_2(can0);   
     motor_2.begin();   
 
-    double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
-    // printf("Motor 2 position: %f\n", theta_2);   
+    // double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+    double theta_2 = motor_2.read_sensor(motor_id_2) - theta_2_initial;   
+    printf("Motor 2 position: %f\n", theta_2);  
 
     return theta_2;   
 }

@@ -479,24 +479,28 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
 if __name__ == "__main__":  
     # write_name = 'xing'       
-    # eval_times = 5 
+    # eval_times = 5   
 
     # ===========================================================
-    # motor_control.read_encoder_angles()  
+    # motor_control.read_encoder_angles(2.516857, 4.574669)   
     
     # motor_control.read_initial_angle_1()  
 
     # motor_control.read_initial_angle_2()  
 
-    # motor_control.read_analog_encoder() 
-    
-    # motor_control.phri_get_demonstration(-0.390407, -0.486933, 0.0, 0.0, 0.0, 0.0, 10000) 
+    # motor_control.read_angle_1(-0.392035)  
 
-    plot_sea_angle_torque_path(
-        root_path='./',
-        file_angle_name='data/real_path_data/demonstrated_angle_list.txt',
-        file_torque_name='data/real_path_data/demonstrated_torque_list.txt'
-    )
+    # motor_control.read_angle_2(-0.500249, 0)  
+
+    # motor_control.read_analog_encoder()  
+    
+    motor_control.phri_get_demonstration(-0.392035, -0.500249, 2.516857, 4.574669, 0.0, 0.0, 0.0, 0.0) 
+
+    # plot_sea_angle_torque_path(
+    #     root_path='./',
+    #     file_angle_name='demonstrated_angle_list.txt', 
+    #     file_torque_name='demonstrated_torque_list.txt' 
+    # )
 
     # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.2])) 
     

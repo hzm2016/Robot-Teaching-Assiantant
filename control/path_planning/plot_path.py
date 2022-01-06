@@ -466,22 +466,22 @@ def plot_real_2d_demo_path(
 
 
 def plot_sea_angle_torque_path(
-        root_path='./motor_control/bin/data/',
-        file_angle_name='',
-        file_torque_name=''
+        root_path='./motor_control/bin/data/', 
+        file_angle_name='', 
+        file_torque_name='' 
 ):
     """ plot angle trajectory and cartesian path"""
-    FONT_SIZE = 28
-    linewidth = 4
+    FONT_SIZE = 28 
+    linewidth = 4 
     # plt.rcParams['font.family'] = 'Times New Roman'
     # plt.rcParams['font.size'] = FONT_SIZE
     # print("angle_list :", root_path + file_angle_name)
 
     angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1) 
-    max_index = angle_list_e.shape[0]
+    max_index = angle_list_e.shape[0] 
 
-    angle_list_1_e = angle_list_e[:max_index, 0]
-    angle_list_2_e = angle_list_e[:max_index, 3]
+    angle_list_1_e = angle_list_e[:max_index, 3]
+    angle_list_2_e = angle_list_e[:max_index, 5]
 
     torque_list = np.loadtxt(root_path + file_torque_name, delimiter=',', skiprows=1)
     torque_list_1 = torque_list[:max_index, 0]
@@ -492,8 +492,8 @@ def plot_sea_angle_torque_path(
     plt.subplot(1, 2, 1)
     plt.subplots_adjust(wspace=0, hspace=0)
     
-    plt.plot(angle_list_1_e, linewidth=linewidth, label='angle 1')
-    plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2')
+    plt.plot(angle_list_1_e, linewidth=linewidth, label='theta 1')
+    plt.plot(angle_list_2_e, linewidth=linewidth, label='q 1')
     
     plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
     plt.ylabel('rad')  # fontsize=FONT_SIZE

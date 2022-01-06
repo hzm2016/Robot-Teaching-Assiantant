@@ -9,6 +9,7 @@
 
 #include "model526.h" 
 #include "robot_cal.hpp"  
+#include "SEA_model.h"
 
 using namespace std; 
 
@@ -64,7 +65,7 @@ double read_analog_encoder(){
 
     // cout << "initial DAC !!!" << endl; 
     
-    // s526_adc_init(ADC_CHAN, NUM_ADC_CHAN); 
+    // s526_adc_init(ADC_CHAN, NUM_ADC_CHAN);  
 
     // cout << "Test ADC read !!!" << endl; 
 
@@ -76,13 +77,13 @@ double read_analog_encoder(){
 } 
 
 
-int read_encoder_angles()
+int read_encoder_angles(double q_1_initial, double q_2_initial) 
 {
-    double encoder_values[2] = {0.0, 0.0}; 
-    read_initial_encode(encoder_values); 
-    printf("encoder1: %f, encoder2: %f", encoder_values[0], encoder_values[1]); 
+    double encoder_values[2] = {0.0, 0.0};  
+    read_initial_encode(encoder_values);  
+    printf("encoder1: %f, encoder2: %f", encoder_values[0] - q_1_initial, encoder_values[1] - q_2_initial); 
 
-    return 1; 
+    return 1;  
 }
 
 
@@ -364,10 +365,12 @@ py::array_t<double> buff_size)
 }  
 
 
-int phri_get_demonstration(double theta_1_initial, double theta_2_initial,  
+int phri_get_demonstration(
+double theta_1_initial, double theta_2_initial,  
+double q_1_initial, double q_2_initial,  
 double stiffness_1, double stiffness_2,  
-double damping_1, double damping_2,  
-py::array_t<double> buff_size)  
+double damping_1, double damping_2
+)
 {
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN 
@@ -399,8 +402,21 @@ py::array_t<double> buff_size)
 
 	encoder.read_ang_encoder(encoder_arr);  
      
-  	q_1_t = (double) encoder_arr[1]*PI/180.0;   
-  	q_2_t = (double) encoder_arr[0]*PI/180.0;   
+  	q_1_t = (double) encoder_arr[1] * PI/180.0 - q_1_initial;   
+
+  	q_2_t = (double) encoder_arr[0] * PI/180.0 - q_2_initial;   
+
+    if (q_2_t < 0)
+    {
+        q_2_t = q_2_t + 6.28; 
+    } 
+    else
+    {
+        q_2_t = q_2_t; 
+    }
+
+    q_1_t = -1 * q_1_t;   
+    q_2_t = -1 * q_2_t;   
 
     // ////////////////////////////////////////////////////////
     // // One loop control demonstration
@@ -409,7 +425,7 @@ py::array_t<double> buff_size)
 
     string output_torque = "demonstrated_torque_list.txt";    
     ofstream OutFileTorque(output_torque);    
-    OutFileTorque << "torque_1" << "," << "torque_1_t" << "," << "torque_2" << "," << "torque_2_t" << "\n";   
+    OutFileTorque << "torque_1_e" << "," << "torque_1_t" << "," << "tau_1" << "," << "torque_2_e" << "," << "torque_2_t" << "," << "tau_2"<< "\n";   
 
     string output_angle = "demonstrated_angle_list.txt";    
     ofstream OutFileAngle(output_angle);    
@@ -432,6 +448,20 @@ py::array_t<double> buff_size)
 
     double torque_lower_bound = -0.4;      
     double torque_upper_bound = 0.4;    
+
+    //////////////////// SEA model //////////////////////////
+    double pre_ex_length = 0.0005; 
+
+    double diff_angle_sea_1 = 0.0; 
+    double diff_angle_sea_2 = 0.0; 
+
+    double offset_angle_1 = 10.0 * PI/180; 
+    double offset_angle_2 = 10.0 * PI/180; 
+
+    double K_1 = 0.0;
+    double K_2 = 0.0;
+    double tau_1 = 0.0;
+    double tau_2 = 0.0; 
 
     // double stiffness_1 = stiffness_1;   
     // double stiffness_2 = stiffness_2;    
@@ -488,8 +518,26 @@ py::array_t<double> buff_size)
 
         encoder.read_ang_encoder(encoder_arr);  
     
-        q_1_t = (double) encoder_arr[1]*PI/180.0;   
-        q_2_t = (double) encoder_arr[0]*PI/180.0;   
+        q_1_t = (double) encoder_arr[1] * PI/180.0 - q_1_initial;   
+        q_2_t = (double) encoder_arr[0] * PI/180.0 - q_2_initial;   
+
+        if (q_2_t < 0)
+        {
+            q_2_t = q_2_t + 6.28; 
+        } 
+        else
+        {
+            q_2_t = q_2_t; 
+        } 
+
+        q_1_t = -1 * q_1_t;   
+        q_2_t = -1 * q_2_t;   
+        
+        tau_1 = tau_est_SEA_model(pre_ex_length, offset_angle_1, diff_angle_sea_1);  
+        tau_2 = tau_est_SEA_model(pre_ex_length, offset_angle_2, diff_angle_sea_2);  
+
+        K_1 = k_est_SEA_model(pre_ex_length, offset_angle_1, diff_angle_sea_1);  
+        K_2 = k_est_SEA_model(pre_ex_length, offset_angle_2, diff_angle_sea_2);  
 
         // index_buff = index%buff_length;   
         // theta_list[index_buff][0] = theta_1_t;   
@@ -499,15 +547,14 @@ py::array_t<double> buff_size)
         printf("torque_2_t: %f\n", torque_2_t);     
 
         /// zero impedance control   
-        torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
-        torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
+        // torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
+        // torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;  
+
+        torque_1 = 0.0;   
+        torque_2 = 0.0;    
 
         pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);    
         pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
- 
-
-        // pos_1 = motor_1.set_torque(motor_id_1, 0.0, &d_theta_1_t, &torque_1_t);   
-        // pos_2 = motor_2.set_torque(motor_id_2, 0.0, &d_theta_2_t, &torque_2_t);   
 
         torque_1_o = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound);    
         torque_2_o = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound);   
@@ -515,9 +562,9 @@ py::array_t<double> buff_size)
         // theta_list[index_buff*result_buf.shape[1] + 0] = theta_1_t;    
         // theta_list[index_buff*result_buf.shape[1] + 1] = theta_2_t;    
 
-        OutFileAngle << theta_1_t << "," << d_theta_1_t << "," << q_1_t << ","<< theta_2_t << "," << d_theta_2_t << ","  << q_2_t <<"\n";  
+        OutFileAngle << theta_1_t << "," << d_theta_1_t << "," << q_1_t << ","<< theta_2_t << "," << d_theta_2_t << "," << q_2_t <<"\n";  
 
-        OutFileTorque << torque_1_o << "," << torque_1_t << "," << torque_2_o << "," << torque_2_t << "\n";   
+        OutFileTorque << torque_1_o << "," << torque_1_t << "," << tau_1 << "," << torque_2_o << "," << torque_2_t << "," << tau_2 << "\n";   
 
         // for(i=0; i<result_buf.shape[0]; i++) 
         // {

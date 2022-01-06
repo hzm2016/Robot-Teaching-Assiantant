@@ -14,21 +14,21 @@
 
 #include "SEA_model.h"
 
-double stiff_spring      =  11.9e3; //N/m
+double stiff_spring      =  20.5e3; //N/m // 20.5e3
 double orginal_length    =  28.5e-3;  // meter
 double redius_inner      =  24.5e-3; 
-double redius_outer      =  0;
+double redius_outer      =  0; //53e-3
 double spring_length1    =  0;
 double spring_length2    =  0;
 double spring_angle1     =  0;
 double spring_angle2     =  0;
 double N_pairs_spring    =  6;
-double pi                =  3.14159265358979;
+double pi                =  3.14159265358979; 
 
 double
 tau_est_SEA_model(double pre_ex_length, double offset_angle, double diff_angle_sea) {
 	
-	double tau_sea_est		 =  0;
+	double tau_sea_est	=  0;
 
 	redius_outer = redius_inner + orginal_length + pre_ex_length;
 	spring_angle1  = diff_angle_sea + offset_angle;
@@ -41,6 +41,27 @@ tau_est_SEA_model(double pre_ex_length, double offset_angle, double diff_angle_s
 
 	return tau_sea_est;
 }
+
+
+double
+k_est_SEA_model(double pre_ex_length, double offset_angle, double diff_angle_sea) {
+	
+	double k_sea_est = 0;
+
+	redius_outer = redius_inner + orginal_length + pre_ex_length;
+	spring_angle1  = diff_angle_sea + offset_angle;
+	spring_angle2  = diff_angle_sea - offset_angle;
+	spring_length1 = sqrt ( pow(redius_inner, 2) + pow(redius_outer,2) - 2*redius_outer*redius_inner* cos(spring_angle1) );
+	spring_length2 = sqrt ( pow(redius_inner, 2) + pow(redius_outer,2) - 2*redius_outer*redius_inner* cos(spring_angle2) );
+
+	k_sea_est = (double) (N_pairs_spring*stiff_spring*( (spring_length1-orginal_length) * (redius_inner*redius_outer* (double) cos( spring_angle1 )/spring_length1)
+		                                                + (spring_length2-orginal_length) * (redius_inner*redius_outer* (double) cos( spring_angle2 )/spring_length2) ) );
+
+	return k_sea_est;
+}
+
+
+
 
 double
 diff_h_theta_ord1(double pre_ex_length, double offset_angle,double diff_angle_sea){
