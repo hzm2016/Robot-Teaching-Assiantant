@@ -79,7 +79,7 @@ string angle_path_name, string torque_path_name
     double theta_2_t = 0.0;   
 
     double q_1_t = 0.0;   
-    double q_2_t = 0.0;  
+    double q_2_t = 0.0;   
 
     double d_theta_1_t = 0.0;    
     double d_theta_2_t = 0.0;   
@@ -102,9 +102,9 @@ string angle_path_name, string torque_path_name
     double torque_lower_bound = -0.4;      
     double torque_upper_bound = 0.4;    
 
-    // ////////////////////////////////////////////
+    // //////////////////////////////////////////
     // One loop control demonstration
-    // ////////////////////////////////////////////
+    // //////////////////////////////////////////
     printf("Get demonstration start !!!!\n");  
 
     string output_torque = torque_path_name;    
@@ -164,8 +164,10 @@ string angle_path_name, string torque_path_name
         q_1_t = (double) encoder_arr[1] * PI/180.0 - q_1_initial;   
         q_2_t = (double) encoder_arr[0] * PI/180.0 - q_2_initial;   
 
-        printf("torque_1_t: %f\n", torque_1_t);   
-        printf("torque_2_t: %f\n", torque_2_t);     
+        // printf("torque_1_t: %f\n", torque_1_t);   
+        // printf("torque_2_t: %f\n", torque_2_t);   
+
+        // calculate torque data   
 
         /// zero impedance control   
         torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
@@ -173,10 +175,6 @@ string angle_path_name, string torque_path_name
 
         pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);    
         pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
- 
-
-        // pos_1 = motor_1.set_torque(motor_id_1, 0.0, &d_theta_1_t, &torque_1_t);   
-        // pos_2 = motor_2.set_torque(motor_id_2, 0.0, &d_theta_2_t, &torque_2_t);   
 
         torque_1_o = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound);    
         torque_2_o = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound);   
