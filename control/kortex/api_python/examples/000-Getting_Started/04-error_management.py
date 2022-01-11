@@ -52,5 +52,6 @@ def main():
         # Example core
         example_error_management(base)
 
+
 if __name__ == "__main__":
     main()

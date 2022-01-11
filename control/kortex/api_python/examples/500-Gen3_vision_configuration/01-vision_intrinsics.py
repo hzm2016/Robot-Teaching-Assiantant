@@ -196,6 +196,7 @@ def example_routed_vision_set_intrinsics(vision_config, vision_device_id):
     print("\n-- Using Vision Config Service to set back old intrinsic parameters for depth resolution 424x240 --")
     vision_config.SetIntrinsicParameters(intrinsics_old, vision_device_id)
 
+
 def main():
     # Import the utilities helper module
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -216,6 +217,7 @@ def main():
         if vision_device_id != 0:
             example_routed_vision_get_intrinsics(vision_config, vision_device_id)
             example_routed_vision_set_intrinsics(vision_config, vision_device_id)
+
 
 if __name__ == "__main__":
     main()

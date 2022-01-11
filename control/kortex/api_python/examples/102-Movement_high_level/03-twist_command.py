@@ -11,7 +11,6 @@
 # Refer to the LICENSE file for details.
 #
 ###
-
 import time
 import sys
 import os
@@ -20,13 +19,12 @@ import threading
 from kortex_api.TCPTransport import TCPTransport
 from kortex_api.RouterClient import RouterClient
 from kortex_api.SessionManager import SessionManager
-
 from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
-
 from kortex_api.autogen.messages import Session_pb2, Base_pb2
 
 # Maximum allowed waiting time during actions (in seconds)
 TIMEOUT_DURATION = 20
+
 
 # Create closure to set an event after an END or an ABORT
 def check_for_end_or_abort(e):
@@ -56,6 +54,7 @@ def example_move_to_home_position(base):
     action_type = Base_pb2.RequestedActionType()
     action_type.action_type = Base_pb2.REACH_JOINT_ANGLES
     action_list = base.ReadAllActions(action_type)
+
     action_handle = None
     for action in action_list.action_list:
         if action.name == "Home":
@@ -83,13 +82,13 @@ def example_move_to_home_position(base):
         print("Timeout on action notification wait")
     return finished
 
+
 def example_twist_command(base):
-
     command = Base_pb2.TwistCommand()
-
     command.reference_frame = Base_pb2.CARTESIAN_REFERENCE_FRAME_TOOL
     command.duration = 0
 
+    # set value
     twist = command.twist
     twist.linear_x = 0
     twist.linear_y = 0.03
@@ -98,17 +97,18 @@ def example_twist_command(base):
     twist.angular_y = 0
     twist.angular_z = 5
 
-    print ("Sending the twist command for 5 seconds...")
+    print("Sending the twist command for 5 seconds...")
     base.SendTwistCommand(command)
 
     # Let time for twist to be executed
     time.sleep(5)
 
-    print ("Stopping the robot...")
+    print("Stopping the robot...")
     base.Stop()
     time.sleep(1)
 
     return True
+
 
 def main():
     # Import the utilities helper module
@@ -130,6 +130,7 @@ def main():
         success &= example_twist_command(base)
 
         return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit(main())

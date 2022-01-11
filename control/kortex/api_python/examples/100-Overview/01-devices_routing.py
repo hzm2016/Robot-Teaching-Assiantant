@@ -25,6 +25,7 @@ from kortex_api.autogen.messages import Common_pb2, DeviceManager_pb2, DeviceCon
 
 from google.protobuf import json_format
 
+
 def example_routed_device_config(device_manager, device_config):
 
     # Get all device routing information (from DeviceManagerClient service)
@@ -72,10 +73,12 @@ def main():
 
         # Create required services
         device_manager = DeviceManagerClient(router)
+
         device_config = DeviceConfigClient(router)
 
         # Example core
         example_routed_device_config(device_manager, device_config)
+
 
 if __name__ == "__main__":
     main()

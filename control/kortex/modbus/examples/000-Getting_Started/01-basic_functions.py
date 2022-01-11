@@ -105,10 +105,10 @@ def example_read_current_voltage():
     client = ModbusTcpClient(IP_ADDRESS, PORT)
     assert client.connect(), "Unable to connect to the slave"
 
-    modbus_current = read_two_input_registers_to_one_float(
-        client, ARM_CURRENT_ADDRESS)
-    modbus_voltage = read_two_input_registers_to_one_float(
-        client, ARM_VOLTAGE_ADDRESS)
+    modbus_current = \
+        read_two_input_registers_to_one_float(client, ARM_CURRENT_ADDRESS)
+    modbus_voltage = \
+        read_two_input_registers_to_one_float(client, ARM_VOLTAGE_ADDRESS)
 
     print('Robot current: {} A'.format(modbus_current))
     print('Robot voltage: {} V'.format(modbus_voltage))
@@ -120,7 +120,6 @@ def example_read_joints_position():
     '''
     This function initiate a modbus connection with the robot and read the position of every joint.
     '''
-
     # Set-up
     # instantiate modbus client connection
     client = ModbusTcpClient(IP_ADDRESS, PORT)
@@ -175,7 +174,6 @@ def example_move():
     '''
     This function initiate a modbus connection with the robot and reach 2 Cartesian positions.
     '''
-
     # Set-up
     # instantiate modbus client connection
     client = ModbusTcpClient(IP_ADDRESS, PORT)
@@ -281,7 +279,6 @@ def example_move():
             # Stop the action
             write_uint16_to_one_register(client, ACTION_STOP, ACTION_CONTROL_ADDRESS)
             print('Second position reached')
-
 
     client.close()
 

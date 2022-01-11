@@ -25,6 +25,7 @@ from kortex_api.autogen.messages import Session_pb2, Base_pb2, BaseCyclic_pb2
 # Maximum allowed waiting time during actions (in seconds)
 TIMEOUT_DURATION = 20
 
+
 # Create closure to set an event after an END or an ABORT
 def check_for_sequence_end_or_abort(e):
     """Return a closure checking for END or ABORT notifications on a sequence
@@ -34,7 +35,7 @@ def check_for_sequence_end_or_abort(e):
         (will be set when an END or ABORT occurs)
     """
 
-    def check(notification, e = e):
+    def check(notification, e=e):
         event_id = notification.event_identifier
         task_id = notification.task_index
         if event_id == Base_pb2.SEQUENCE_TASK_COMPLETED:
@@ -49,6 +50,7 @@ def check_for_sequence_end_or_abort(e):
             print("Sequence completed.")
             e.set()
     return check
+
 
 # Create closure to set an event after an END or an ABORT
 def check_for_end_or_abort(e):
@@ -66,9 +68,6 @@ def check_for_end_or_abort(e):
             e.set()
     return check
 
-#
-# Example related functions
-#
 
 def create_angular_action(actuator_count):
     
@@ -83,6 +82,7 @@ def create_angular_action(actuator_count):
 
     return action
 
+
 def create_cartesian_action(base_cyclic):
     
     print("Creating Cartesian action")
@@ -93,19 +93,15 @@ def create_cartesian_action(base_cyclic):
     feedback = base_cyclic.RefreshFeedback()
 
     cartesian_pose = action.reach_pose.target_pose
-    cartesian_pose.x = feedback.base.tool_pose_x          # (meters)
-    cartesian_pose.y = feedback.base.tool_pose_y - 0.1    # (meters)
-    cartesian_pose.z = feedback.base.tool_pose_z - 0.2    # (meters)
-    cartesian_pose.theta_x = feedback.base.tool_pose_theta_x # (degrees)
-    cartesian_pose.theta_y = feedback.base.tool_pose_theta_y # (degrees)
-    cartesian_pose.theta_z = feedback.base.tool_pose_theta_z # (degrees)
+    cartesian_pose.x = feedback.base.tool_pose_x               # (meters)
+    cartesian_pose.y = feedback.base.tool_pose_y - 0.1         # (meters)
+    cartesian_pose.z = feedback.base.tool_pose_z - 0.2         # (meters)
+    cartesian_pose.theta_x = feedback.base.tool_pose_theta_x   # (degrees)
+    cartesian_pose.theta_y = feedback.base.tool_pose_theta_y   # (degrees)
+    cartesian_pose.theta_z = feedback.base.tool_pose_theta_z   # (degrees)
 
     return action
 
-#
-#
-# Example core functions
-#
 
 def example_move_to_home_position(base):
     # Make sure the arm is in Single Level Servoing mode
@@ -143,9 +139,9 @@ def example_move_to_home_position(base):
         print("Timeout on action notification wait")
     return finished
 
+
 def example_create_sequence(base, base_cyclic):
     print("Creating Action for Sequence")
-
     actuator_count = base.GetActuatorCount().count
     angular_action = create_angular_action(actuator_count)
     cartesian_action = create_cartesian_action(base_cyclic)
@@ -181,6 +177,7 @@ def example_create_sequence(base, base_cyclic):
         print("Timeout on action notification wait")
     return finished
 
+
 def main():
     # Import the utilities helper module
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -202,6 +199,7 @@ def main():
         success &= example_create_sequence(base, base_cyclic)
         
         return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit(main())

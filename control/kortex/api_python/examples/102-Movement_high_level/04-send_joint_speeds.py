@@ -20,7 +20,6 @@ import threading
 from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
 from kortex_api.autogen.client_stubs.DeviceManagerClientRpc import DeviceManagerClient
 from kortex_api.autogen.client_stubs.DeviceConfigClientRpc import DeviceConfigClient
-
 from kortex_api.autogen.messages import Session_pb2, Base_pb2, Common_pb2
 
 # Maximum allowed waiting time during actions (in seconds)
@@ -28,6 +27,7 @@ TIMEOUT_DURATION = 20
 
 # Actuator speed (deg/s)
 SPEED = 20.0
+
 
 # Create closure to set an event after an END or an ABORT
 def check_for_end_or_abort(e):
@@ -44,6 +44,7 @@ def check_for_end_or_abort(e):
         or notification.action_event == Base_pb2.ACTION_ABORT:
             e.set()
     return check
+
 
 def example_move_to_start_position(base):
     # Make sure the arm is in Single Level Servoing mode
@@ -82,11 +83,13 @@ def example_move_to_start_position(base):
         print("Timeout on action notification wait")
     return finished
 
+
 def example_send_joint_speeds(base):
 
     joint_speeds = Base_pb2.JointSpeeds()
 
     actuator_count = base.GetActuatorCount().count
+
     # The 7DOF robot will spin in the same direction for 10 seconds
     if actuator_count == 7:
         speeds = [SPEED, 0, -SPEED, 0, SPEED, 0, -SPEED]
@@ -146,6 +149,7 @@ def main():
         success &= example_send_joint_speeds(base)
 
         return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit(main())

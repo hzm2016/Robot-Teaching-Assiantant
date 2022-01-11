@@ -482,7 +482,7 @@ if __name__ == "__main__":
     # eval_times = 5   
 
     # ===========================================================
-    # motor_control.read_encoder_angles(2.516857, 4.574669)   
+    # motor_control.read_encoder_angles(2.516857, 4.574669)
     
     # motor_control.read_initial_angle_1()  
 
@@ -494,7 +494,7 @@ if __name__ == "__main__":
 
     # motor_control.read_analog_encoder()  
     
-    motor_control.phri_get_demonstration(-0.392035, -0.500249, 2.516857, 4.574669, 0.0, 0.0, 0.0, 0.0) 
+    motor_control.phri_get_demonstration(-0.392035, -0.500249, 2.516857, 4.574669, 0.0, 0.0, 0.0, 0.0)
 
     # plot_sea_angle_torque_path(
     #     root_path='./',

@@ -14,13 +14,13 @@
 
 import sys
 import os
-
 from kortex_api.RouterClient import RouterClientSendOptions
 
 from kortex_api.autogen.client_stubs.DeviceConfigClientRpc import DeviceConfigClient
 from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
 
 from kortex_api.autogen.messages import DeviceConfig_pb2, Session_pb2, Base_pb2, Common_pb2
+
 
 def example_call_rpc_using_options(base):
 
@@ -33,9 +33,8 @@ def example_call_rpc_using_options(base):
     # The RouterClientSendOptions is optional and needs to be passed with the keyword
     # options
     router_options = RouterClientSendOptions()
-    router_options.timeout_ms = 5000 # 5 seconds
+    router_options.timeout_ms = 5000  # 5 seconds
 
-    
     # The same function call without the options=router_options is valid and will do the same
     # using router's default options
     
@@ -59,6 +58,7 @@ def example_call_rpc_using_options(base):
             if (action.handle.permission & Common_pb2.DELETE_PERMISSION): print("\t- {0}".format(Common_pb2.Permission.Name(Common_pb2.DELETE_PERMISSION)))
             print("============================================")
 
+
 def main():
     # Import the utilities helper module
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -75,6 +75,7 @@ def main():
 
         # Example core
         example_call_rpc_using_options(base)
+
 
 if __name__ == "__main__":
     main()

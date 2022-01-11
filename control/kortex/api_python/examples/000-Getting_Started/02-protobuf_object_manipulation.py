@@ -288,7 +288,6 @@ def example_manipulation_protobuf_helpers():
     #   ]
     # }
 
-
     # From the Google Protocol Buffer library you can used the text_format module.
     # A useful function is the MessageToString. It has the same purpose as 
     # MessageToJson - convert the message to a human readable format.

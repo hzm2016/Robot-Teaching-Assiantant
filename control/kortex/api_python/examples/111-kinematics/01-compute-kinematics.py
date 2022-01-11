@@ -16,7 +16,6 @@ import sys
 import os
 
 from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
-
 from kortex_api.autogen.messages import Base_pb2
 from kortex_api.Exceptions.KServerException import KServerException
 
@@ -57,6 +56,7 @@ def example_forward_kinematics(base):
     print()
     return True
 
+
 def example_inverse_kinematics(base):
     # get robot's pose (by using forward kinematics)
     try:
@@ -80,11 +80,10 @@ def example_inverse_kinematics(base):
     input_IkData.cartesian_pose.theta_z = pose.theta_z
 
     # Fill the IKData Object with the guessed joint angles
-    for joint_angle in input_joint_angles.joint_angles :
+    for joint_angle in input_joint_angles.joint_angles:
         jAngle = input_IkData.guess.joint_angles.add()
         # '- 1' to generate an actual "guess" for current joint angles
         jAngle.value = joint_angle.value - 1
-    
     try:
         print("Computing Inverse Kinematics using joint angles and pose...")
         computed_joint_angles = base.ComputeInverseKinematics(input_IkData)
@@ -99,8 +98,8 @@ def example_inverse_kinematics(base):
     for joint_angle in computed_joint_angles.joint_angles :
         print(joint_identifier, " : ", joint_angle.value)
         joint_identifier += 1
-
     return True
+
 
 def main():
     # Import the utilities helper module
@@ -122,6 +121,7 @@ def main():
         success &= example_inverse_kinematics(base)
         
         return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit(main())

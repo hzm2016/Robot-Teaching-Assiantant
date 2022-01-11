@@ -57,6 +57,7 @@ class EthernetBridgeConfigurationExample:
         except Exception as e:
             print ("An unexpected error occured : {}".format(e))
 
+
 def main():
     # Import the utilities helper module
     import argparse
@@ -71,9 +72,9 @@ def main():
 
     # Create connection to the device and get the router
     with utilities.DeviceConnection.createTcpConnection(args) as router:
-
         example = EthernetBridgeConfigurationExample(router)
         example.EnableEthernetBridge()
+
 
 if __name__ == "__main__":
     main()

@@ -33,6 +33,7 @@ PROTECTION_ZONE_MOVEMENT_THETAS = [90.0, 0.0, 90.0]
 # Waiting time between actions (in milliseconds)
 ACTION_WAITING_TIME = 1
 
+
 # Create closure to set finished to true after an END or an ABORT
 def check_for_end_or_abort(e):
     """Return a closure checking for END or ABORT notifications
@@ -48,7 +49,8 @@ def check_for_end_or_abort(e):
         or notification.action_event == Base_pb2.ACTION_ABORT:
             e.set()
     return check
- 
+
+
 def move_to_home_position(base):
     # Make sure the arm is in Single Level Servoing mode
     base_servo_mode = Base_pb2.ServoingModeInformation()
@@ -81,6 +83,7 @@ def move_to_home_position(base):
 
     base.Unsubscribe(notification_handle)
 
+
 def move_to_protection_zone(base):
     
     command = Base_pb2.TwistCommand()
@@ -96,15 +99,16 @@ def move_to_protection_zone(base):
     twist.angular_y = 0
     twist.angular_z = 0
 
-    print ("Moving towards the protection zone for 4 seconds...")
+    print("Moving towards the protection zone for 4 seconds...")
     base.SendTwistCommand(command)
 
     # Let time for twist to be executed
     time.sleep(4)
 
-    print ("Stopping the robot...")
+    print("Stopping the robot...")
     base.Stop()
     time.sleep(1)
+
 
 def move_in_front_of_protection_zone(base):
     
@@ -114,9 +118,9 @@ def move_in_front_of_protection_zone(base):
     action.application_data = ""
  
     cartesian_pose = action.reach_pose.target_pose
-    cartesian_pose.x = PROTECTION_ZONE_POS[0] - 0.1     # (meters)
-    cartesian_pose.y = PROTECTION_ZONE_POS[1]           # (meters)
-    cartesian_pose.z = PROTECTION_ZONE_POS[2]           # (meters)
+    cartesian_pose.x = PROTECTION_ZONE_POS[0] - 0.1             # (meters)
+    cartesian_pose.y = PROTECTION_ZONE_POS[1]                   # (meters)
+    cartesian_pose.z = PROTECTION_ZONE_POS[2]                   # (meters)
     cartesian_pose.theta_x = PROTECTION_ZONE_MOVEMENT_THETAS[0] # (degrees)
     cartesian_pose.theta_y = PROTECTION_ZONE_MOVEMENT_THETAS[1] # (degrees)
     cartesian_pose.theta_z = PROTECTION_ZONE_MOVEMENT_THETAS[2] # (degrees)
@@ -137,6 +141,7 @@ def move_in_front_of_protection_zone(base):
 
     base.Unsubscribe(notification_handle)
 
+
 def print_protection_zones(base):
 
     all_protection_zones = base.ReadAllProtectionZones()
@@ -153,6 +158,7 @@ def print_protection_zones(base):
             message += str(dim) + " "
         message += "]"
         print(message)
+
 
 def create_protection_zone(base):
 
@@ -177,6 +183,7 @@ def create_protection_zone(base):
 
     return base.CreateProtectionZone(zone)
 
+
 def main():
     
     # Import the utilities helper module
@@ -197,28 +204,29 @@ def main():
         # Move to initial position
         move_to_home_position(base)
 
-        # Move without the protection zone
-        print_protection_zones(base)
-        move_in_front_of_protection_zone(base)
-        move_to_protection_zone(base)
-        move_to_home_position(base)
+        # # Move without the protection zone
+        # print_protection_zones(base)
+        # move_in_front_of_protection_zone(base)
+        # move_to_protection_zone(base)
+        # move_to_home_position(base)
+        #
+        # # Move with the protection zone
+        # print_protection_zones(base)
+        # move_in_front_of_protection_zone(base)
+        #
+        # # Add the protection zone
+        # handle = create_protection_zone(base)
+        #
+        # move_to_protection_zone(base)
+        # move_to_home_position(base)
+        #
+        # # Delete the protection zone
+        # base.DeleteProtectionZone(handle)
+        #
+        # # Print final protection zones
+        # # The example protection zone should be removed
+        # print_protection_zones(base)
 
-        # Move with the protection zone
-        print_protection_zones(base)
-        move_in_front_of_protection_zone(base)
-
-        # Add the protection zone
-        handle = create_protection_zone(base)
-
-        move_to_protection_zone(base)
-        move_to_home_position(base)
-
-        # Delete the protection zone
-        base.DeleteProtectionZone(handle)
-
-        # Print final protection zones
-        # The example protection zone should be removed
-        print_protection_zones(base)
 
 if __name__ == "__main__":
     main()

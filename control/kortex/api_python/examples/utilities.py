@@ -6,11 +6,13 @@ from kortex_api.RouterClient import RouterClient, RouterClientSendOptions
 from kortex_api.SessionManager import SessionManager
 from kortex_api.autogen.messages import Session_pb2
 
-def parseConnectionArguments(parser = argparse.ArgumentParser()):
-    parser.add_argument("--ip", type=str, help="IP address of destination", default="192.168.1.10")
+
+def parseConnectionArguments(parser=argparse.ArgumentParser()):
+    parser.add_argument("--ip", type=str, help="IP address of destination", default="192.168.0.81")
     parser.add_argument("-u", "--username", type=str, help="username to login", default="admin")
     parser.add_argument("-p", "--password", type=str, help="password to login", default="admin")
     return parser.parse_args()
+
 
 class DeviceConnection:
     
@@ -33,7 +35,7 @@ class DeviceConnection:
 
         return DeviceConnection(args.ip, port=DeviceConnection.UDP_PORT, credentials=(args.username, args.password))
 
-    def __init__(self, ipAddress, port=TCP_PORT, credentials = ("","")):
+    def __init__(self, ipAddress, port=TCP_PORT, credentials=("", "")):
 
         self.ipAddress = ipAddress
         self.port = port
@@ -54,8 +56,8 @@ class DeviceConnection:
             session_info = Session_pb2.CreateSessionInfo()
             session_info.username = self.credentials[0]
             session_info.password = self.credentials[1]
-            session_info.session_inactivity_timeout = 10000   # (milliseconds)
-            session_info.connection_inactivity_timeout = 2000 # (milliseconds)
+            session_info.session_inactivity_timeout = 10000     # (milliseconds)
+            session_info.connection_inactivity_timeout = 2000   # (milliseconds)
 
             self.sessionManager = SessionManager(self.router)
             print("Logging as", self.credentials[0], "on device", self.ipAddress)
@@ -65,7 +67,6 @@ class DeviceConnection:
 
     # Called when exiting 'with' statement
     def __exit__(self, exc_type, exc_value, traceback):
-    
         if self.sessionManager != None:
 
             router_options = RouterClientSendOptions()

@@ -21,8 +21,8 @@ from kortex_api.SessionManager import SessionManager
 
 from kortex_api.autogen.client_stubs.DeviceConfigClientRpc import DeviceConfigClient
 from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
-
 from kortex_api.autogen.messages import DeviceConfig_pb2, Session_pb2, Base_pb2
+
 
 def example_api_creation(args):
     '''
@@ -44,8 +44,8 @@ def example_api_creation(args):
     session_info = Session_pb2.CreateSessionInfo()
     session_info.username = args.username
     session_info.password = args.password
-    session_info.session_inactivity_timeout = 60000   # (milliseconds)
-    session_info.connection_inactivity_timeout = 2000 # (milliseconds)
+    session_info.session_inactivity_timeout = 60000     # (milliseconds)
+    session_info.connection_inactivity_timeout = 2000   # (milliseconds)
 
     print("Creating session for communication")
     session_manager = SessionManager(router)
@@ -65,6 +65,7 @@ def example_api_creation(args):
     # Disconnect from the transport object
     transport.disconnect()
 
+
 def main():
     # Import the utilities helper module
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -75,6 +76,7 @@ def main():
 
     # Example core
     example_api_creation(args)
-    
+
+
 if __name__ == "__main__":
     main()

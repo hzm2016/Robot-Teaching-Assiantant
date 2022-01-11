@@ -59,12 +59,15 @@ import time
 import sys
 import threading
 
+
 class TorqueExample:
-    def __init__(self, router, router_real_time):
+    def __init__(self,
+                 router,
+                 router_real_time
+                 ):
 
         # Maximum allowed waiting time during actions (in seconds)
         self.ACTION_TIMEOUT_DURATION = 20
-
         self.torque_amplification = 2.0  # Torque measure on last actuator is sent as a command to first actuator
 
         # Create required services
@@ -318,6 +321,7 @@ class TorqueExample:
         if i == retry:
             print("Failed to communicate")
         return arg_out
+
 
 def main():
     # Import the utilities helper module

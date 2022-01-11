@@ -24,6 +24,7 @@ from kortex_api.autogen.messages import DeviceConfig_pb2, Session_pb2, Base_pb2
 from kortex_api.Exceptions.KException import KException
 from google.protobuf import json_format
 
+
 def example_notification(base):
 
     def notification_callback(data):
@@ -95,6 +96,7 @@ def main():
 
         # Example core
         example_notification(base)
+
 
 if __name__ == "__main__":
     main()
