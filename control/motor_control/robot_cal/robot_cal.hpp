@@ -19,12 +19,16 @@ const double ctl_ratio = 2000.0/32;
 const double ctl_ratio_1 = -2000.0/32;     
 const double ctl_ratio_2 = 2000.0/32;   
 
+const double torque_lower_bound = -1.0;      
+const double torque_upper_bound = 1.0;    
+
 const double d_t = 0.001; 
 const double L_1 = 0.30, L_2 = 0.25;  
 
 ////////// define the motor id to control ////////
 const int motor_id_1 = 1;    
-const int motor_id_2 = 1;    
+const int motor_id_2 = 1;      
+const int motor_id_3 = 1;    
 //////////////////////////////////////////////////
 
 double clip(double angle, double lower_bound, double upper_bound); 
