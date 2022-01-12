@@ -56,8 +56,8 @@ params = {
  'ytick.major.size': 1.0,
  'ytick.minor.size': 0.0
  }
-# sns.axes_style(rc=params) 
-sns.set(font_scale=2.5) 
+# sns.axes_style(rc=params)
+sns.set(font_scale=2.5)
 
 
 def plot_real_trajectory(
@@ -176,7 +176,6 @@ def plot_real_2d_path(
     # plt.xlabel('time($t$)', fontsize=FONT_SIZE)
     # plt.ylabel('$rad', fontsize=FONT_SIZE)
     # plt.legend()
-
     
     plt.subplot(1, 1, 1) 
     for i in range(stroke_num): 
@@ -201,8 +200,8 @@ def plot_real_2d_path(
         # plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
         # plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
 
-    # plt.subplot(1, 2, 1) 
-    # for i in range(stroke_num): 
+        # plt.subplot(1, 2, 1)
+        # for i in range(stroke_num):
         # print(x_e - x_t)   
         plt.plot(x_e-x_t, linewidth=linewidth, label='error')  
         plt.plot(y_e-y_t, linewidth=linewidth, label='error')  
@@ -300,7 +299,6 @@ def plot_real_error_path(
     plt.show() 
 
 
-
 def plot_real_stroke_2d_path(
         root_path='./motor_control/bin/data/',
         file_name='',
@@ -361,49 +359,55 @@ def plot_real_stroke_2d_path(
     plt.show()
 
 
-def plot_torque_path(
-        root_path='./motor_control/bin/data/',
-        file_angle_name='',
-        file_torque_name=''
+def plot_real_word_2d_path(
+        root_path=None,
+        word_name='mu',
+        stroke_num=1,
+        delimiter=' ',
+        skiprows=0,
 ):
-    """ plot angle trajectory and cartesian path"""
+    """
+        plot angle trajectory and cartesian path
+    """
     FONT_SIZE = 28
     linewidth = 4
-    # plt.rcParams['font.family'] = 'Times New Roman'
-    # plt.rcParams['font.size'] = FONT_SIZE
-    # print("angle_list :", root_path + file_angle_name)
+    fig = plt.figure(figsize=(8, 8))
+    plt.subplot(1, 1, 1)
 
-    angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1) 
-    max_index = angle_list_e.shape[0]
+    x_list = []
+    y_list = []
+    for i in range(stroke_num):
+        angle_list = np.loadtxt(root_path + '/' + word_name + '/angle_list_' + str(i) + '.txt',
+                                delimiter=delimiter, skiprows=skiprows)
 
-    angle_list_1_e = angle_list_e[:max_index, 0]
-    angle_list_2_e = angle_list_e[:max_index, 1]
+        angle_list_1_e = angle_list[:, 0]
+        angle_list_2_e = angle_list[:, 1]
 
-    torque_list = np.loadtxt(root_path + file_torque_name, delimiter=',', skiprows=1)
-    torque_list_1 = torque_list[:max_index, 0]
-    torque_list_2 = torque_list[:max_index, 1]
-    
-    fig = plt.figure(figsize=(24, 8)) 
-    
-    plt.subplot(1, 2, 1)
-    plt.subplots_adjust(wspace=0, hspace=0)
-    
-    plt.plot(angle_list_1_e, linewidth=linewidth, label='angle 1')
-    plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2')
-    
-    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
-    plt.ylabel('rad')  # fontsize=FONT_SIZE
-    plt.legend()
-    
-    plt.subplot(1, 2, 2)
-    plt.plot(torque_list_1, linewidth=linewidth, label='angle 1')
-    plt.plot(torque_list_2, linewidth=linewidth, label='angle 2')
-    
-    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
-    plt.ylabel('Nm')  # fontsize=FONT_SIZE
-    plt.legend()
-    
+        # angle_list_1_t = angle_list[:, 1]
+        # angle_list_2_t = angle_list[:, 4]
+
+        # d_angle_list_1_t = angle_list[:, 2]
+        # d_angle_list_2_t = angle_list[:, 5]
+
+        x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+        y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+        x_list.append(x_e)
+        y_list.append(y_e)
+        # x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
+        # y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
+
+        plt.plot(x_e, y_e, linewidth=linewidth, label='desired')
+        # plt.plot(x_t, y_t, linewidth=linewidth, label='real')
+        plt.scatter(np.flipud(x_e)[0], np.flipud(y_e)[1], s=100, c='b', marker='o')
+
+    plt.xlabel('x(m)', fontsize=FONT_SIZE)
+    plt.ylabel('y(m)', fontsize=FONT_SIZE)
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0.13, 0.13 + WIDTH])
+    # plt.legend()
     plt.show()
+
+    return x_list, y_list
 
 
 def plot_real_2d_demo_path(
@@ -465,52 +469,7 @@ def plot_real_2d_demo_path(
     plt.show()
 
 
-def plot_sea_angle_torque_path(
-        root_path='./motor_control/bin/data/', 
-        file_angle_name='', 
-        file_torque_name='' 
-):
-    """ plot angle trajectory and cartesian path"""
-    FONT_SIZE = 28 
-    linewidth = 4 
-    # plt.rcParams['font.family'] = 'Times New Roman'
-    # plt.rcParams['font.size'] = FONT_SIZE
-    # print("angle_list :", root_path + file_angle_name)
-
-    angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1) 
-    max_index = angle_list_e.shape[0] 
-
-    angle_list_1_e = angle_list_e[:max_index, 3]
-    angle_list_2_e = angle_list_e[:max_index, 5]
-
-    torque_list = np.loadtxt(root_path + file_torque_name, delimiter=',', skiprows=1)
-    torque_list_1 = torque_list[:max_index, 0]
-    torque_list_2 = torque_list[:max_index, 1]
-    
-    fig = plt.figure(figsize=(24, 8)) 
-    
-    plt.subplot(1, 2, 1)
-    plt.subplots_adjust(wspace=0, hspace=0)
-    
-    plt.plot(angle_list_1_e, linewidth=linewidth, label='theta 1')
-    plt.plot(angle_list_2_e, linewidth=linewidth, label='q 1')
-    
-    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
-    plt.ylabel('rad')  # fontsize=FONT_SIZE
-    plt.legend()
-    
-    plt.subplot(1, 2, 2)
-    plt.plot(torque_list_1, linewidth=linewidth, label='angle 1')
-    plt.plot(torque_list_2, linewidth=linewidth, label='angle 2')
-    
-    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
-    plt.ylabel('Nm')  # fontsize=FONT_SIZE
-    plt.legend()
-    
-    plt.show()
-
-
-def plot_real_osc_2d_demo_path(
+def plot_real_osc_2d_path(
     osc_list
 ):
     """
@@ -533,11 +492,137 @@ def plot_real_osc_2d_demo_path(
     
     plt.xlabel('x(m)', fontsize=FONT_SIZE)
     plt.ylabel('y(m)', fontsize=FONT_SIZE)
-    plt.ylim([0, 128])
-    plt.xlim([0, 128])
+    plt.ylim([-WIDTH / 2, WIDTH / 2])
+    plt.xlim([0.13, 0.13 + WIDTH])
+    # plt.ylim([0, 128])
+    # plt.xlim([0, 128])
     
     plt.show()
-    
+
+
+def plot_torque(torque_list, period_list):
+    """
+        torque_list
+    """
+    fig = plt.figure(figsize=(10, 10))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+
+    total_period = sum(period_list)
+    print('*' * 50)
+    print("total_period :", total_period)
+    for i in range(len(torque_list)):
+        if i == 0:
+            start_period = 0.0
+        else:
+            start_period = sum(period_list[:i])
+
+        t_list = np.linspace(start_period, period_list[i] + start_period, torque_list[i].shape[0])
+        print("period :", start_period, period_list[i] + start_period)
+
+        plt.plot(t_list, torque_list[i][:, 0], linewidth=linewidth, label='$q_1$')
+        # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
+        plt.plot(t_list, torque_list[i][:, 1], linewidth=linewidth, label='$q_2$')
+    # plt.plot(t_list[1:], angle_vel_2_list_e, linewidth=linewidth, label='$d_{q2}$')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Stiffness (Nm/rad)')
+    # plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+    # plt.tight_layout()
+
+    plt.show()
+
+
+def plot_torque_path(
+        root_path='./motor_control/bin/data/',
+        file_angle_name='',
+        file_torque_name=''
+):
+    """ plot angle trajectory and cartesian path"""
+    FONT_SIZE = 28
+    linewidth = 4
+    # plt.rcParams['font.family'] = 'Times New Roman'
+    # plt.rcParams['font.size'] = FONT_SIZE
+    # print("angle_list :", root_path + file_angle_name)
+
+    angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1)
+    max_index = angle_list_e.shape[0]
+
+    angle_list_1_e = angle_list_e[:max_index, 0]
+    angle_list_2_e = angle_list_e[:max_index, 1]
+
+    torque_list = np.loadtxt(root_path + file_torque_name, delimiter=',', skiprows=1)
+    torque_list_1 = torque_list[:max_index, 0]
+    torque_list_2 = torque_list[:max_index, 1]
+
+    fig = plt.figure(figsize=(24, 8))
+
+    plt.subplot(1, 2, 1)
+    plt.subplots_adjust(wspace=0, hspace=0)
+
+    plt.plot(angle_list_1_e, linewidth=linewidth, label='angle 1')
+    plt.plot(angle_list_2_e, linewidth=linewidth, label='angle 2')
+
+    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
+    plt.ylabel('rad')  # fontsize=FONT_SIZE
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(torque_list_1, linewidth=linewidth, label='angle 1')
+    plt.plot(torque_list_2, linewidth=linewidth, label='angle 2')
+
+    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
+    plt.ylabel('Nm')  # fontsize=FONT_SIZE
+    plt.legend()
+
+    plt.show()
+
+
+def plot_sea_angle_torque_path(
+        root_path='./motor_control/bin/data/',
+        file_angle_name='',
+        file_torque_name=''
+):
+    """ plot angle trajectory and cartesian path"""
+    FONT_SIZE = 28
+    linewidth = 4
+    # plt.rcParams['font.family'] = 'Times New Roman'
+    # plt.rcParams['font.size'] = FONT_SIZE
+    # print("angle_list :", root_path + file_angle_name)
+
+    angle_list_e = np.loadtxt(root_path + file_angle_name, delimiter=',', skiprows=1)
+    max_index = angle_list_e.shape[0]
+
+    angle_list_1_e = angle_list_e[:max_index, 3]
+    angle_list_2_e = angle_list_e[:max_index, 5]
+
+    torque_list = np.loadtxt(root_path + file_torque_name, delimiter=',', skiprows=1)
+    torque_list_1 = torque_list[:max_index, 0]
+    torque_list_2 = torque_list[:max_index, 1]
+
+    fig = plt.figure(figsize=(24, 8))
+
+    plt.subplot(1, 2, 1)
+    plt.subplots_adjust(wspace=0, hspace=0)
+
+    plt.plot(angle_list_1_e, linewidth=linewidth, label='theta 1')
+    plt.plot(angle_list_2_e, linewidth=linewidth, label='q 1')
+
+    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
+    plt.ylabel('rad')  # fontsize=FONT_SIZE
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(torque_list_1, linewidth=linewidth, label='angle 1')
+    plt.plot(torque_list_2, linewidth=linewidth, label='angle 2')
+
+    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
+    plt.ylabel('Nm')  # fontsize=FONT_SIZE
+    plt.legend()
+
+    plt.show()
+
 
 if __name__ == "__main__":
     

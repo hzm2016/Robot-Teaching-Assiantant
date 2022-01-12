@@ -434,7 +434,6 @@ def motor_stop():
 
 
 def load_word_path(root_path='./data/font_data', word_name=None, joint_params=None):
-
     word_file = root_path + '/' + word_name + '/'
     stroke_list_file = glob.glob(word_file + 'angle_list_*txt')
     print("Load stroke data %d", len(stroke_list_file)) 
