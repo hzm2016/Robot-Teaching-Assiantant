@@ -53,6 +53,7 @@ from kortex_api.autogen.messages import Base_pb2
 from kortex_api.autogen.messages import Common_pb2
 from kortex_api.autogen.messages import InterconnectConfig_pb2
 
+
 class UARTBridge:
 
     def __init__(self, router, ip_address):
@@ -164,6 +165,7 @@ class UARTBridge:
 
         # Disable bridge on base.
         self.DisableBridge(bridge_id)
+
 
 def main():
 

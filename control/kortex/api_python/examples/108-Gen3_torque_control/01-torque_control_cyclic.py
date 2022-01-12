@@ -26,12 +26,14 @@
 # 1- Connection with the base:
 #     1- A TCP session is started on port 10000 for most API calls. Refresh is at 25ms on this port.
 #     2- A UDP session is started on port 10001 for BaseCyclic calls. Refresh is at 1ms on this port only.
+
 # 2- Initialization
 #     1- First frame is built based on arm feedback to ensure continuity
 #     2- First actuator torque command is set as well
 #     3- Base is set in low-level servoing
 #     4- First frame is sent
 #     3- First actuator is switched to torque mode
+
 # 3- Cyclic thread is running at 1ms
 #     1- Torque command to first actuator is set to a multiple of last actuator torque measure minus its initial value to
 #        avoid an initial offset error
@@ -68,7 +70,9 @@ class TorqueExample:
 
         # Maximum allowed waiting time during actions (in seconds)
         self.ACTION_TIMEOUT_DURATION = 20
-        self.torque_amplification = 2.0  # Torque measure on last actuator is sent as a command to first actuator
+
+        # Torque measure on last actuator is sent as a command to first actuator
+        self.torque_amplification = 2.0
 
         # Create required services
         device_manager = DeviceManagerClient(router)
@@ -97,7 +101,7 @@ class TorqueExample:
         self.sendOption.delay_ms = 0
         self.sendOption.timeout_ms = 3
 
-        self.cyclic_t_end = 30  #Total duration of the thread in seconds. 0 means infinite.
+        self.cyclic_t_end = 30  # Total duration of the thread in seconds. 0 means infinite.
         self.cyclic_thread = {}
 
         self.kill_the_thread = False
@@ -125,7 +129,7 @@ class TorqueExample:
         base_servo_mode = Base_pb2.ServoingModeInformation()
         base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
         self.base.SetServoingMode(base_servo_mode)
-    
+
         # Move arm to ready position
         print("Moving the arm to a safe position")
         action_type = Base_pb2.RequestedActionType()
@@ -279,6 +283,7 @@ class TorqueExample:
                 print("Cyclic Finished")
                 sys.stdout.flush()
                 break
+
         self.cyclic_running = False
         return True
 

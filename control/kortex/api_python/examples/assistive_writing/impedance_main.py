@@ -104,6 +104,7 @@ def example_trajectory(base, base_cyclic):
 	base.SetServoingMode(base_servo_mode)
 	product = base.GetProductConfiguration()
 	waypointsDefinition = tuple(tuple())
+
 	if (product.model == Base_pb2.ProductConfiguration__pb2.MODEL_ID_L53
 			or product.model == Base_pb2.ProductConfiguration__pb2.MODEL_ID_L31):
 		if (product.model == Base_pb2.ProductConfiguration__pb2.MODEL_ID_L31):
@@ -142,6 +143,7 @@ def example_trajectory(base, base_cyclic):
 	result = base.ValidateWaypointList(waypoints)
 	if (len(result.trajectory_error_report.trajectory_error_elements) == 0):
 		e = threading.Event()
+
 		notification_handle = base.OnNotificationActionTopic(
 			check_for_end_or_abort(e),
 			Base_pb2.NotificationOptions()
@@ -179,7 +181,6 @@ def example_trajectory(base, base_cyclic):
 			print("Timeout on action notification wait for non-optimized trajectory")
 
 		return finished
-
 	else:
 		print("Error found in trajectory")
 		result.trajectory_error_report.PrintDebugString();

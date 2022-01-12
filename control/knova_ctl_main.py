@@ -1,33 +1,46 @@
-from matplotlib.pyplot import title
-from numpy.lib import NumpyVersion
 import numpy as np
 import math
 import os
+import sys
+import threading
+
 from path_planning.plot_path import *
 from path_planning.path_generate import *
 import time
 import glob
 import scipy
 
+from kortex.api_python.examples import utilities
+from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
+from kortex_api.autogen.client_stubs.BaseCyclicClientRpc import BaseCyclicClient
+from kortex_api.autogen.messages import Base_pb2, BaseCyclic_pb2, Common_pb2
+
 sns.set(font_scale=1.5)
 np.set_printoptions(precision=5)
 
-#################################################################
-########################## Hyper Parameters #####################
-#################################################################
+##############################################################
+####################### Hyper Parameters #####################
+##############################################################
 Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.2])
 Move_velocity = 0.1
 Initial_point = np.array([0.0, 0.0])
+
+##############################################################
+########################### kortex ###########################
+##############################################################
+# Maximum allowed waiting time during actions (in seconds)
+TIMEOUT_DURATION = 30
 
 
 def write_word(word_path, word_params=None, word_name='yi', epi_times=0):
     """
         Write a word and plot :::::
+        Input word path in cartesian space ::::
     """
     for index in range(len(word_path)):
         print("*" * 50)
         print("*" * 50)
-        print("Write Stroke %d : " % index)
+        # print("Write Stroke %d : " % index)
         stroke_points = word_path[index]
 
         if index < (len(word_path) - 1):
@@ -51,16 +64,19 @@ def write_word(word_path, word_params=None, word_name='yi', epi_times=0):
 
 def write_stroke(stroke_points=None,
                  stroke_params=None,
-                 target_point=None,  # next initial point
+                 target_point=None,   # next initial point
                  epi_time=1,
                  word_name='yi',
                  stroke_name='0'
                  ):
     print("Write stroke !!!%s", word_name + '_' + str(stroke_name))
     done = False
-    velocity_list = np.zeros_like(stroke_points)
 
-    # params_list = np.tile(impedance_params, (Num_stroke_points, 1))
+    # obtain prediction value from feedforward model :::
+    velocity_list = np.zeros_like(stroke_points)
+    preference_force_list = np.zeros_like(stroke_points)
+
+    # params_list = np.tile(impedance_params, (Num_stroke_points, 1)) :::
     if stroke_params is None:
         print("Please give impedance parameters !!!")
         exit()
@@ -84,6 +100,7 @@ def write_stroke(stroke_points=None,
         stroke_points,
         stroke_params,
         velocity_list,
+        preference_force_list,
         epi_time,
         word_name,
         stroke_name
@@ -119,15 +136,88 @@ def set_pen_down():
     return done
 
 
-def move_to_target_point(desired_point, desired_impedance_params, velocity=0.1):
+# Create closure to set an event after an END or an ABORT
+def check_for_end_or_abort(e):
+    """
+    Return a closure checking for END or ABORT notifications
+
+    Arguments:
+    e -- event to signal when the action is completed
+        (will be set when an END or ABORT occurs)
+    """
+    def check(notification, e=e):
+        print("EVENT : " + \
+              Base_pb2.ActionEvent.Name(notification.action_event))
+        if notification.action_event == Base_pb2.ACTION_END \
+                or notification.action_event == Base_pb2.ACTION_ABORT:
+            e.set()
+    return check
+
+
+def populateCartesianCoordinate(waypointInformation):
+    waypoint = Base_pb2.CartesianWaypoint()
+
+    waypoint.pose.x = waypointInformation[0]
+    waypoint.pose.y = waypointInformation[1]
+    waypoint.pose.z = waypointInformation[2]
+    waypoint.blending_radius = waypointInformation[3]
+    waypoint.pose.theta_x = waypointInformation[4]
+    waypoint.pose.theta_y = waypointInformation[5]
+    waypoint.pose.theta_z = waypointInformation[6]
+
+    waypoint.reference_frame = Base_pb2.CARTESIAN_REFERENCE_FRAME_BASE
+    return waypoint
+
+
+def move_to_target_point(base,
+                         desired_point, desired_impedance_params,
+                         velocity=0.1
+                         ):
     """
         move to desired point
     """
-    done = False
-    return done
+    # Make sure the arm is in Single Level Servoing mode
+    base_servo_mode = Base_pb2.ServoingModeInformation()
+    base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
+    base.SetServoingMode(base_servo_mode)
+
+    # Move arm to ready position
+    print("Moving the arm to the initial position !!!")
+    action_type = Base_pb2.RequestedActionType()
+    action_type.action_type = Base_pb2.REACH_JOINT_ANGLES
+    action_list = base.ReadAllActions(action_type)
+
+    action_handle = None
+    for action in action_list.action_list:
+        if action.name == "Home":
+            action_handle = action.handle
+
+    print("execute action :", action_handle)
+
+    if action_handle == None:
+        print("Can't reach safe position. Exiting")
+        return False
+
+    e = threading.Event()
+    notification_handle = base.OnNotificationActionTopic(
+        check_for_end_or_abort(e),
+        Base_pb2.NotificationOptions()
+    )
+
+    base.ExecuteActionFromReference(action_handle)
+    finished = e.wait(TIMEOUT_DURATION)
+    base.Unsubscribe(notification_handle)
+
+    if finished:
+        print("Safe position reached")
+    else:
+        print("Timeout on action notification wait")
+
+    return finished
 
 
-def run_one_loop(stroke_points, params_list, velocity_list,
+def run_one_loop(base,
+                 stroke_points, params_list, velocity_list, preference_force_list,
                  eval_epi_times=1,
                  word_name='yi',
                  stroke_name='0'
@@ -135,15 +225,79 @@ def run_one_loop(stroke_points, params_list, velocity_list,
     """
         run one loop
     """
-    done = False
+    base_servo_mode = Base_pb2.ServoingModeInformation()
+    base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
+    base.SetServoingMode(base_servo_mode)
+    product = base.GetProductConfiguration()
+    waypointsDefinition = tuple(tuple())
 
+    kTheta_x = 90.0
+    kTheta_y = 0.0
+    kTheta_z = 90.0
+    Delta_z = 0.5
     for epi_time in range(eval_epi_times):
+        # store data list
         stroke_angle_name = './data/real_path_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '_' \
                             + str(epi_time) + '.txt'
         stroke_torque_name = './data/real_path_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '_' \
                              + str(epi_time) + '.txt'
 
+        waypoints = Base_pb2.WaypointList()
+        waypoints.duration = 0.0
+        waypoints.use_optimal_blending = False
+
         # send waypoint
+        for index in range(stroke_points.shape[0]):
+            waypointDefinition = np.array([stroke_points[0], stroke_points[1], Delta_z, 0.0, kTheta_x, kTheta_y, kTheta_z])
+            waypoint = waypoints.waypoints.add()
+            waypoint.name = "waypoint_" + str(epi_time)
+            waypoint.cartesian_waypoint.CopyFrom(populateCartesianCoordinate(waypointDefinition))
+            # index = index + 1
+
+        # Verify validity of waypoints
+        result = base.ValidateWaypointList(waypoints)
+        if (len(result.trajectory_error_report.trajectory_error_elements) == 0):
+            e = threading.Event()
+            notification_handle = base.OnNotificationActionTopic(
+                check_for_end_or_abort(e),
+                Base_pb2.NotificationOptions()
+            )
+
+            print("Moving cartesian trajectory...")
+            base.ExecuteWaypointTrajectory(waypoints)
+
+            print("Waiting for trajectory to finish ...")
+            finished = e.wait(TIMEOUT_DURATION)
+            base.Unsubscribe(notification_handle)
+
+            if finished:
+                print("Cartesian trajectory with no optimization completed ")
+                e_opt = threading.Event()
+                notification_handle_opt = base.OnNotificationActionTopic(
+                    check_for_end_or_abort(e_opt),
+                    Base_pb2.NotificationOptions()
+                )
+
+                waypoints.use_optimal_blending = True
+                base.ExecuteWaypointTrajectory(waypoints)
+
+                print("Waiting for trajectory to finish ...")
+                finished_opt = e_opt.wait(TIMEOUT_DURATION)
+                base.Unsubscribe(notification_handle_opt)
+
+                if (finished_opt):
+                    print("Cartesian trajectory with optimization completed ")
+                else:
+                    print("Timeout on action notification wait for optimized trajectory")
+
+                return finished_opt
+            else:
+                print("Timeout on action notification wait for non-optimized trajectory")
+
+            return finished
+        else:
+            print("Error found in trajectory")
+            result.trajectory_error_report.PrintDebugString()
 
     return done
 
@@ -199,12 +353,25 @@ def load_real_path(root_path='./data/font_data', word_name=None):
     return np.array(real_path)
 
 
+def start_api():
+    # Parse arguments
+    args = utilities.parseConnectionArguments()
+
+    # Create connection to the device and get the router
+    with utilities.DeviceConnection.createTcpConnection(args) as router:
+        # Create required services
+        base = BaseClient(router)
+        base_cyclic = BaseCyclicClient(router)
+
+    return base, base_cyclic
+
+
 if __name__ == "__main__":
     # word_path, word_params = load_word_path(
     #     root_path='./data/font_data',
-    #     word_name='mu', joint_params=np.array([1.0, 1.0])
+    #     word_name='mu',
+    #     joint_params=np.array([1.0, 1.0])
     # )
-
     x_list, y_list = plot_real_word_2d_path(
         root_path='./data/font_data',
         word_name='mu',
