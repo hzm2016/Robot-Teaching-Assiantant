@@ -75,6 +75,127 @@ double read_link_angle_2(double q_2_initial)
     return q_2;  
 }  
 
+double read_initial_angle_1() 
+{
+    ////////////////////////////////////////////
+    // Read motor original angle 1
+    ////////////////////////////////////////////
+
+    CANDevice can1((char *) "can1");   
+    can1.begin();   
+
+    Gcan motor_1(can1);   
+    motor_1.begin();   
+    
+    double theta_1 = motor_1.read_sensor(motor_id_1);   
+    printf("Motor 1 original position: %f\n", theta_1);   
+
+    return theta_1;   
+}
+
+double read_initial_angle_2()   
+{
+    ////////////////////////////////////////////
+    // Read motor original angle 2
+    ////////////////////////////////////////////
+
+    CANDevice can0((char *) "can0");   
+    can0.begin();   
+
+    Gcan motor_2(can0);   
+    motor_2.begin();   
+
+    // double theta_2 = motor_2.read_sensor(1);   
+    double theta_2 = motor_2.read_sensor(motor_id_2);  
+    printf("Motor 2 original position: %f\n", theta_2);   
+
+    return theta_2;   
+}
+
+double read_initial_angle_3()   
+{
+    ////////////////////////////////////////////
+    // Read motor original angle 3
+    ////////////////////////////////////////////
+    CANDevice can3((char *) "can3");   
+    can3.begin();   
+
+    Gcan motor_3(can3);   
+    motor_3.begin();   
+
+    double theta_3 = motor_3.read_single_turn(motor_id_3);  
+    printf("Motor 3 original position: %f\n", theta_3);   
+
+    return theta_3;   
+}
+
+
+double read_angle_1(double theta_1_initial) 
+{
+    //////////////////////////////////////////// 
+    // Read motor angle 1
+    //////////////////////////////////////////// 
+
+    CANDevice can1((char *) "can1");  
+    can1.begin();  
+
+    Gcan motor_1(can1);   
+    motor_1.begin();  
+    
+    double theta_1 = motor_1.read_sensor(motor_id_1) - theta_1_initial;    
+    printf("Motor 1 position: %f\n", theta_1);   
+
+    return theta_1;   
+}
+
+
+double read_angle_2(double theta_2_initial, double theta_1_t)   
+{
+    ////////////////////////////////////////////
+    // Read motor angle 2
+    ////////////////////////////////////////////
+
+    CANDevice can0((char *) "can0");    
+    can0.begin();   
+
+    Gcan motor_2(can0);   
+    motor_2.begin();   
+
+    double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
+    // double theta_2 = motor_2.read_sensor(motor_id_2) - theta_2_initial;   
+    printf("Motor 2 position: %f\n", theta_2);  
+
+    return theta_2;   
+}
+
+
+double read_angle_3(double theta_3_initial)    
+{
+    ////////////////////////////////////////////
+    // Read motor angle 3 
+    ////////////////////////////////////////////
+    CANDevice can3((char *) "can3");   
+    can3.begin();   
+
+    Gcan motor_3(can3);    
+    motor_3.begin();   
+
+    // double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
+    // printf("Motor 2 position: %f\n", theta_2);   
+    // double theta_3 = motor_3.read_sensor(1);  
+    // printf("Motor 3 position: %f\n", theta_3);   
+
+    double theta_3_t; 
+
+    // theta_3_t = -1 * (motor_3.read_sensor(1));   
+    // printf("Motor 3 position: %f\n", theta_3_t);   
+
+    theta_3_t = motor_3.read_single_turn(motor_id_3) - theta_3_initial;   
+    printf("Motor 3 rad: %f, deg %f\n", theta_3_t, theta_3_t * 180/3.14);   
+
+    return theta_3_t;   
+}
+
 
 int vic_optimization( 
 double stiffness, double damping,  
@@ -224,127 +345,6 @@ double dist_threshold
     return 1;  
 }
 
-
-double read_initial_angle_1() 
-{
-    ////////////////////////////////////////////
-    // Read motor original angle 1
-    ////////////////////////////////////////////
-
-    CANDevice can1((char *) "can1");   
-    can1.begin();   
-
-    Gcan motor_1(can1);   
-    motor_1.begin();   
-    
-    double theta_1 = motor_1.read_sensor(motor_id_1);   
-    printf("Motor 1 original position: %f\n", theta_1);   
-
-    return theta_1;   
-}
-
-double read_initial_angle_2()   
-{
-    ////////////////////////////////////////////
-    // Read motor original angle 2
-    ////////////////////////////////////////////
-
-    CANDevice can0((char *) "can0");   
-    can0.begin();   
-
-    Gcan motor_2(can0);   
-    motor_2.begin();   
-
-    // double theta_2 = motor_2.read_sensor(1);   
-    double theta_2 = motor_2.read_sensor(motor_id_2);  
-    printf("Motor 2 original position: %f\n", theta_2);   
-
-    return theta_2;   
-}
-
-double read_initial_angle_3()   
-{
-    ////////////////////////////////////////////
-    // Read motor original angle 3
-    ////////////////////////////////////////////
-    CANDevice can3((char *) "can3");   
-    can3.begin();   
-
-    Gcan motor_3(can3);   
-    motor_3.begin();   
-
-    double theta_3 = motor_3.read_single_turn(1);  
-    printf("Motor 3 original position: %f\n", theta_3);   
-
-    return theta_3;   
-}
-
-
-double read_angle_1(double theta_1_initial) 
-{
-    //////////////////////////////////////////// 
-    // Read motor angle 1
-    //////////////////////////////////////////// 
-
-    CANDevice can1((char *) "can1");  
-    can1.begin();  
-
-    Gcan motor_1(can1);   
-    motor_1.begin();  
-    
-    double theta_1 = motor_1.read_sensor(motor_id_1) - theta_1_initial;    
-    printf("Motor 1 position: %f\n", theta_1);   
-
-    return theta_1;   
-}
-
-
-double read_angle_2(double theta_2_initial, double theta_1_t)   
-{
-    ////////////////////////////////////////////
-    // Read motor angle 2
-    ////////////////////////////////////////////
-
-    CANDevice can0((char *) "can0");    
-    can0.begin();   
-
-    Gcan motor_2(can0);   
-    motor_2.begin();   
-
-    // double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);  
-    double theta_2 = motor_2.read_sensor(motor_id_2) - theta_2_initial;   
-    printf("Motor 2 position: %f\n", theta_2);  
-
-    return theta_2;   
-}
-
-
-double read_angle_3(double theta_3_initial)    
-{
-    ////////////////////////////////////////////
-    // Read motor angle 3 
-    ////////////////////////////////////////////
-    CANDevice can3((char *) "can3");   
-    can3.begin();   
-
-    Gcan motor_3(can3);    
-    motor_3.begin();   
-
-    // double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
-    // printf("Motor 2 position: %f\n", theta_2);   
-    // double theta_3 = motor_3.read_sensor(1);  
-    // printf("Motor 3 position: %f\n", theta_3);   
-
-    double theta_3_t; 
-
-    // theta_3_t = -1 * (motor_3.read_sensor(1));   
-    // printf("Motor 3 position: %f\n", theta_3_t);   
-
-    theta_3_t = motor_3.read_single_turn(1) - theta_3_initial;   
-    printf("Motor 3 rad: %f, deg %f\n", theta_3_t, theta_3_t * 180/3.14);   
-
-    return theta_3_t;   
-}
 
 
 void load_path_data(double *theta_1_list, double *theta_2_list)

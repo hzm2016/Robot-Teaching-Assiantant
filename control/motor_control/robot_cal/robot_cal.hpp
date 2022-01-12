@@ -53,19 +53,19 @@ double read_initial_angle_2();
 
 double read_initial_angle_3();  
 
-int read_initial_encode(double encoder_angle[2]);  
-
 double read_angle_1(double theta_1_initial);  
 
 double read_angle_2(double theta_2_initial, double theta_1_t);  
 
 double read_angle_3(double theta_3_initial);  
 
+int read_initial_encode(double encoder_angle[2]);  
+
 void load_path_data(double *theta_1_list, double *theta_2_list); 
 
-int motor_two_link_stop(); 
+int motor_two_link_stop();  
 
-int motor_3_stop(); 
+int motor_3_stop();  
 
 
 double set_two_link_position(double theta_1_initial, double theta_2_initial, 
