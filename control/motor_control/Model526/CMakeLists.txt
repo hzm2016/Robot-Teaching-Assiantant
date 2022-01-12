@@ -1,5 +1,5 @@
 # Create a library
-add_library (s526_lib model526.c) 
+add_library (s526_lib model526.cpp) 
 # target_link_libraries(s526_lib LINK_PUBLIC
 # gyems_can_lib renishaw_can_lib) 
 

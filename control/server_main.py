@@ -1,5 +1,3 @@
-# from matplotlib.pyplot import title
-# from numpy.lib import NumpyVersion
 from protocol.task_interface import *
 import numpy as np
 import math
@@ -18,17 +16,17 @@ np.set_printoptions(precision=5)
 L_1 = 0.3
 L_2 = 0.25
 action_dim = 3
-DIST_THREHOLD = 0.05
+DIST_THREHOLD = 0.05 
 
 # initial angle (rad) ::: 
 Initial_angle = np.array([-1.31, 1.527]) 
 
 Initial_point = np.array([0.32299, -0.23264])  
 
-Angle_initial = np.array([-0.344848, 0.253177, 1.981514])   
+Angle_initial = np.array([-0.268877, 0.172293, 1.981514])   
 
 # impedance params :  
-Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.2])
+Move_Impedance_Params = np.array([40.0, 35.0, 4.0, 0.2])  
 
 
 def reset_and_calibration(): 
@@ -62,7 +60,7 @@ def get_observation(angle_initial=Angle_initial):
     # ############## get current state ##################### 
     # ###################################################### 
     angle = np.zeros(action_dim)  
-    point = np.zeros(2)  
+    point = np.zeros(action_dim)   
     
     print('+' * 20)   
     angle[0] = motor_control.read_angle_1(angle_initial[0])  
@@ -477,29 +475,26 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
 
 if __name__ == "__main__":  
+    # set_pen_down()
+    # motor_stop()
     # write_name = 'xing'       
-    # eval_times = 5   
-
+    # eval_times = 5    
+    angle, point = get_observation()
+    print("angle :", angle)
+    print("point :", point)
     # ===========================================================
     # motor_control.read_encoder_angles(2.516857, 4.574669)
     
-    # motor_control.read_initial_angle_1()  
+    # theta_1 = motor_control.read_initial_angle_1()  
+    # print("theta_1 :", theta_1)
+    # theta_2 = motor_control.read_initial_angle_2()  
+    # print("theta_2 :", theta_2) 
 
-    # motor_control.read_initial_angle_2()  
-
-    # motor_control.read_angle_1(-0.392035)  
-
-    # motor_control.read_angle_2(-0.500249, 0)  
+    # theta_1_t = motor_control.read_angle_1(-0.268877)  
+    # motor_control.read_angle_2(0.172293, theta_1_t)   
 
     # motor_control.read_analog_encoder()  
-    
-    motor_control.phri_get_demonstration(-0.392035, -0.500249, 2.516857, 4.574669, 0.0, 0.0, 0.0, 0.0)
-
-    # plot_sea_angle_torque_path(
-    #     root_path='./',
-    #     file_angle_name='demonstrated_angle_list.txt', 
-    #     file_torque_name='demonstrated_torque_list.txt' 
-    # )
+    # motor_control.phri_get_demonstration(-0.392035, -0.500249, 2.516857, 4.574669, 0.0, 0.0, 0.0, 0.0)
 
     # word_path, word_params, real_path = load_word_path(word_name=write_name, joint_params=np.array([45, 30, 5, 0.2])) 
     

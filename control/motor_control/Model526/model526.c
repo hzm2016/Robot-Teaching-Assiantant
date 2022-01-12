@@ -1,4 +1,4 @@
-#include "model526.h"
+#include "model526.h" 
 #include <assert.h>
 
 static struct s526_reg_ s526_reg;

@@ -208,7 +208,8 @@ int get_demonstration(
 double theta_1_initial, double theta_2_initial,   
 double stiffness_1, double stiffness_2,   
 double damping_1, double damping_2,   
-string angle_name, string torque_name    
+string angle_name, string torque_name   
+) 
 {
     ////////////////////////////////////////////////////////
     //// Initial Encoder and Motor CAN 
@@ -313,230 +314,6 @@ string angle_name, string torque_name
 
     return 1;  
 }  
-
-
-int phri_get_demonstration(
-double theta_1_initial, double theta_2_initial,  
-double q_1_initial, double q_2_initial,  
-double stiffness_1, double stiffness_2,  
-double damping_1, double damping_2
-)
-{
-    ////////////////////////////////////////////////////////
-    //// Initial Encoder and Motor CAN 
-    //////////////////////////////////////////////////////// 
-    CANDevice can0((char *) "can0");   
-    can0.begin();   
-    CANDevice can1((char *) "can1");   
-    can1.begin();  
-    Gcan motor_1(can1);   
-    Gcan motor_2(can0);   
-    motor_1.begin();   
-    motor_2.begin();   
-
-    ////////////////////////////////////////////
-    // Read original encoder
-    ////////////////////////////////////////////
-    controller_renishaw encoder("can2");  
-    float encoder_arr[2];  
-
-    double theta_1_t = 0.0;   
-    double theta_2_t = 0.0;   
-
-    double q_1_t = 0.0;   
-    double q_2_t = 0.0;  
-
-    double d_theta_1_t = 0.0;    
-    double d_theta_2_t = 0.0;   
-
-	encoder.read_ang_encoder(encoder_arr);  
-     
-  	q_1_t = (double) encoder_arr[1] * PI/180.0 - q_1_initial;   
-
-  	q_2_t = (double) encoder_arr[0] * PI/180.0 - q_2_initial;   
-
-    if (q_2_t < 0)
-    {
-        q_2_t = q_2_t + 6.28; 
-    } 
-    else
-    {
-        q_2_t = q_2_t; 
-    }
-
-    q_1_t = -1 * q_1_t;   
-    q_2_t = -1 * q_2_t;   
-
-    // ////////////////////////////////////////////////////////
-    // // One loop control demonstration
-    // ////////////////////////////////////////////////////////
-    printf("Get demonstration start !!!!\n");  
-
-    string output_torque = "demonstrated_torque_list.txt";    
-    ofstream OutFileTorque(output_torque);    
-    OutFileTorque << "torque_1_e" << "," << "torque_1_t" << "," << "tau_1" << "," << "torque_2_e" << "," << "torque_2_t" << "," << "tau_2"<< "\n";   
-
-    string output_angle = "demonstrated_angle_list.txt";    
-    ofstream OutFileAngle(output_angle);    
-    OutFileAngle << "theta_1_t" << "," << "d_theta_1_t" << "," << "q_1_t" << "," << "theta_2_t" << "," << "d_theta_2_t" << "," << "q_2_t" << "\n";       
-
-    double torque_1 = 0.0;  
-    double torque_2 = 0.0;  
-
-    double torque_1_o = 0.0;  
-    double torque_2_o = 0.0;  
-
-    double torque_1_e = 0.0;   
-    double torque_2_e = 0.0;   
-
-    double torque_1_t = 0.0;   
-    double torque_2_t = 0.0;   
-
-    double pos_1 = 0.0;   
-    double pos_2 = 0.0;   
-
-    double torque_lower_bound = -0.4;      
-    double torque_upper_bound = 0.4;    
-
-    //////////////////// SEA model //////////////////////////
-    double pre_ex_length = 0.0005; 
-
-    double diff_angle_sea_1 = 0.0; 
-    double diff_angle_sea_2 = 0.0; 
-
-    double offset_angle_1 = 10.0 * PI/180; 
-    double offset_angle_2 = 10.0 * PI/180; 
-
-    double K_1 = 0.0;
-    double K_2 = 0.0;
-    double tau_1 = 0.0;
-    double tau_2 = 0.0; 
-
-    // double stiffness_1 = stiffness_1;   
-    // double stiffness_2 = stiffness_2;    
-
-
-    // double damping_1 = damping_1;     
-    // double damping_2 = damping_2;     
-
-    // double ratio_ctl_1 = -2000/32;   
-    // double ratio_ctl_2 = 2000/32;   
-
-    run_on = 1;   
-
-    // Catch a Ctrl-C event:  
-    // pointer to signal handler
-	void (*sig_h)(int) = sigint_1_step;   
-
-    // py::buffer_info buff_size_list = buff_size.request();   
-
-    // // allocate the output buffer
-	// py::array_t<double> result = py::array_t<double>(buff_size_list.size);  
-
-    // result.resize({buff_size_list.shape[0], buff_size_list.shape[1]}); 
-
-    // // acquire buffer info 
-	// py::buffer_info result_buf = result.request();  
-
-    // double *theta_list = (double *)result_buf.ptr;  
-
-    int index = 0; 
-    int index_buff = 0;  
-    int buff_length = 10000;  
-
-    printf("Print enter for starting record !!!!\n");  
-    getchar();  
-
-    ///////////////////////////////////////////////////////
-    // avoid large motion at starting points 
-    ///////////////////////////////////////////////////////
-    for(int index=0; index<10; index=index+1)   
-    {
-        pos_1 = motor_1.set_torque(motor_id_1, 0.0, &d_theta_1_t, &torque_1_t);   
-        pos_2 = motor_2.set_torque(motor_id_2, 0.0, &d_theta_2_t, &torque_2_t);   
-    }
-
-    while(run_on)   
-    {
-        // Catch a Ctrl-C event:   
-        signal(SIGINT, sig_h);   
-        
-        // get sensing data
-        theta_1_t = motor_1.read_sensor(motor_id_1) - theta_1_initial;   
-        theta_2_t = motor_2.read_sensor(motor_id_2) - theta_2_initial;  
-
-        encoder.read_ang_encoder(encoder_arr);  
-    
-        q_1_t = (double) encoder_arr[1] * PI/180.0 - q_1_initial;   
-        q_2_t = (double) encoder_arr[0] * PI/180.0 - q_2_initial;   
-
-        if (q_2_t < 0)
-        {
-            q_2_t = q_2_t + 6.28; 
-        } 
-        else
-        {
-            q_2_t = q_2_t; 
-        } 
-
-        q_1_t = -1 * q_1_t;   
-        q_2_t = -1 * q_2_t;   
-        
-        tau_1 = tau_est_SEA_model(pre_ex_length, offset_angle_1, diff_angle_sea_1);  
-        tau_2 = tau_est_SEA_model(pre_ex_length, offset_angle_2, diff_angle_sea_2);  
-
-        K_1 = k_est_SEA_model(pre_ex_length, offset_angle_1, diff_angle_sea_1);  
-        K_2 = k_est_SEA_model(pre_ex_length, offset_angle_2, diff_angle_sea_2);  
-
-        // index_buff = index%buff_length;   
-        // theta_list[index_buff][0] = theta_1_t;   
-        // theta_list[index_buff][1] = theta_2_t;  
-
-        printf("torque_1_t: %f\n", torque_1_t);   
-        printf("torque_2_t: %f\n", torque_2_t);     
-
-        /// zero impedance control   
-        // torque_1 = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
-        // torque_2 = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;  
-
-        torque_1 = 0.0;   
-        torque_2 = 0.0;    
-
-        pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);    
-        pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
-
-        torque_1_o = clip(stiffness_1 * (torque_1_e - torque_1_t), torque_lower_bound, torque_upper_bound);    
-        torque_2_o = clip(stiffness_2 * (torque_2_e - torque_2_t), torque_lower_bound, torque_upper_bound);   
-
-        // theta_list[index_buff*result_buf.shape[1] + 0] = theta_1_t;    
-        // theta_list[index_buff*result_buf.shape[1] + 1] = theta_2_t;    
-
-        OutFileAngle << theta_1_t << "," << d_theta_1_t << "," << q_1_t << ","<< theta_2_t << "," << d_theta_2_t << "," << q_2_t <<"\n";  
-
-        OutFileTorque << torque_1_o << "," << torque_1_t << "," << tau_1 << "," << torque_2_o << "," << torque_2_t << "," << tau_2 << "\n";   
-
-        // for(i=0; i<result_buf.shape[0]; i++) 
-        // {
-        //     for(j=0; j<result_buf.shape[1]; j++)
-        //     {
-                
-        //     }
-        // }
-
-        // OutFileVel << d_theta_1_t << " " << d_theta_2_t << "\n";    
-
-        index = index + 1;    
-    } 
-
-    OutFileAngle.close();    
-    OutFileTorque.close();       
-
-    motor_1.pack_stop_cmd(motor_id_1);   
-    motor_2.pack_stop_cmd(motor_id_2);   
-
-    return 1;  
-}  
-
 
 int control_single_motor(double stiffness_1, double stiffness_2,  
 double damping_1, double damping_2,  
@@ -1308,11 +1085,11 @@ PYBIND11_MODULE(motor_control, m) {
         Some other explanation about the add function.
     )pbdoc");  
 
-    m.def("phri_get_demonstration", &phri_get_demonstration, R"pbdoc(
-        phri_get_demonstration
+    // m.def("phri_get_demonstration", &phri_get_demonstration, R"pbdoc(
+    //     phri_get_demonstration
 
-        Some other explanation about the add function.
-    )pbdoc"); 
+    //     Some other explanation about the add function.
+    // )pbdoc"); 
 
     m.def("run_one_loop", &run_one_loop, R"pbdoc( 
         run_one_loop 

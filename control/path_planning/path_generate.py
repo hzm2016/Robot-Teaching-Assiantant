@@ -10,7 +10,7 @@ sns.set(font_scale=0.5)
 import cv2
 
 from scipy.signal import savgol_filter
-from control.path_planning.utils import IK, Stiff_convert, rotate_point
+from .utils import IK, Stiff_convert, rotate_point
 from .utils import *
 
 # writing space
