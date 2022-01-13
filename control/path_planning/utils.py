@@ -3,10 +3,14 @@ import math
 import PIL.Image as Image
 import matplotlib.pyplot as plt
 import cv2
+from scipy import signal
+
+# b, a = signal.butter(8, 0.02, 'lowpass')
+# filtedData = signal.filtfilt(b, a, data)  #data为要过滤的信号
 
 Length = [0.30, 0.150, 0.25, 0.125]
-L1 = Length[0]
-L2 = Length[2]
+L_1 = Length[0]
+L_2 = Length[2]
 
 action_dim = 2
 Ts = 0.001
@@ -368,3 +372,38 @@ def plot_word_path(period_list, traj_list, image_points_list, task_points_list, 
     # cv2.waitKey(0)
     # plt.imshow(img_show)
     # plt.show()
+
+
+def cope_real_word_path(
+        root_path=None,
+        file_name='mu',
+        stroke_index=1,
+        epi_times=1,
+        delimiter=' ',
+        skiprows=1,
+):
+    x_list = []
+    y_list = []
+    for epi_index in range(epi_times):
+        angle_list = np.loadtxt(
+            root_path + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
+            delimiter=delimiter,
+            skiprows=skiprows
+            )
+
+        # angle_list : desired and real-time
+        angle_list_1_e = angle_list[:, 0]
+        angle_list_2_e = angle_list[:, 3]
+        angle_list_1_t = angle_list[:, 1]
+        angle_list_2_t = angle_list[:, 4]
+
+        x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+        y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+
+        x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
+        y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
+
+        x_list.append(x_t)
+        y_list.append(y_t)
+
+    return x_list, y_list

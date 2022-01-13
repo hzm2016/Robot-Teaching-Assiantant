@@ -6,7 +6,7 @@ import os
 from motor_control import motor_control  
 from path_planning.plot_path import *  
 from path_planning.path_generate import *  
-import time  
+import time
 import glob  
 import scipy  
 
@@ -531,14 +531,14 @@ if __name__ == "__main__":
         #     skiprows=1
         # ) 
 
-        plot_real_2d_path(
-            root_path='./data/font_data/' + write_name + '/',  
-            file_name='real_angle_list_',  
-            stroke_num=2,  
-            epi_time=1,  
-            delimiter=',',   
-            skiprows=1 
-        )  
+        # plot_real_2d_path(
+        #     root_path='./data/font_data/' + write_name + '/',
+        #     file_name='real_angle_list_',
+        #     stroke_num=2,
+        #     epi_time=1,
+        #     delimiter=',',
+        #     skiprows=1
+        # )
 
         # plot_torque_path(
         #     root_path='./data/font_data/' + write_name + '/',  
@@ -549,14 +549,14 @@ if __name__ == "__main__":
         #     skiprows=1  
         # )  
 
-        # plot_velocity_path(
-        #     root_path='./data/font_data/' + write_name + '/',   
-        #     file_name='real_angle_list_',  
-        #     stroke_num=1,  
-        #     epi_time=1,  
-        #     delimiter=',',  
-        #     skiprows=1  
-        # )
+        plot_velocity_path(
+            root_path='./data/font_data/' + write_name + '/',
+            file_name='real_angle_list_',
+            stroke_num=1,
+            epi_time=1,
+            delimiter=',',
+            skiprows=1
+        )
 
         # plot_real_error_path(
         #     root_path='./data/font_data/' + write_name + '/', 
