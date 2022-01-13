@@ -9,10 +9,10 @@ import glob
 import scipy
 import matplotlib.pyplot as plt
 from scipy.io import loadmat  # loading data from matlab
-from GMRbasedGP.utils.gmr import Gmr, plot_gmm
-from GMRbasedGP.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
-from GMRbasedGP.utils.gmr_mean_mapping import GmrMeanMapping
-from GMRbasedGP.utils.gmr_kernels import Gmr_based_kernel
+from forward_mode.utils.gmr import Gmr, plot_gmm
+from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
+from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
+from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 import GPy
 
 
