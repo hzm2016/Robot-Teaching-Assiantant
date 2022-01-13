@@ -136,11 +136,11 @@ double read_angle_1(double theta_1_initial)
     // Read motor angle 1
     //////////////////////////////////////////// 
 
-    CANDevice can1((char *) "can1");  
-    can1.begin();  
+    CANDevice can1((char *) "can1");   
+    can1.begin();   
 
     Gcan motor_1(can1);   
-    motor_1.begin();  
+    motor_1.begin();   
     
     double theta_1 = motor_1.read_sensor(motor_id_1) - theta_1_initial;    
     printf("Motor 1 position: %f\n", theta_1);   
@@ -177,7 +177,7 @@ double read_angle_3(double theta_3_initial)
     CANDevice can3((char *) "can3");   
     can3.begin();   
 
-    Gcan motor_3(can3);    
+    Gcan motor_3(can3);   
     motor_3.begin();   
 
     // double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1_t - theta_2_initial);   
