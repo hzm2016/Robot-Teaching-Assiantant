@@ -1,3 +1,4 @@
+from numpy.core.arrayprint import format_float_scientific
 from protocol.task_interface import *  
 import numpy as np  
 import math   
@@ -481,9 +482,10 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
 if __name__ == "__main__":  
     # =========================================================== 
-    flag_write_word = False
-    flag_plot_result = True
-    write_name = 'ren'  
+    flag_write_word = True  
+    flag_plot_result = False  
+    flag_demo_write = False   
+    write_name = 'ren'   
 
     # set_pen_down() 
     # motor_stop() 
@@ -510,13 +512,13 @@ if __name__ == "__main__":
 
     # =========================================================== 
     if flag_write_word == True:   
-        eval_times = 1   
+        eval_times = 4  
         word_path, word_params, real_path = load_word_path(
             word_name=write_name,   
-            joint_params=np.array([25, 25, 0.2, 0.2])   
-            )  
+            joint_params=np.array([45, 30, 5, 1])    
+            )   
         
-        for i in range(eval_times):  
+        for i in range(eval_times, eval_times+1):   
             write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)   
 
     # =========================================================== 
@@ -527,25 +529,34 @@ if __name__ == "__main__":
         #     stroke_num=5, 
         #     delimiter=' ',
         #     skiprows=1
-        # )
+        # ) 
 
-        # plot_real_2d_path(
-        #     root_path='./data/font_data/' + write_name + '/', 
-        #     file_name='real_angle_list_', 
-        #     stroke_num=2, 
-        #     delimiter=',', 
-        #     skiprows=1
-        # )
-
-
-        plot_torque_path(
+        plot_real_2d_path(
             root_path='./data/font_data/' + write_name + '/',  
-            file_name='real_torque_list_',  
+            file_name='real_angle_list_',  
             stroke_num=2,  
-            epi_time=0,  
-            delimiter=',',  
-            skiprows=1  
-        )
+            epi_time=1,  
+            delimiter=',',   
+            skiprows=1 
+        )  
+
+        # plot_torque_path(
+        #     root_path='./data/font_data/' + write_name + '/',  
+        #     file_name='real_torque_list_',  
+        #     stroke_num=2,  
+        #     epi_time=1,  
+        #     delimiter=',',  
+        #     skiprows=1  
+        # )  
+
+        # plot_velocity_path(
+        #     root_path='./data/font_data/' + write_name + '/',   
+        #     file_name='real_angle_list_',  
+        #     stroke_num=1,  
+        #     epi_time=1,  
+        #     delimiter=',',  
+        #     skiprows=1  
+        # )
 
         # plot_real_error_path(
         #     root_path='./data/font_data/' + write_name + '/', 

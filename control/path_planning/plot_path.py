@@ -154,7 +154,7 @@ def plot_real_2d_path(
     file_name='',
     stroke_num=1,  
     epi_time=0, 
-    delimiter=',', 
+    delimiter=',',  
     skiprows=1
 ):
     """ 
@@ -165,31 +165,16 @@ def plot_real_2d_path(
 
     fig = plt.figure(figsize=(20, 8))
     
-    # plt.subplot(1, 2, 1)
-    # plt.subplots_adjust(wspace=0, hspace=0)
-
-    # plt.plot(angle_list_1_e, linewidth=linewidth, label='angle_1_e') 
-    # plt.plot(angle_list_1_t, linewidth=linewidth, label='angle_1_t')
-    # plt.plot(angle_list_2_e, linewidth=linewidth, label='angle_2_e') 
-    # plt.plot(angle_list_2_t, linewidth=linewidth, label='angle_2_t')
-
-    # plt.xlabel('time($t$)', fontsize=FONT_SIZE)
-    # plt.ylabel('$rad', fontsize=FONT_SIZE)
-    # plt.legend()
-    
     plt.subplot(1, 1, 1) 
-    for i in range(stroke_num): 
+    for i in range(stroke_num):  
 
         angle_list = np.loadtxt(root_path + file_name + str(i) + '_' + str(epi_time) + '.txt', delimiter=delimiter, skiprows=skiprows)
 
-        angle_list_1_e = angle_list[:, 0] 
-        angle_list_2_e = angle_list[:, 3]
+        angle_list_1_e = angle_list[:, 0]   
+        angle_list_2_e = angle_list[:, 3]   
 
-        angle_list_1_t = angle_list[:, 1] 
-        angle_list_2_t = angle_list[:, 4] 
-
-        # d_angle_list_1_t = angle_list[:, 2] 
-        # d_angle_list_2_t = angle_list[:, 5] 
+        angle_list_1_t = angle_list[:, 1]  
+        angle_list_2_t = angle_list[:, 4]  
 
         x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
         y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
@@ -200,19 +185,14 @@ def plot_real_2d_path(
         plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
         plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
 
-        # plt.subplot(1, 2, 1)
-        # for i in range(stroke_num):
-        # print(x_e - x_t)   
-        # plt.plot(x_e-x_t, linewidth=linewidth, label='error')  
-        # plt.plot(y_e-y_t, linewidth=linewidth, label='error')  
 
-    plt.xlabel('x(m)', fontsize=FONT_SIZE)  
-    plt.ylabel('y(m)', fontsize=FONT_SIZE)  
-    plt.ylim([-WIDTH/2, WIDTH/2])  
-    plt.xlim([0.13, 0.13 + WIDTH])  
-    # plt.legend()
+    plt.xlabel('x(m)', fontsize=FONT_SIZE)   
+    plt.ylabel('y(m)', fontsize=FONT_SIZE)   
+    plt.ylim([-WIDTH/2, WIDTH/2])   
+    plt.xlim([0.13, 0.13 + WIDTH])   
+    # plt.legend()  
     plt.savefig('xing' + str(epi_time) + '.png') 
-    plt.show() 
+    plt.show()   
 
 
 def plot_real_error_path(
@@ -361,9 +341,10 @@ def plot_real_stroke_2d_path(
 
 def plot_real_word_2d_path(
         root_path=None,
-        word_name='mu',
-        stroke_num=1,
-        delimiter=' ',
+        file_name='mu', 
+        stroke_num=1, 
+        epi_time=1, 
+        delimiter=' ', 
         skiprows=0,
 ):
     """
@@ -374,30 +355,30 @@ def plot_real_word_2d_path(
     fig = plt.figure(figsize=(8, 8))
     plt.subplot(1, 1, 1)
 
-    x_list = []
-    y_list = []
-    for i in range(stroke_num):
-        angle_list = np.loadtxt(root_path + '/' + word_name + '/angle_list_' + str(i) + '.txt',
-                                delimiter=delimiter, skiprows=skiprows)
+    x_list = []  
+    y_list = []  
+    for i in range(stroke_num):  
+        angle_list = np.loadtxt(
+            root_path + '/' + file_name + str(i) + '_' + str(epi_time) + '.txt',
+            delimiter=delimiter, skiprows=skiprows
+            )   
 
-        angle_list_1_e = angle_list[:, 0]
-        angle_list_2_e = angle_list[:, 1]
+        angle_list_1_e = angle_list[:, 0]  
+        angle_list_2_e = angle_list[:, 3]   
 
-        # angle_list_1_t = angle_list[:, 1]
-        # angle_list_2_t = angle_list[:, 4]
-
-        # d_angle_list_1_t = angle_list[:, 2]
-        # d_angle_list_2_t = angle_list[:, 5]
+        angle_list_1_t = angle_list[:, 1]   
+        angle_list_2_t = angle_list[:, 4]   
 
         x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
         y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
-        x_list.append(x_e)
-        y_list.append(y_e)
-        # x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
-        # y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
+        # x_list.append(x_e)
+        # y_list.append(y_e) 
+        x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
+        y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
 
         plt.plot(x_e, y_e, linewidth=linewidth, label='desired')
-        # plt.plot(x_t, y_t, linewidth=linewidth, label='real')
+        plt.plot(x_t, y_t, linewidth=linewidth, label='real')
+
         plt.scatter(np.flipud(x_e)[0], np.flipud(y_e)[1], s=100, c='b', marker='o')
 
     plt.xlabel('x(m)', fontsize=FONT_SIZE)
@@ -551,13 +532,14 @@ def plot_torque_path(
 
     fig = plt.figure(figsize=(20, 8))  
 
-    torque_list = np.array([0.0, 0.0])
+    torque_list = np.array([0.0, 0.0])  
     for index in range(stroke_num): 
         stroke_torque_list = np.loadtxt(  
             root_path + file_name + str(index) + '_' + str(epi_time) + '.txt', 
             delimiter=delimiter, skiprows=skiprows   
         ) 
-        torque_list = np.vstack((torque_list, stroke_torque_list))   
+        print("torque list shape:", np.array(stroke_torque_list).shape)    
+        torque_list = np.vstack((torque_list, stroke_torque_list[:, [1, 3]]))    
 
     print("torque list shape:", np.array(torque_list).shape)    
 
@@ -565,11 +547,47 @@ def plot_torque_path(
     plt.plot(torque_list[:, 0], linewidth=linewidth, label='torque 1')   
     plt.plot(torque_list[:, 1], linewidth=linewidth, label='torque 2')   
 
-    plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
-    plt.ylabel('Nm')  # fontsize=FONT_SIZE
+    plt.xlabel('time($t$)')  
+    plt.ylabel('Nm')  
     plt.legend()
 
-    plt.show()
+    plt.show()  
+
+
+def plot_velocity_path(
+    root_path='./motor_control/bin/data/',   
+    file_name='',  
+    stroke_num=1,  
+    epi_time=0,  
+    delimiter=',',  
+    skiprows=1  
+):
+    """ plot angle trajectory and cartesian path """ 
+    FONT_SIZE = 28   
+    linewidth = 4   
+
+    fig = plt.figure(figsize=(20, 8))  
+
+    velocity_list = np.array([0.0, 0.0])  
+    for index in range(stroke_num): 
+        stroke_velocity_list = np.loadtxt(  
+            root_path + file_name + str(index) + '_' + str(epi_time) + '.txt', 
+            delimiter=delimiter, skiprows=skiprows   
+        ) 
+        print("velocity list shape:", np.array(stroke_velocity_list).shape)     
+        velocity_list = np.vstack((velocity_list, stroke_velocity_list[:, [2,5]]))     
+
+    # print("velocity list shape:", np.array(velocity_list).shape)    
+
+    plt.subplot(1, 1, 1)   
+    plt.plot(velocity_list[1:, 0], linewidth=linewidth, label='velocity 1')    
+    plt.plot(velocity_list[1:, 1], linewidth=linewidth, label='velocity 2')    
+
+    plt.xlabel('time($t$)')  
+    plt.ylabel('rad/s')  
+    plt.legend()
+
+    plt.show()  
 
 
 def plot_sea_angle_torque_path(
