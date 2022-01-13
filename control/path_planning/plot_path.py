@@ -549,22 +549,21 @@ def plot_torque_path(
     FONT_SIZE = 28
     linewidth = 4  
 
-    fig = plt.figure(figsize=(20, 8)) 
+    fig = plt.figure(figsize=(20, 8))  
 
-    torque_list = [] 
+    torque_list = np.array([0.0, 0.0])
     for index in range(stroke_num): 
-        stroke_torque_list = np.loadtxt(
+        stroke_torque_list = np.loadtxt(  
             root_path + file_name + str(index) + '_' + str(epi_time) + '.txt', 
-            delimiter=delimiter, skiprows=skiprows
+            delimiter=delimiter, skiprows=skiprows   
         ) 
-        torque_list.append(list(stroke_torque_list))   
+        torque_list = np.vstack((torque_list, stroke_torque_list))   
 
-    print("torque list shape:", torque_list, np.array(torque_list).shape)   
-    torque_list = np.array(torque_list).reshape((-1, 2))  
+    print("torque list shape:", np.array(torque_list).shape)    
 
-    plt.subplot(1, 1, 1) 
-    plt.plot(torque_list[:, 0], linewidth=linewidth, label='torque 1')  
-    plt.plot(torque_list[:, 1], linewidth=linewidth, label='torque 2')  
+    plt.subplot(1, 1, 1)   
+    plt.plot(torque_list[:, 0], linewidth=linewidth, label='torque 1')   
+    plt.plot(torque_list[:, 1], linewidth=linewidth, label='torque 2')   
 
     plt.xlabel('time($t$)')  # fontsize=FONT_SIZE
     plt.ylabel('Nm')  # fontsize=FONT_SIZE
