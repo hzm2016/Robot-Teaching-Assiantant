@@ -9,14 +9,14 @@ import numpy as np
 import GPy
 import matplotlib.pyplot as plt
 from scipy.io import loadmat # loading data from matlab
-from utils.gmr import plot_gmm
+from forward_mode.utils.gmr import plot_gmm
 
 # GPR (LMC) on 2D trajectories with time as input
 # Via-points are defined for the reproduction
 if __name__ == '__main__':
 	# Load data
 	letter = 'B'  # choose a letter in the alphabet
-	datapath = './data/2Dletters/'
+	datapath = './forward_mode/data/2Dletters/'
 	data = loadmat(datapath + '%s.mat' % letter)
 	demos = [d['pos'][0][0].T for d in data['demos'][0]]
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
 	plt.locator_params(nbins=3)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
-	plt.savefig('figures/GP_B_trajmod.png')
+	# plt.savefig('figures/GP_B_trajmod.png')
 
 	plt.figure(figsize=(5, 4))
 	for p in range(nb_samples):
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 	plt.ylabel('$y_1$', fontsize=30)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
-	plt.savefig('figures/GP_B01_trajmod.png')
+	# plt.savefig('figures/GP_B01_trajmod.png')
 
 	plt.figure(figsize=(5, 4))
 	for p in range(nb_samples):
@@ -134,5 +134,6 @@ if __name__ == '__main__':
 	plt.ylabel('$y_1$', fontsize=30)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
-	plt.savefig('figures/GP_B02_trajmod.png')
+	# plt.savefig('figures/GP_B02_trajmod.png')
+	
 	plt.show()

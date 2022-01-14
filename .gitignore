@@ -152,3 +152,4 @@ control/vision_capture/camera control
 control/vision_capture/spatial mapping
 control/vision_capture/plane detection
 control/vision_capture/tutorials
+control/data/video

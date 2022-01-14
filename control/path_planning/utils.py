@@ -74,7 +74,7 @@ def IK(point):
 
     gamma = math.atan2(x2, x1)
 
-    cos_belta = (L1 ** 2 + L - L2 ** 2) / (2 * L1 * np.sqrt(L))
+    cos_belta = (L_1 ** 2 + L - L_2 ** 2) / (2 * L_1 * np.sqrt(L))
 
     if cos_belta > 1:
         angle_1 = gamma
@@ -83,7 +83,7 @@ def IK(point):
     else:
         angle_1 = gamma - math.acos(cos_belta)
 
-    cos_alpha = (L1 ** 2 - L + L2 ** 2) / (2 * L1 * L2)
+    cos_alpha = (L_1 ** 2 - L + L_2 ** 2) / (2 * L_1 * L_2)
 
     if cos_alpha > 1:
         angle_2 = np.pi
@@ -102,8 +102,8 @@ def forward_ik(angle):
         calculate point
     """
     point = np.zeros_like(angle)
-    point[0] = L1 * math.cos(angle[0]) + L2 * math.cos(angle[0] + angle[1])
-    point[1] = L1 * math.sin(angle[0]) + L2 * math.sin(angle[0] + angle[1])
+    point[0] = L_1 * math.cos(angle[0]) + L_2 * math.cos(angle[0] + angle[1])
+    point[1] = L_1 * math.sin(angle[0]) + L_2 * math.sin(angle[0] + angle[1])
 
     return point
 
@@ -114,10 +114,10 @@ def Jacobian(theta):
     """
     J = np.zeros((action_dim, action_dim))
 
-    J[0, 0] = -L1 * math.sin(theta[0]) - L2 * math.sin(theta[0] + theta[1])
-    J[0, 1] = -L2 * math.sin(theta[0] + theta[1])
-    J[1, 0] = L1 * math.cos(theta[0]) + L2 * math.cos(theta[0] + theta[1])
-    J[1, 1] = L2 * math.cos(theta[0] + theta[1])
+    J[0, 0] = -L_1 * math.sin(theta[0]) - L_2 * math.sin(theta[0] + theta[1])
+    J[0, 1] = -L_2 * math.sin(theta[0] + theta[1])
+    J[1, 0] = L_1 * math.cos(theta[0]) + L_2 * math.cos(theta[0] + theta[1])
+    J[1, 1] = L_2 * math.cos(theta[0] + theta[1])
 
     return J
 

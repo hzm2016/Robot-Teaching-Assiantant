@@ -8,11 +8,11 @@
 import numpy as np
 import GPy
 import matplotlib.pyplot as plt
-from utils.gmr import Gmr
-from utils.gmr import plot_gmm
-from utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
-from utils.gmr_mean_mapping import GmrMeanMapping
-from utils.gmr_kernels import Gmr_based_kernel
+from forward_mode.utils.gmr import Gmr
+from forward_mode.utils.gmr import plot_gmm
+from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
+from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
+from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 
 
 # Illustration of GMR-based GPR properties with 1-dimensional input and output
@@ -121,5 +121,5 @@ if __name__ == '__main__':
 	plt.ylabel('$y$', fontsize=25)
 	plt.tick_params(labelsize=15)
 	plt.tight_layout()
-	plt.savefig('figures/GMRbGP_toyex_%dobs_lambda%f_noise%f.png' % (nb_obs, lengthscale, noise_var))
+	# plt.savefig('figures/GMRbGP_toyex_%dobs_lambda%f_noise%f.png' % (nb_obs, lengthscale, noise_var))
 	plt.show()

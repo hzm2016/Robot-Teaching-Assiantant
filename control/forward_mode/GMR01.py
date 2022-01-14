@@ -8,13 +8,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat  # loading data from matlab
-from utils.gmr import Gmr, plot_gmm
+from forward_mode.utils.gmr import Gmr, plot_gmm
 
 # GMR on 2D trajectories with time as input
 if __name__ == '__main__':
 	# Load data
+	file_name = './forward_mode'
 	letter = 'B'
-	datapath = './data/2Dletters/'
+	datapath = file_name + '/data/2Dletters/'
 	data = loadmat(datapath + '%s.mat' % letter)
 	# print("data :", data.shape)
 	demos = [d['pos'][0][0].T for d in data['demos'][0]]
@@ -83,7 +84,7 @@ if __name__ == '__main__':
 	plt.locator_params(nbins=3)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
-	plt.savefig('figures/GMM_B.png')
+	plt.savefig(file_name + '/figures/GMM_B.png')
 
 	plt.figure(figsize=(5, 5))
 	for p in range(nb_samples):
@@ -100,7 +101,7 @@ if __name__ == '__main__':
 	plt.locator_params(nbins=3)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
-	plt.savefig('figures/GMR_B.png')
+	plt.savefig(file_name + '/figures/GMR_B.png')
 
 	plt.figure(figsize=(5, 4))
 	for p in range(nb_samples):
@@ -115,7 +116,7 @@ if __name__ == '__main__':
 	plt.ylabel('$y_1$', fontsize=30)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
-	plt.savefig('figures/GMR_B01.png')
+	plt.savefig(file_name + '/figures/GMR_B01.png')
 
 	plt.figure(figsize=(5, 4))
 	for p in range(nb_samples):
@@ -130,5 +131,5 @@ if __name__ == '__main__':
 	plt.ylabel('$y_2$', fontsize=30)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
-	plt.savefig('figures/GMR_B02.png')
+	plt.savefig(file_name + '/figures/GMR_B02.png')
 	plt.show()

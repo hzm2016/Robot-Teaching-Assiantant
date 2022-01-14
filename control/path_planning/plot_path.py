@@ -5,6 +5,7 @@ import seaborn as sns
 import numpy as np
 # from path_planning.path_generate import *
 from matplotlib.animation import FuncAnimation
+from path_planning.utils import Jacobian
 
 """ ================================= Plot result ===================================== """
 COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple', 'pink',
@@ -57,7 +58,7 @@ params = {
  'ytick.minor.size': 0.0
  }
 # sns.axes_style(rc=params)
-sns.set(font_scale=2.5)
+sns.set(font_scale=3.5)
 
 
 def plot_real_trajectory(
@@ -518,6 +519,28 @@ def plot_torque(
     plt.show()
 
 
+def plot_force(
+    force_list
+):
+    """
+        torque_list
+    """
+    fig = plt.figure(figsize=(10, 10))
+    plt.subplot(1, 1, 1)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+
+    plt.plot(force_list[:, 0], linewidth=linewidth, label='$F_x$')
+    plt.plot(force_list[:, 1], linewidth=linewidth, label='$F_y$')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Force (N)')
+    plt.legend()
+    # plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+    # plt.tight_layout()
+
+    plt.show()
+
+
 def plot_torque_path(
     root_path='./motor_control/bin/data/',   
     file_name='',  
@@ -530,28 +553,85 @@ def plot_torque_path(
     FONT_SIZE = 28
     linewidth = 4  
 
-    fig = plt.figure(figsize=(20, 8))  
+    fig = plt.figure(figsize=(20, 8))
 
     torque_list = np.array([0.0, 0.0])  
     for index in range(stroke_num): 
-        stroke_torque_list = np.loadtxt(  
+        stroke_torque_list = np.loadtxt(
             root_path + file_name + str(index) + '_' + str(epi_time) + '.txt', 
             delimiter=delimiter, skiprows=skiprows   
-        ) 
+        )
+        stroke_velocity_list = np.loadtxt(
+            root_path + 'real_angle_list_' + str(index) + '_' + str(epi_time) + '.txt',
+            delimiter=delimiter, skiprows=skiprows
+        )
+        # print("velocity list shape:", np.array(stroke_velocity_list).shape)
+        # velocity_list = np.vstack((np.array([0.0, 0.0]), stroke_velocity_list[:, [2, 5]]))
+        
         print("torque list shape:", np.array(stroke_torque_list).shape)    
-        torque_list = np.vstack((torque_list, stroke_torque_list[:, [1, 3]]))    
-
-    print("torque list shape:", np.array(torque_list).shape)    
-
-    plt.subplot(1, 1, 1)   
-    plt.plot(torque_list[:, 0], linewidth=linewidth, label='torque 1')   
-    plt.plot(torque_list[:, 1], linewidth=linewidth, label='torque 2')   
-
-    plt.xlabel('time($t$)')  
+        torque_list = np.vstack((torque_list, stroke_torque_list[:, [1, 3]]))
+        angle_list = np.vstack((np.array([0.0, 0.0]), stroke_velocity_list[:, [1, 4]]))
+    
+    external_force = []
+    for i in range(1, angle_list.shape[0]):
+        external_force.append(np.linalg.inv(Jacobian(angle_list[i, :])).dot(torque_list[i, :]))
+    external_force = np.array(external_force)
+    
+    plt.subplot(1, 2, 1)
+    plt.plot(torque_list[1:, 0], linewidth=linewidth, label='torque 1')
+    plt.plot(torque_list[1:, 1], linewidth=linewidth, label='torque 2')
+    plt.xlabel('time($t$)')
     plt.ylabel('Nm')  
     plt.legend()
+    
+    plt.subplot(1, 2, 2)
+    plt.plot(external_force[1:, 0], linewidth=linewidth, label='force 1')
+    plt.plot(external_force[1:, 1], linewidth=linewidth, label='force 2')
+    plt.xlabel('time($t$)')
+    plt.ylabel('N')
+    plt.legend()
 
-    plt.show()  
+    plt.show()
+    
+    return external_force
+    
+    
+def plot_external_force(
+    root_path='./motor_control/bin/data/',
+    file_name='',
+    stroke_num=1,
+    epi_time=0,
+    delimiter=',',
+    skiprows=1
+):
+    FONT_SIZE = 28
+    linewidth = 4
+    
+    fig = plt.figure(figsize=(8, 8))
+    
+    torque_list = np.array([0.0, 0.0])
+    for index in range(stroke_num):
+        stroke_torque_list = np.loadtxt(
+            root_path + file_name + str(index) + '_' + str(epi_time) + '.txt',
+            delimiter=delimiter, skiprows=skiprows
+        )
+        print("torque list shape:", np.array(stroke_torque_list).shape)
+        torque_list = np.vstack((torque_list, stroke_torque_list[:, [1, 3]]))
+    
+    # external_force = []
+    # print("torque list shape:", np.array(torque_list).shape)
+    # for i range(1, np.array(torque_list).shape[0]):
+    #     external_force.append(torque_list[i, :].dot(np.linalg.inv()))
+    
+    plt.subplot(1, 1, 1)
+    plt.plot(torque_list[1:, 0], linewidth=linewidth, label='torque 1')
+    plt.plot(torque_list[1:, 1], linewidth=linewidth, label='torque 2')
+    
+    plt.xlabel('time($t$)')
+    plt.ylabel('Nm')
+    plt.legend()
+    
+    plt.show()
 
 
 def plot_velocity_path(
@@ -569,25 +649,73 @@ def plot_velocity_path(
     fig = plt.figure(figsize=(20, 8))  
 
     velocity_list = np.array([0.0, 0.0])  
-    for index in range(stroke_num): 
+    for index in range(stroke_num):
         stroke_velocity_list = np.loadtxt(  
             root_path + file_name + str(index) + '_' + str(epi_time) + '.txt', 
             delimiter=delimiter, skiprows=skiprows   
         ) 
         print("velocity list shape:", np.array(stroke_velocity_list).shape)     
-        velocity_list = np.vstack((velocity_list, stroke_velocity_list[:, [2,5]]))     
+        velocity_list = np.vstack((velocity_list, stroke_velocity_list[:, [2,5]]))
+        angle_list = np.vstack((velocity_list, stroke_velocity_list[:, [1,4]]))
 
-    # print("velocity list shape:", np.array(velocity_list).shape)    
-
-    plt.subplot(1, 1, 1)   
+    osc_velocity_list = []
+    for i in range(1, velocity_list.shape[0]):
+        osc_velocity_list.append(Jacobian(angle_list[i]).dot(velocity_list[i]))
+    
+    plt.subplot(1, 2, 1)
     plt.plot(velocity_list[1:, 0], linewidth=linewidth, label='velocity 1')    
-    plt.plot(velocity_list[1:, 1], linewidth=linewidth, label='velocity 2')    
-
+    plt.plot(velocity_list[1:, 1], linewidth=linewidth, label='velocity 2')
     plt.xlabel('time($t$)')  
     plt.ylabel('rad/s')  
     plt.legend()
 
-    plt.show()  
+    osc_velocity_list = np.array(osc_velocity_list)
+    plt.subplot(1, 2, 2)
+    plt.plot(osc_velocity_list[:, 0], linewidth=linewidth, label='osc velocity 1')
+    plt.plot(osc_velocity_list[:, 1], linewidth=linewidth, label='osc velocity 2')
+    plt.xlabel('time($t$)')
+    plt.ylabel('m/s')
+    plt.legend()
+
+    plt.show()
+    
+    return osc_velocity_list
+    
+
+def plot_velocity_2d_path(
+    root_path='./motor_control/bin/data/',
+    file_name='',
+    stroke_num=1,
+    epi_time=0,
+    delimiter=',',
+    skiprows=1
+):
+    """ plot cartesian velocity """
+    FONT_SIZE = 28
+    linewidth = 4
+
+    fig = plt.figure(figsize=(20, 8))
+
+    velocity_list = np.array([0.0, 0.0])
+    for index in range(stroke_num):
+        stroke_velocity_list = np.loadtxt(
+            root_path + file_name + str(index) + '_' + str(epi_time) + '.txt',
+            delimiter=delimiter, skiprows=skiprows
+        )
+        print("velocity list shape:", np.array(stroke_velocity_list).shape)
+        velocity_list = np.vstack((velocity_list, stroke_velocity_list[:, [2,5]]))
+
+    # print("velocity list shape:", np.array(velocity_list).shape)
+
+    plt.subplot(1, 1, 1)
+    plt.plot(velocity_list[1:, 0], linewidth=linewidth, label='velocity 1')
+    plt.plot(velocity_list[1:, 1], linewidth=linewidth, label='velocity 2')
+
+    plt.xlabel('time($t$)')
+    plt.ylabel('rad/s')
+    plt.legend()
+
+    plt.show()
 
 
 def plot_sea_angle_torque_path(
