@@ -19,11 +19,11 @@ action_dim = 3
 DIST_THREHOLD = 0.05  
 
 # initial angle (rad) ::: 
-Initial_angle = np.array([-1.31, 1.527]) 
+Initial_angle = np.array([-1.31, 1.527])  
 
-Initial_point = np.array([0.32299, -0.23264])  
+Initial_point = np.array([0.32299, -0.23264])   
 
-Angle_initial = np.array([-0.291904, 0.136561, 1.981514])   
+Angle_initial = np.array([-0.286060, 0.187528, 1.981514])   
 
 # impedance params :  
 Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])  
@@ -484,16 +484,16 @@ if __name__ == "__main__":
     # =========================================================== 
     flag_write_word = True  
     flag_plot_result = False  
-    flag_demo_write = False   
-    write_name = 'ren'   
+    flag_demo_write = False  
+    write_name = 'chuan'  
 
     # set_pen_down() 
     # motor_stop() 
 
-    # theta_1 = motor_control.read_initial_angle_1()   
-    # print("theta_1 :", theta_1)    
-    # theta_2 = motor_control.read_initial_angle_2()   
-    # print("theta_2 :", theta_2)    
+    theta_1 = motor_control.read_initial_angle_1()   
+    print("theta_1 :", theta_1)    
+    theta_2 = motor_control.read_initial_angle_2()   
+    print("theta_2 :", theta_2)    
 
     # theta_1_t = motor_control.read_angle_1(Angle_initial[0])  
     # print("theta_1_t :", theta_1_t)
@@ -512,10 +512,10 @@ if __name__ == "__main__":
 
     # =========================================================== 
     if flag_write_word == True:   
-        eval_times = 4  
+        eval_times = 4 
         word_path, word_params, real_path = load_word_path(
             word_name=write_name,   
-            joint_params=np.array([45, 30, 5, 1])    
+            joint_params=np.array([45, 35, 5, 1])    
             )   
         
         for i in range(eval_times, eval_times+1):   
@@ -523,6 +523,9 @@ if __name__ == "__main__":
 
     # =========================================================== 
     if flag_plot_result == True:
+        
+        pass
+
         # plot_real_stroke_2d_path(
         #     root_path='./data/font_data/xing/', 
         #     file_name='angle_list_5', 
@@ -549,17 +552,17 @@ if __name__ == "__main__":
         #     skiprows=1  
         # )  
 
-        plot_velocity_path(
-            root_path='./data/font_data/' + write_name + '/',
-            file_name='real_angle_list_',
-            stroke_num=1,
-            epi_time=1,
-            delimiter=',',
-            skiprows=1
-        )
+        # plot_velocity_path(
+        #     root_path='./data/font_data/' + write_name + '/',
+        #     file_name='real_angle_list_',
+        #     stroke_num=1, 
+        #     epi_time=1, 
+        #     delimiter=',',  
+        #     skiprows=1
+        # )
 
         # plot_real_error_path(
-        #     root_path='./data/font_data/' + write_name + '/', 
+        #     root_path='./data/font_data/' + write_name + '/',  
         #     file_name='real_angle_list_',  
         #     stroke_num=6,  
         #     epi_num=5, 

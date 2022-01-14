@@ -168,7 +168,6 @@ def plot_real_2d_path(
     
     plt.subplot(1, 1, 1) 
     for i in range(stroke_num):  
-
         angle_list = np.loadtxt(root_path + file_name + str(i) + '_' + str(epi_time) + '.txt', delimiter=delimiter, skiprows=skiprows)
 
         angle_list_1_e = angle_list[:, 0]   
@@ -580,7 +579,7 @@ def plot_torque_path(
     plt.subplot(1, 2, 1)
     plt.plot(torque_list[1:, 0], linewidth=linewidth, label='torque 1')
     plt.plot(torque_list[1:, 1], linewidth=linewidth, label='torque 2')
-    plt.xlabel('time($t$)')
+    plt.xlabel('time($t$)')   
     plt.ylabel('Nm')  
     plt.legend()
     
@@ -658,7 +657,7 @@ def plot_velocity_path(
         velocity_list = np.vstack((velocity_list, stroke_velocity_list[:, [2,5]]))
         angle_list = np.vstack((velocity_list, stroke_velocity_list[:, [1,4]]))
 
-    osc_velocity_list = []
+    osc_velocity_list = [] 
     for i in range(1, velocity_list.shape[0]):
         osc_velocity_list.append(Jacobian(angle_list[i]).dot(velocity_list[i]))
     
