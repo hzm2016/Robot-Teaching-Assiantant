@@ -3,5 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/forward_mode/GPy" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/vision_capture/opencv" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/vision_capture/opencv_contrib" vcs="Git" />
   </component>
 </project>

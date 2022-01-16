@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat # loading data from matlab
 from forward_mode.utils.gmr import plot_gmm
 
+
 # GPR (LMC) on 2D trajectories with time as input
 if __name__ == '__main__':
 	# Load data

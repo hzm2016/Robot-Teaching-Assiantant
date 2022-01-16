@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
 	# Create time data
 	demos_t = [np.arange(demos[i].shape[0])[:, None] for i in range(nb_samples)]
+
 	# Stack time and position data
 	demos_tx = [np.hstack([demos_t[i] * dt, demos[i]]) for i in range(nb_samples)]
 
