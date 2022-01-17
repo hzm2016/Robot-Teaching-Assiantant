@@ -22,6 +22,7 @@ if __name__ == '__main__':
 
 	# Parameters
 	nb_data = demos[0].shape[0]
+	print("nb_data :", nb_data)
 	nb_data_sup = 30
 	nb_samples = 5
 	dt = 0.01
@@ -59,7 +60,7 @@ if __name__ == '__main__':
 	Xtest, _, output_index = GPy.util.multioutput.build_XY([Xt for i in range(output_dim)])
 
 	# Create coregionalisation model
-	kernel = GPy.kern.Matern52(input_dim, variance=1., lengthscale=10.)
+	kernel = GPy.kern.Matern52(input_dim, variance=5., lengthscale=10.)
 	K = kernel.prod(GPy.kern.Coregionalize(1, output_dim, active_dims=[input_dim], name='B'))
 	m = GPy.models.GPCoregionalizedRegression(X_list=X_list, Y_list=Y_list)
 	m.randomize()

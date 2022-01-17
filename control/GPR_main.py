@@ -14,12 +14,13 @@ from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregiona
 from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
 from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 import GPy
+from scipy import signal
 
 sns.set(font_scale=1.5)
 np.set_printoptions(precision=5)
 
 if __name__ == "__main__":
-	write_name = 'ren'
+	write_name = 'mu'
 	stroke_index = 0
 	file_fig_name = './data/predicted_images/'
 	epi_times = 5
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 	out_idx = [1, 2]
 	nb_states = 5
 
-	nb_data_sup = 50
+	nb_data_sup = 10
 
 	# plot font size
 	font_size = 20
@@ -48,22 +49,27 @@ if __name__ == "__main__":
 		delimiter=',',
 		skiprows=1
 	)
-
+	print("x_list :", np.array(x_list).shape, "y_list :", np.array(y_list).shape)
+	
 	folder_name = './data/predicted_images/' + write_name
 	if os.path.exists(folder_name):
 		pass
 	else:
 		os.makedirs(folder_name)
-
+	
+	# down sampling ::::
+	# x_down_list = signal.resample(x_list, 200, axis=1)
+	# y_down_list = signal.resample(y_list, 200, axis=1)
 	x_down_list = []
 	y_down_list = []
 	for i in range(len(x_list)):
 		x_down_list.append(x_list[i][::10])
 		y_down_list.append(y_list[i][::10])
-	# print('x_list shape :', np.array(x_down_list).shape, 'y list shape :', np.array(y_down_list).shape)
+	print('x_list shape :', np.array(x_down_list).shape, 'y list shape :', np.array(y_down_list).shape)
 
 	nb_data = x_down_list[0].shape[0]
-
+	print("nb_data :", nb_data)
+	
 	# Create time data
 	demos_t = [np.arange(x_down_list[i].shape[0])[:, None] for i in range(epi_times)]
 	# print("demos_t :", demos_t)
@@ -71,13 +77,13 @@ if __name__ == "__main__":
 	# Stack time and position data
 	demos_tx = [np.hstack([demos_t[i] * dt, x_down_list[i][:, None], y_down_list[i][:, None]]) for i in
 				range(epi_times)]
-	print("demos_tx :", demos_tx)
+	# print("demos_tx :", demos_tx)
 
 	# Stack demos
 	demos_np = demos_tx[0]
 	for i in range(1, epi_times):
 		demos_np = np.vstack([demos_np, demos_tx[i]])
-
+	
 	X = demos_np[:, 0][:, None]
 	Y = demos_np[:, 1:]
 	print("Y :", Y.shape)
@@ -89,7 +95,7 @@ if __name__ == "__main__":
 	Xt = dt * np.arange(nb_data + nb_data_sup)[:, None]
 	nb_data_test = Xt.shape[0]
 	Xtest, _, output_index = GPy.util.multioutput.build_XY([Xt for i in range(output_dim)])
-
+ 
 	# Create coregionalisation model
 	kernel = GPy.kern.Matern52(input_dim, variance=1., lengthscale=1.)
 	K = kernel.prod(GPy.kern.Coregionalize(1, output_dim, active_dims=[input_dim], name='B'))
@@ -99,7 +105,6 @@ if __name__ == "__main__":
 
 	# Prediction
 	mu_gp, sigma_gp = m.predict(Xtest, full_cov=True, Y_metadata={'output_index': output_index})
-
 	mu_gp_rshp = np.reshape(mu_gp, (output_dim, -1))
 
 	sigma_gp_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
@@ -162,10 +167,10 @@ if __name__ == "__main__":
 	# plt.show()
 
 	# New observations (via-points to go through)
-	# X_obs = np.array([0.0, 1., 1.9])[:, None]
-	# Y_obs = np.array([[-12.5, -11.5], [-0.5, -1.5], [-14.0, -7.5]])
-	X_obs = np.array([0.15])[:, None]
-	Y_obs = np.array([[0.30, -0.10]])
+	# X_obs = np.array([0.0, 0.15, 0.21])[:, None]
+	# Y_obs = np.array([[0.3, -0.02], [0.40, -0.10], [0.42, -0.17]])
+	X_obs = np.array([0.15, 0.22])[:, None]
+	Y_obs = np.array([[0.28, -0.10], [0.25, 0.06]])
 	X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
 	Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
 	Xobstest, _, output_index_obs = GPy.util.multioutput.build_XY([X_obs for i in range(output_dim)])
@@ -177,7 +182,8 @@ if __name__ == "__main__":
 	Xtest, _, output_index = GPy.util.multioutput.build_XY([Xt for i in range(output_dim)])
 
 	# Create coregionalisation model
-	kernel = GPy.kern.Matern52(input_dim, variance=0.01, lengthscale=10)
+	kernel = GPy.kern.Matern52(input_dim, variance=0.001, lengthscale=0.1)
+	# kernel = GPy.kern.RBF(input_dim, variance=0.001, lengthscale=0.1)
 	K = kernel.prod(GPy.kern.Coregionalize(1, output_dim, active_dims=[input_dim], name='B'))
 	m = GPy.models.GPCoregionalizedRegression(X_list=X_list, Y_list=Y_list)
 	m.randomize()
