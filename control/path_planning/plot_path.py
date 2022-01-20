@@ -518,24 +518,34 @@ def plot_torque(
     plt.show()
 
 
-def plot_force(
-    force_list
+def plot_force_velocity(
+    force_list,
+    data_type='force'
 ):
     """
         torque_list
     """
+    if data_type == 'force':
+        label_1 = '$F_x$'
+        label_2 = '$F_y$'
+        label_y = 'Force(N)'
+    else:
+        label_1 = '$v_x$'
+        label_2 = '$v_y$'
+        label_y = 'Velocity($m/s$)'
+
     fig = plt.figure(figsize=(10, 10))
     plt.subplot(1, 1, 1)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
 
-    plt.plot(force_list[:, 0], linewidth=linewidth, label='$F_x$')
-    plt.plot(force_list[:, 1], linewidth=linewidth, label='$F_y$')
+    plt.plot(force_list[:, 0], linewidth=linewidth, label=label_1)
+    plt.plot(force_list[:, 1], linewidth=linewidth, label=label_2)
 
     plt.xlabel('Time (s)')
-    plt.ylabel('Force (N)')
+    plt.ylabel(label_y)
     plt.legend()
     # plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
-    # plt.tight_layout()
+    plt.tight_layout()
 
     plt.show()
 
@@ -546,7 +556,8 @@ def plot_torque_path(
     stroke_num=1,  
     epi_time=0,  
     delimiter=',',  
-    skiprows=1  
+    skiprows=1,
+    render=False
 ):
     """ plot angle trajectory and cartesian path"""
     FONT_SIZE = 28
@@ -554,7 +565,9 @@ def plot_torque_path(
 
     fig = plt.figure(figsize=(20, 8))
 
-    torque_list = np.array([0.0, 0.0])  
+    torque_list = np.array([0.0, 0.0])
+    angle_list = np.array([0.0, 0.0])
+    index_list = np.zeros(stroke_num)
     for index in range(stroke_num): 
         stroke_torque_list = np.loadtxt(
             root_path + file_name + str(index) + '_' + str(epi_time) + '.txt', 
@@ -567,9 +580,10 @@ def plot_torque_path(
         # print("velocity list shape:", np.array(stroke_velocity_list).shape)
         # velocity_list = np.vstack((np.array([0.0, 0.0]), stroke_velocity_list[:, [2, 5]]))
         
-        print("torque list shape:", np.array(stroke_torque_list).shape)    
-        torque_list = np.vstack((torque_list, stroke_torque_list[:, [1, 3]]))
-        angle_list = np.vstack((np.array([0.0, 0.0]), stroke_velocity_list[:, [1, 4]]))
+        print("torque list shape:", np.array(stroke_torque_list).shape)
+        index_list[index] = np.array(stroke_torque_list).shape[0]
+        torque_list = np.vstack((torque_list.copy(), stroke_torque_list[:, [1, 3]]))
+        angle_list = np.vstack((angle_list.copy(), stroke_velocity_list[:, [1, 4]]))
     
     external_force = []
     for i in range(1, angle_list.shape[0]):
@@ -590,9 +604,10 @@ def plot_torque_path(
     plt.ylabel('N')
     plt.legend()
 
-    plt.show()
+    if render:
+        plt.show()
     
-    return external_force
+    return external_force, index_list
     
     
 def plot_external_force(
@@ -647,15 +662,18 @@ def plot_velocity_path(
 
     fig = plt.figure(figsize=(20, 8))  
 
-    velocity_list = np.array([0.0, 0.0])  
+    velocity_list = np.array([0.0, 0.0])
+    angle_list = np.zeros(2)
+    index_list = np.zeros(stroke_num)
     for index in range(stroke_num):
         stroke_velocity_list = np.loadtxt(  
             root_path + file_name + str(index) + '_' + str(epi_time) + '.txt', 
-            delimiter=delimiter, skiprows=skiprows   
-        ) 
+            delimiter=delimiter, skiprows=skiprows
+        )
         print("velocity list shape:", np.array(stroke_velocity_list).shape)     
-        velocity_list = np.vstack((velocity_list, stroke_velocity_list[:, [2,5]]))
-        angle_list = np.vstack((velocity_list, stroke_velocity_list[:, [1,4]]))
+        velocity_list = np.vstack((velocity_list.copy(), stroke_velocity_list[:, [2,5]]))
+        angle_list = np.vstack((angle_list.copy(), stroke_velocity_list[:, [1, 4]]))
+        index_list[index] = np.array(stroke_velocity_list).shape[0]
 
     osc_velocity_list = [] 
     for i in range(1, velocity_list.shape[0]):
@@ -678,7 +696,7 @@ def plot_velocity_path(
 
     plt.show()
     
-    return osc_velocity_list
+    return osc_velocity_list, index_list
     
 
 def plot_velocity_2d_path(

@@ -21,6 +21,7 @@ np.set_printoptions(precision=5)
 
 if __name__ == "__main__":
 	write_name = 'mu'
+	stroke_num = 3
 	stroke_index = 0
 	file_fig_name = './data/predicted_images/'
 	epi_times = 5
@@ -95,7 +96,7 @@ if __name__ == "__main__":
 	Xt = dt * np.arange(nb_data + nb_data_sup)[:, None]
 	nb_data_test = Xt.shape[0]
 	Xtest, _, output_index = GPy.util.multioutput.build_XY([Xt for i in range(output_dim)])
- 
+
 	# Create coregionalisation model
 	kernel = GPy.kern.Matern52(input_dim, variance=1., lengthscale=1.)
 	K = kernel.prod(GPy.kern.Coregionalize(1, output_dim, active_dims=[input_dim], name='B'))

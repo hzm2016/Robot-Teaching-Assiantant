@@ -39,16 +39,17 @@ if __name__ == '__main__':
 
 	# Stack time and position data
 	demos_tx = [np.hstack([demos_t[i]*dt, demos[i]]) for i in range(nb_samples)]
-	print("demos_tx :", demos_tx)
+	# print("demos_tx :", demos_tx)
 
 	# Stack demos
 	demos_np = demos_tx[0]
 	for i in range(1, nb_samples):
 		demos_np = np.vstack([demos_np, demos_tx[i]])
+	print("demos_np :", demos_np.shape)
 
 	X = demos_np[:, 0][:, None]
 	Y = demos_np[:, 1:]
-	print('Y :', Y)
+	# print('Y :', Y)
 	print('Y shape:', Y.shape)
 
 	# Test data
