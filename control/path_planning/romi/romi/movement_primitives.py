@@ -160,6 +160,7 @@ class ProbabilisticMovementPrimitives:
     def sample_movement(self):
         w = np.random.multivariate_normal(self.mean_w, self.cov_w)
         w = MovementPrimitive.get_params_from_block(self.movement_space, w)
+
         return MovementPrimitive(self.movement_space, w)
 
 

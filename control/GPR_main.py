@@ -27,6 +27,7 @@ if __name__ == "__main__":
 	epi_times = 5
 	dt = 0.001
 	nb_samples = 5
+	re_sample_index = 10
 
 	input_dim = 1
 	output_dim = 2
@@ -46,7 +47,7 @@ if __name__ == "__main__":
 		root_path='./data/font_data/' + write_name + '/',
 		file_name='real_angle_list_',
 		stroke_index=stroke_index,
-		epi_times=5,
+		epi_times=epi_times,
 		delimiter=',',
 		skiprows=1
 	)
@@ -64,8 +65,8 @@ if __name__ == "__main__":
 	x_down_list = []
 	y_down_list = []
 	for i in range(len(x_list)):
-		x_down_list.append(x_list[i][::10])
-		y_down_list.append(y_list[i][::10])
+		x_down_list.append(x_list[i][::re_sample_index])
+		y_down_list.append(y_list[i][::re_sample_index])
 	print('x_list shape :', np.array(x_down_list).shape, 'y list shape :', np.array(y_down_list).shape)
 
 	nb_data = x_down_list[0].shape[0]
@@ -128,50 +129,52 @@ if __name__ == "__main__":
 	axes = plt.gca()
 	# axes.set_xlim([-14., 14.])
 	# axes.set_ylim([-14., 14.])
-	plt.xlabel('$y_1$', fontsize=30)
-	plt.ylabel('$y_2$', fontsize=30)
+	axes.set_xlim([-0.15, 0.15])
+	axes.set_ylim([0.0, 0.45])
+	plt.xlabel('$x_1(m)$', fontsize=30)
+	plt.ylabel('$x_2(m)$', fontsize=30)
 	plt.locator_params(nbins=3)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
 	# plt.savefig('figures/GP_B.png')
 
-	plt.figure(figsize=(5, 4))
-	for p in range(nb_samples):
-		plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 0], color=[.7, .7, .7])
-	plt.plot(Xt[:, 0], mu_gp_rshp[0, :], color=[0.99, 0.76, 0.53], linewidth=3)
-	miny = mu_gp_rshp[0, :] - np.sqrt(sigma_gp_rshp[:, 0, 0])
-	maxy = mu_gp_rshp[0, :] + np.sqrt(sigma_gp_rshp[:, 0, 0])
-	plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
-	axes = plt.gca()
-	# axes.set_ylim([-14., 14.])
-	plt.xlabel('$t$', fontsize=30)
-	plt.ylabel('$y_1$', fontsize=30)
-	plt.tick_params(labelsize=20)
-	plt.tight_layout()
-	# plt.savefig('figures/GP_B01.png')
+	# plt.figure(figsize=(5, 4))
+	# for p in range(nb_samples):
+	# 	plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 0], color=[.7, .7, .7])
+	# plt.plot(Xt[:, 0], mu_gp_rshp[0, :], color=[0.99, 0.76, 0.53], linewidth=3)
+	# miny = mu_gp_rshp[0, :] - np.sqrt(sigma_gp_rshp[:, 0, 0])
+	# maxy = mu_gp_rshp[0, :] + np.sqrt(sigma_gp_rshp[:, 0, 0])
+	# plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
+	# axes = plt.gca()
+	# # axes.set_ylim([-14., 14.])
+	# plt.xlabel('$t$', fontsize=30)
+	# plt.ylabel('$y_1$', fontsize=30)
+	# plt.tick_params(labelsize=20)
+	# plt.tight_layout()
+	# # plt.savefig('figures/GP_B01.png')
 
-	plt.figure(figsize=(5, 4))
-	for p in range(nb_samples):
-		plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
-	plt.plot(Xt[:, 0], mu_gp_rshp[1, :], color=[0.99, 0.76, 0.53], linewidth=3)
-	miny = mu_gp_rshp[1, :] - np.sqrt(sigma_gp_rshp[:, 1, 1])
-	maxy = mu_gp_rshp[1, :] + np.sqrt(sigma_gp_rshp[:, 1, 1])
-	plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
-	axes = plt.gca()
-	# axes.set_ylim([-14., 14.])
-	plt.xlabel('$t$', fontsize=30)
-	plt.ylabel('$y_2$', fontsize=30)
-	plt.tick_params(labelsize=20)
-	plt.tight_layout()
-	# plt.savefig('figures/GP_B02.png')
-	#
-	# plt.show()
+	# plt.figure(figsize=(5, 4))
+	# for p in range(nb_samples):
+	# 	plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
+	# plt.plot(Xt[:, 0], mu_gp_rshp[1, :], color=[0.99, 0.76, 0.53], linewidth=3)
+	# miny = mu_gp_rshp[1, :] - np.sqrt(sigma_gp_rshp[:, 1, 1])
+	# maxy = mu_gp_rshp[1, :] + np.sqrt(sigma_gp_rshp[:, 1, 1])
+	# plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
+	# axes = plt.gca()
+	# # axes.set_ylim([-14., 14.])
+	# plt.xlabel('$t$', fontsize=30)
+	# plt.ylabel('$y_2$', fontsize=30)
+	# plt.tick_params(labelsize=20)
+	# plt.tight_layout()
+	# # plt.savefig('figures/GP_B02.png')
+	# #
+	# # plt.show()
 
 	# New observations (via-points to go through)
 	# X_obs = np.array([0.0, 0.15, 0.21])[:, None]
 	# Y_obs = np.array([[0.3, -0.02], [0.40, -0.10], [0.42, -0.17]])
-	X_obs = np.array([0.15, 0.22])[:, None]
-	Y_obs = np.array([[0.28, -0.10], [0.25, 0.06]])
+	X_obs = np.array([0.05, 0.22])[:, None]
+	Y_obs = np.array([[0.28, -0.10], [0.26, 0.06]])
 	X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
 	Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
 	Xobstest, _, output_index_obs = GPy.util.multioutput.build_XY([X_obs for i in range(output_dim)])
@@ -183,7 +186,7 @@ if __name__ == "__main__":
 	Xtest, _, output_index = GPy.util.multioutput.build_XY([Xt for i in range(output_dim)])
 
 	# Create coregionalisation model
-	kernel = GPy.kern.Matern52(input_dim, variance=0.001, lengthscale=0.1)
+	kernel = GPy.kern.Matern52(input_dim, variance=0.01, lengthscale=0.01)
 	# kernel = GPy.kern.RBF(input_dim, variance=0.001, lengthscale=0.1)
 	K = kernel.prod(GPy.kern.Coregionalize(1, output_dim, active_dims=[input_dim], name='B'))
 	m = GPy.models.GPCoregionalizedRegression(X_list=X_list, Y_list=Y_list)
@@ -223,42 +226,44 @@ if __name__ == "__main__":
 	axes = plt.gca()
 	# axes.set_xlim([-17., 17.])
 	# axes.set_ylim([-17., 17.])
-	plt.xlabel('$y_1$', fontsize=30)
-	plt.ylabel('$y_2$', fontsize=30)
+	axes.set_xlim([-0.15, 0.15])
+	axes.set_ylim([0.0, 0.45])
+	plt.xlabel('$x_1(m)$', fontsize=30)
+	plt.ylabel('$x_2(m)$', fontsize=30)
 	plt.locator_params(nbins=3)
 	plt.tick_params(labelsize=20)
 	plt.tight_layout()
 	# plt.savefig('figures/GP_B_trajmod.png')
 
-	plt.figure(figsize=(5, 4))
-	for p in range(nb_samples):
-		plt.plot(Xt[:nb_data, 0], Y[p*nb_data:(p+1)*nb_data, 0], color=[.7, .7, .7])
-	plt.plot(Xt[:, 0], mu_gp_rshp[0, :], color=[0.99, 0.76, 0.53], linewidth=3)
-	miny = mu_gp_rshp[0, :] - np.sqrt(sigma_gp_rshp[:, 0, 0])
-	maxy = mu_gp_rshp[0, :] + np.sqrt(sigma_gp_rshp[:, 0, 0])
-	plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
-	plt.scatter(X_obs[:, 0], Y_obs[:, 0], color=[0, 0, 0], zorder=60, s=100)
-	axes = plt.gca()
-	# axes.set_ylim([-17., 17.])
-	plt.xlabel('$t$', fontsize=30)
-	plt.ylabel('$y_1$', fontsize=30)
-	plt.tick_params(labelsize=20)
-	plt.tight_layout()
-	# plt.savefig('figures/GP_B01_trajmod.png')
+	# plt.figure(figsize=(5, 4))
+	# for p in range(nb_samples):
+	# 	plt.plot(Xt[:nb_data, 0], Y[p*nb_data:(p+1)*nb_data, 0], color=[.7, .7, .7])
+	# plt.plot(Xt[:, 0], mu_gp_rshp[0, :], color=[0.99, 0.76, 0.53], linewidth=3)
+	# miny = mu_gp_rshp[0, :] - np.sqrt(sigma_gp_rshp[:, 0, 0])
+	# maxy = mu_gp_rshp[0, :] + np.sqrt(sigma_gp_rshp[:, 0, 0])
+	# plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
+	# plt.scatter(X_obs[:, 0], Y_obs[:, 0], color=[0, 0, 0], zorder=60, s=100)
+	# axes = plt.gca()
+	# # axes.set_ylim([-17., 17.])
+	# plt.xlabel('$t$', fontsize=30)
+	# plt.ylabel('$y_1$', fontsize=30)
+	# plt.tick_params(labelsize=20)
+	# plt.tight_layout()
+	# # plt.savefig('figures/GP_B01_trajmod.png')
 
-	plt.figure(figsize=(5, 4))
-	for p in range(nb_samples):
-		plt.plot(Xt[:nb_data, 0], Y[p*nb_data:(p+1)*nb_data, 1], color=[.7, .7, .7])
-	plt.plot(Xt[:, 0], mu_gp_rshp[1, :], color=[0.99, 0.76, 0.53], linewidth=3)
-	miny = mu_gp_rshp[1, :] - np.sqrt(sigma_gp_rshp[:, 1, 1])
-	maxy = mu_gp_rshp[1, :] + np.sqrt(sigma_gp_rshp[:, 1, 1])
-	plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
-	plt.scatter(X_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
-	axes = plt.gca()
-	# axes.set_ylim([-17., 17.])
-	plt.xlabel('$t$', fontsize=30)
-	plt.ylabel('$y_1$', fontsize=30)
-	plt.tick_params(labelsize=20)
-	plt.tight_layout()
+	# plt.figure(figsize=(5, 4))
+	# for p in range(nb_samples):
+	# 	plt.plot(Xt[:nb_data, 0], Y[p*nb_data:(p+1)*nb_data, 1], color=[.7, .7, .7])
+	# plt.plot(Xt[:, 0], mu_gp_rshp[1, :], color=[0.99, 0.76, 0.53], linewidth=3)
+	# miny = mu_gp_rshp[1, :] - np.sqrt(sigma_gp_rshp[:, 1, 1])
+	# maxy = mu_gp_rshp[1, :] + np.sqrt(sigma_gp_rshp[:, 1, 1])
+	# plt.fill_between(Xt[:, 0], miny, maxy, color=[0.99, 0.76, 0.53], alpha=0.3)
+	# plt.scatter(X_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
+	# axes = plt.gca()
+	# # axes.set_ylim([-17., 17.])
+	# plt.xlabel('$t$', fontsize=30)
+	# plt.ylabel('$y_1$', fontsize=30)
+	# plt.tick_params(labelsize=20)
+	# plt.tight_layout()
 
 	plt.show()

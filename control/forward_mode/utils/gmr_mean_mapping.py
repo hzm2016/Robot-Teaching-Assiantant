@@ -4,10 +4,10 @@
 # License: MIT
 # Contact: noemie.jaquier@idiap.ch
 ##################################################
-
 import numpy as np
 from GPy.core.mapping import Mapping
 from GPy.core.parameterization import Param
+
 
 class GmrMeanMapping(Mapping):
 	"""

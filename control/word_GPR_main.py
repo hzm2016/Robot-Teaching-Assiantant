@@ -21,10 +21,10 @@ np.set_printoptions(precision=5)
 
 
 if __name__ == "__main__":
-	write_name = 'mu'
-	stroke_num = 4
-	stroke_index = 0
 	file_fig_name = './data/predicted_images/'
+	write_name = 'ren'
+	stroke_num = 2
+	stroke_index = 0
 	epi_times = 5
 	resample_index = 10
 

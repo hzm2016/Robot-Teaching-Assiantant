@@ -63,11 +63,19 @@ if __name__ == '__main__':
 	# GMR
 	mu_gmr = []
 	sigma_gmr = []
+	sigma_gmr_1 = []
+	sigma_gmr_2 = []
 	for i in range(Xt.shape[0]):
 		mu_gmr_tmp, sigma_gmr_tmp, H_tmp = gmr_model.gmr_predict(Xt[i])
 		mu_gmr.append(mu_gmr_tmp)
 		sigma_gmr.append(sigma_gmr_tmp)
+		sigma_gmr_1.append(sigma_gmr_tmp[0, 0])
+		sigma_gmr_2.append(sigma_gmr_tmp[1, 1])
+		print("mu_gmr :", mu_gmr_tmp.shape)
+		print("sigma_gmr :", sigma_gmr_tmp.shape)
 
+	sigma_gmr_1_diag = np.diag(np.array(sigma_gmr_1))
+	sigma_gmr_2_diag = np.diag(np.array(sigma_gmr_2))
 	mu_gmr = np.array(mu_gmr)
 	sigma_gmr = np.array(sigma_gmr)
 
@@ -94,6 +102,20 @@ if __name__ == '__main__':
 	plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
 	plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=80)
 	plot_gmm(mu_gmr, sigma_gmr, alpha=0.05, color=[0.20, 0.54, 0.93])
+
+	print("sigma_mr :", sigma_gmr.shape)
+	mu_gmr_sample_1 = []
+	mu_gmr_sample_2 = []
+	for i in range(1):
+		prior_traj_sample_1 = np.random.multivariate_normal(mu_gmr[:, 0], sigma_gmr_1_diag)
+		prior_traj_sample_2 = np.random.multivariate_normal(mu_gmr[:, 1], sigma_gmr_2_diag)
+		# prior_traj_sample = np.random.multivariate_normal(mu_gmr[:, :], sigma_gmr_1_diag)
+	# for j in range(Xt.shape[0]):
+		# 	prior_traj_sample = np.random.multivariate_normal(mu_gmr[j, :], sigma_gmr[j, :, :])
+		# 	mu_gmr_sample.append(prior_traj_sample)
+	# print(np.array(mu_gmr_sample).shape)
+	plt.plot(prior_traj_sample_1, prior_traj_sample_2, color=[0.93, 0.20, 0.54], linewidth=3)
+
 	axes = plt.gca()
 	axes.set_xlim([-14, 14.])
 	axes.set_ylim([-14., 14.])
@@ -108,9 +130,12 @@ if __name__ == '__main__':
 	for p in range(nb_samples):
 		plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 0], color=[.7, .7, .7])
 	plt.plot(Xt[:, 0], mu_gmr[:, 0], color=[0.20, 0.54, 0.93], linewidth=3)
+	plt.plot(Xt[:, 0], prior_traj_sample_1, color=[0.20, 0.54, 0.93], linewidth=3)
 	miny = mu_gmr[:, 0] - np.sqrt(sigma_gmr[:, 0, 0])
 	maxy = mu_gmr[:, 0] + np.sqrt(sigma_gmr[:, 0, 0])
 	plt.fill_between(Xt[:, 0], miny, maxy, color=[0.20, 0.54, 0.93], alpha=0.3)
+	prior_traj = []
+
 	axes = plt.gca()
 	axes.set_ylim([-14., 14.])
 	plt.xlabel('$t$', fontsize=30)
@@ -123,6 +148,7 @@ if __name__ == '__main__':
 	for p in range(nb_samples):
 		plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
 	plt.plot(Xt[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
+	plt.plot(Xt[:, 0], prior_traj_sample_2, color=[0.20, 0.54, 0.93], linewidth=3)
 	miny = mu_gmr[:, 1] - np.sqrt(sigma_gmr[:, 1, 1])
 	maxy = mu_gmr[:, 1] + np.sqrt(sigma_gmr[:, 1, 1])
 	plt.fill_between(Xt[:, 0], miny, maxy, color=[0.20, 0.54, 0.93], alpha=0.3)

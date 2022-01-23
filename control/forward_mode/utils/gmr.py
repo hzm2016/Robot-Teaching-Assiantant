@@ -54,7 +54,6 @@ class Gmr:
 		self.sigma = None  # covariance matrix
 		self.inv_sigma = None  # Precision matrix
 
-
 	# def init_params_kmeans(self, data):
 	# 	from sklearn.cluster import KMeans
 	# 	km_init = KMeans(n_clusters=self.nb_states)
@@ -150,7 +149,6 @@ class Gmr:
 		:param input_data: np_array(nb_dim), this function accept one input data at a time
 		:return: expected mean, covariance and weights of the output data
 		"""
-
 		H = np.zeros(self.nb_states)
 
 		# Compute weights
@@ -188,7 +186,6 @@ class Gmr:
 		:param input_data: np_array(nb_dim), this function accept one input data at a time
 		:return: expected mean of the output data
 		"""
-
 		H = np.zeros(self.nb_states)
 
 		# Compute weights

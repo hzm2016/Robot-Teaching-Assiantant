@@ -129,38 +129,38 @@ if __name__ == "__main__":
     stroke_num = 3
     epi_times = 5
 
-    # build filter based on signals
-    b, a = signal.butter(6, 0.02, 'lowpass')
-
-    all_velocity = []
-    for epi_time in range(epi_times):
-        osc_velocity_list, index_list = \
-            plot_velocity_path(
-            root_path='./data/font_data/' + write_name + '/',
-            file_name='real_angle_list_',
-            stroke_num=stroke_num,
-            epi_time=epi_time,
-            delimiter=',',
-            skiprows=1
-        )
-        filtered_osc_velocity = np.zeros_like(osc_velocity_list)
-        filtered_osc_velocity[:, 0] = signal.filtfilt(b, a, osc_velocity_list[:, 0])
-        filtered_osc_velocity[:, 1] = signal.filtfilt(b, a, osc_velocity_list[:, 1])
-        # print('shape_ori :', external_force.shape, 'shape_filter ', filtered_force.shape)
-        all_velocity.append(filtered_osc_velocity[::resample_index, :])
-        index_list = index_list/resample_index
-        plot_force_velocity(filtered_osc_velocity, data_type='vel')
-
-    print(np.array(all_velocity).shape)
-    GMR(
-        np.array(all_velocity),
-        index_list,
-        word_name=write_name,
-        label_1='$v_x$',
-        label_2='$v_y$',
-        label_y='Velocity(m/s)',   # Force(N)
-        file_name='velocity'
-    )
+    # # build filter based on signals
+    # b, a = signal.butter(6, 0.02, 'lowpass')
+    #
+    # all_velocity = []
+    # for epi_time in range(epi_times):
+    #     osc_velocity_list, index_list = \
+    #         plot_velocity_path(
+    #         root_path='./data/font_data/' + write_name + '/',
+    #         file_name='real_angle_list_',
+    #         stroke_num=stroke_num,
+    #         epi_time=epi_time,
+    #         delimiter=',',
+    #         skiprows=1
+    #     )
+    #     filtered_osc_velocity = np.zeros_like(osc_velocity_list)
+    #     filtered_osc_velocity[:, 0] = signal.filtfilt(b, a, osc_velocity_list[:, 0])
+    #     filtered_osc_velocity[:, 1] = signal.filtfilt(b, a, osc_velocity_list[:, 1])
+    #     # print('shape_ori :', external_force.shape, 'shape_filter ', filtered_force.shape)
+    #     all_velocity.append(filtered_osc_velocity[::resample_index, :])
+    #     index_list = index_list/resample_index
+    #     plot_force_velocity(filtered_osc_velocity, data_type='vel')
+    #
+    # print(np.array(all_velocity).shape)
+    # GMR(
+    #     np.array(all_velocity),
+    #     index_list,
+    #     word_name=write_name,
+    #     label_1='$v_x$',
+    #     label_2='$v_y$',
+    #     label_y='Velocity(m/s)',   # Force(N)
+    #     file_name='velocity'
+    # )
 
     # build filter based on signals
     b, a = signal.butter(8, 0.02, 'lowpass')
@@ -200,13 +200,13 @@ if __name__ == "__main__":
     ###########################################################
     # # DTW
     ###########################################################
-    # import numpy as np
-    # # ## A noisy sine wave as query
-    # # idx = np.linspace(0, 6.28, num=100)
-    # # query = np.sin(idx) + np.random.uniform(size=100) / 10.0
-    # #
-    # # ## A cosine is for template; sin and cos are offset by 25 samples
-    # # template = np.cos(idx)
+    import numpy as np
+    # ## A noisy sine wave as query
+    # idx = np.linspace(0, 6.28, num=100)
+    # query = np.sin(idx) + np.random.uniform(size=100) / 10.0
+    #
+    # ## A cosine is for template; sin and cos are offset by 25 samples
+    # template = np.cos(idx)
     # idx_1 = np.linspace(1, 600, num=600)
     # idx_2 = np.linspace(1, 399, num=400)
     # query = np.cos(2 * np.pi * 0.05 * idx_1)
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     # ## Find the best match with the canonical recursion formula
     # from dtw import *
     #
-    # alignment = dtw(query, template, keep_internals=True)
+    # alignment = dtw(query, template)
     # print("alignment :", alignment.index1, alignment.index2)
     #
     # plt.figure()
@@ -227,21 +227,22 @@ if __name__ == "__main__":
 
     # import numpy as np
     #
-    # # We define two sequences x, y as numpy array
-    # # where y is actually a sub-sequence from x
-    # x = np.array([2, 0, 1, 1, 2, 4, 2, 1, 2, 0]).reshape(-1, 1)
-    # y = np.array([1, 1, 2, 4, 2, 1, 2, 0]).reshape(-1, 1)
-    # z = np.array([1, 2, 4, 4, 2, 1, 2]).reshape(-1, 1)
-    #
-    # from dtw import dtw
-    #
-    # manhattan_distance = lambda x, y: np.abs(x - y)
-    #
-    # d_1, cost_matrix_1, acc_cost_matrix_1, path_1 = dtw(x, y, dist=manhattan_distance)
-    # d_2, cost_matrix_2, acc_cost_matrix_2, path_2 = dtw(x, z, dist=manhattan_distance)
-    #
-    # # print(d)
-    #
+    # We define two sequences x, y as numpy array
+    # where y is actually a sub-sequence from x
+    x = np.array([2, 0, 1, 1, 2, 4, 2, 1, 2, 0]).reshape(-1, 1)
+    y = np.array([1, 1, 2, 4, 2, 1, 2, 0]).reshape(-1, 1)
+    z = np.array([1, 2, 4, 4, 2, 1, 2]).reshape(-1, 1)
+
+    from dtw import dtw
+
+    manhattan_distance = lambda x, y: np.abs(x - y)
+
+    d_1, cost_matrix_1, acc_cost_matrix_1, path_1 = dtw(x, y, dist=manhattan_distance)
+    d_2, cost_matrix_2, acc_cost_matrix_2, path_2 = dtw(x, z, dist=manhattan_distance)
+
+    print(path_1)
+    # print(d_2)
+
     # # You can also visualise the accumulated cost and the shortest path
     # import matplotlib.pyplot as plt
     #

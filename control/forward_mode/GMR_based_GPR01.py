@@ -37,7 +37,7 @@ if __name__ == '__main__':
     nb_states = 6
 
     nb_prior_samples = 10
-    nb_posterior_samples = 3
+    nb_posterior_samples = 5
 
     # Create time data
     demos_t = [np.arange(demos[i].shape[0])[:, None] + 1 for i in range(nb_samples)]
@@ -65,10 +65,10 @@ if __name__ == '__main__':
     Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
     
     # Define via-points (new set of observations)
-    # X_obs = np.array([0.0, 1., 1.9])[:, None]
-    # Y_obs = np.array([[-12.5, -11.5], [-0.5, -1.5], [-14.0, -7.5]])
-    X_obs = np.array([0.5, 0.8, 1., 1.5])[:, None]
-    Y_obs = np.array([[-10.0, -0.0], [-5, 8.0], [-0.5, -1.5], [0.0, -11.]])
+    X_obs = np.array([0.0, 1., 1.9])[:, None]
+    Y_obs = np.array([[-12.5, -11.5], [-0.5, -1.5], [-14.0, -7.5]])
+    # X_obs = np.array([0.5, 0.8, 1., 1.5])[:, None]
+    # Y_obs = np.array([[-10.0, -0.0], [-5, 8.0], [-0.5, -1.5], [0.0, -11.]])
     X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
     Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
 
@@ -84,18 +84,20 @@ if __name__ == '__main__':
         mu_gmr_tmp, sigma_gmr_tmp, H_tmp = gmr_model.gmr_predict(Xt[i])
         mu_gmr.append(mu_gmr_tmp)
         sigma_gmr.append(sigma_gmr_tmp)
+
     mu_gmr = np.array(mu_gmr)
     sigma_gmr = np.array(sigma_gmr)
 
     # Define GPR likelihood and kernels ::: original : 0.01
     likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=0.05) for j in range(output_dim)]
 
-    kernel_list = [GPy.kern.RBF(1, variance=1., lengthscale=0.1) for i in range(gmr_model.nb_states)]
+    kernel_list = [GPy.kern.RBF(1, variance=0.5, lengthscale=1) for i in range(gmr_model.nb_states)]
+    # kernel_list = [GPy.kern.RBF(1, variance=1., lengthscale=0.1) for i in range(gmr_model.nb_states)]
     # kernel_list = [GPy.kern.Matern52(1, variance=1., lengthscale=5.) for i in range(gmr_model.nb_states)]
 
     # Fix variance of kernels
     for kernel in kernel_list:
-        kernel.variance.fix(1.0)  # 1.0
+        kernel.variance.fix(1.0)  # 1.0www
         kernel.lengthscale.constrain_bounded(0.01, 10.)
 
     # Bound noise parameters
@@ -106,13 +108,14 @@ if __name__ == '__main__':
     K = Gmr_based_kernel(gmr_model=gmr_model, kernel_list=kernel_list)
     mf = GmrMeanMapping(2 * input_dim + 1, 1, gmr_model)
     m = GPCoregionalizedWithMeanRegression(
-        X_list, Y_list, kernel=K,
+        X_list, Y_list,
+        kernel=K,
         likelihoods_list=likelihoods_list,
         mean_function=mf
     )
     
     # Parameters optimization
-    m.optimize('bfgs', max_iters=100, messages=True)
+    m.optimize('bfgs', max_iters=200, messages=True)
 
     # Print model parameters
     print(m)
@@ -122,9 +125,10 @@ if __name__ == '__main__':
     prior_mean = mf.f(Xtest)[:, 0]
     prior_kernel = m.kern.K(Xtest)
     for i in range(nb_prior_samples):
+        print("prior_kernel :", prior_kernel.shape)
         prior_traj_tmp = np.random.multivariate_normal(prior_mean, prior_kernel)
+        print("prior_traj_tmp :", prior_traj_tmp.shape)
         prior_traj.append(np.reshape(prior_traj_tmp, (output_dim, -1)))
-    
     prior_kernel_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
     for i in range(output_dim):
         for j in range(output_dim):
@@ -135,10 +139,11 @@ if __name__ == '__main__':
 
     # GPR posterior -> new points observed (the training points are discarded as they are "included" in the GMM)
     m_obs = \
-        GPCoregionalizedWithMeanRegression(X_obs_list, Y_obs_list, kernel=K,
-                                           likelihoods_list=likelihoods_list,
-                                           mean_function=mf
-                                           )
+        GPCoregionalizedWithMeanRegression(
+            X_obs_list, Y_obs_list, kernel=K,
+            likelihoods_list=likelihoods_list,
+            mean_function=mf
+        )
     mu_posterior_tmp = \
         m_obs.posterior_samples_f(Xtest, full_cov=True, size=nb_posterior_samples)
 
@@ -156,7 +161,7 @@ if __name__ == '__main__':
     sigma_gp_rshp = np.zeros((nb_data_test, output_dim, output_dim))
     for i in range(nb_data_test):
         sigma_gp_rshp[i] = np.reshape(sigma_gp_tmp[i, i, :], (output_dim, output_dim))
-
+    print("sigma_gp_rshp", sigma_gp_rshp.shape)
     # Final plots
     # GMM
     # plt.figure(figsize=(5, 5))
@@ -186,37 +191,37 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.savefig(file_name + '/figures/GMRbGP_B_priors_datasup.png')
 
-    plt.figure(figsize=(5, 4))
-    plt.plot(Xt[:, 0], mu_gmr[:, 0], color=[0.20, 0.54, 0.93], linewidth=3)
-    miny = mu_gmr[:, 0] - np.sqrt(prior_kernel_rshp[:, 0, 0])
-    maxy = mu_gmr[:, 0] + np.sqrt(prior_kernel_rshp[:, 0, 0])
-    plt.fill_between(Xt[:, 0], miny, maxy, color=[0.64, 0.27, 0.73], alpha=0.3)
-    for i in range(nb_prior_samples):
-        plt.plot(Xt[:, 0], prior_traj[i][0], color=[0.64, 0.27, 0.73], linewidth=1.)
-    axes = plt.gca()
-    axes.set_ylim([-17., 17.])
-    plt.xlabel('$t$', fontsize=30)
-    plt.ylabel('$y_1$', fontsize=30)
-    plt.tick_params(labelsize=20)
-    plt.tight_layout()
-    plt.savefig(file_name + '/figures/GMRbGP_B_priors01_datasup.png')
+    # plt.figure(figsize=(5, 4))
+    # plt.plot(Xt[:, 0], mu_gmr[:, 0], color=[0.20, 0.54, 0.93], linewidth=3)
+    # miny = mu_gmr[:, 0] - np.sqrt(prior_kernel_rshp[:, 0, 0])
+    # maxy = mu_gmr[:, 0] + np.sqrt(prior_kernel_rshp[:, 0, 0])
+    # plt.fill_between(Xt[:, 0], miny, maxy, color=[0.64, 0.27, 0.73], alpha=0.3)
+    # for i in range(nb_prior_samples):
+    #     plt.plot(Xt[:, 0], prior_traj[i][0], color=[0.64, 0.27, 0.73], linewidth=1.)
+    # axes = plt.gca()
+    # axes.set_ylim([-17., 17.])
+    # plt.xlabel('$t$', fontsize=30)
+    # plt.ylabel('$y_1$', fontsize=30)
+    # plt.tick_params(labelsize=20)
+    # plt.tight_layout()
+    # plt.savefig(file_name + '/figures/GMRbGP_B_priors01_datasup.png')
 
-    plt.figure(figsize=(5, 4))
-    for p in range(nb_samples):
-        plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
-    plt.plot(Xt[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
-    miny = mu_gmr[:, 1] - np.sqrt(prior_kernel_rshp[:, 1, 1])
-    maxy = mu_gmr[:, 1] + np.sqrt(prior_kernel_rshp[:, 1, 1])
-    plt.fill_between(Xt[:, 0], miny, maxy, color=[0.64, 0.27, 0.73], alpha=0.3)
-    for i in range(nb_prior_samples):
-        plt.plot(Xt[:, 0], prior_traj[i][1], color=[0.64, 0.27, 0.73], linewidth=1.)
-    axes = plt.gca()
-    axes.set_ylim([-17., 17.])
-    plt.xlabel('$t$', fontsize=30)
-    plt.ylabel('$y_2$', fontsize=30)
-    plt.tick_params(labelsize=20)
-    plt.tight_layout()
-    plt.savefig(file_name + '/figures/GMRbGP_B_priors02_datasup.png')
+    # plt.figure(figsize=(5, 4))
+    # for p in range(nb_samples):
+    #     plt.plot(Xt[:nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
+    # plt.plot(Xt[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
+    # miny = mu_gmr[:, 1] - np.sqrt(prior_kernel_rshp[:, 1, 1])
+    # maxy = mu_gmr[:, 1] + np.sqrt(prior_kernel_rshp[:, 1, 1])
+    # plt.fill_between(Xt[:, 0], miny, maxy, color=[0.64, 0.27, 0.73], alpha=0.3)
+    # for i in range(nb_prior_samples):
+    #     plt.plot(Xt[:, 0], prior_traj[i][1], color=[0.64, 0.27, 0.73], linewidth=1.)
+    # axes = plt.gca()
+    # axes.set_ylim([-17., 17.])
+    # plt.xlabel('$t$', fontsize=30)
+    # plt.ylabel('$y_2$', fontsize=30)
+    # plt.tick_params(labelsize=20)
+    # plt.tight_layout()
+    # plt.savefig(file_name + '/figures/GMRbGP_B_priors02_datasup.png')
 
     # Posterior
     plt.figure(figsize=(5, 5))
@@ -225,6 +230,7 @@ if __name__ == '__main__':
     for i in range(nb_posterior_samples):
         plt.plot(mu_posterior[i][0], mu_posterior[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
         plt.scatter(mu_posterior[i][0, 0], mu_posterior[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
+
     plt.plot(mu_gp_rshp[:, 0], mu_gp_rshp[:, 1], color=[0.83, 0.06, 0.06], linewidth=3.)
     plt.scatter(mu_gp_rshp[0, 0], mu_gp_rshp[0, 1], color=[0.83, 0.06, 0.06], marker='X', s=80)
     plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
@@ -238,7 +244,7 @@ if __name__ == '__main__':
     plt.tick_params(labelsize=20)
     plt.tight_layout()
     plt.savefig(file_name + '/figures/GMRbGP_B_posterior_datasup.png')
-    #
+
     # plt.figure(figsize=(5, 4))
     # plt.plot(Xt[:, 0], mu_gmr[:, 0], color=[0.20, 0.54, 0.93], linewidth=3.)
     # miny = mu_gp_rshp[:, 0] - np.sqrt(sigma_gp_rshp[:, 0, 0])

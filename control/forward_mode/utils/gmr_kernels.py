@@ -8,7 +8,7 @@
 import numpy as np
 from GPy.kern import Kern
 
-from GPy.util.config import config # for assesing whether to use cython
+from GPy.util.config import config  # for assesing whether to use cython
 try:
 	from GPy import coregionalize_cython
 	config.set('cython', 'working', 'True')
