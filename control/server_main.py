@@ -485,7 +485,7 @@ if __name__ == "__main__":
     flag_write_word = True
     flag_plot_result = False  
     flag_demo_write = False  
-    write_name = 'ren_10'  
+    write_name = 'ren_20'  
 
     # set_pen_down() 
     # motor_stop() 
@@ -515,7 +515,7 @@ if __name__ == "__main__":
         eval_times = 5  
         word_path, word_params, real_path = load_word_path(
             word_name=write_name,   
-            joint_params=np.array([10, 10, 1, 0.5])    
+            joint_params=np.array([20, 20, 1, 0.5])    
             )   
         for i in range(eval_times):   
             write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)   
