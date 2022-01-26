@@ -485,7 +485,7 @@ if __name__ == "__main__":
     flag_write_word = True
     flag_plot_result = False  
     flag_demo_write = False  
-    write_name = 'yi_10'  
+    write_name = 'ren_10'  
 
     # set_pen_down() 
     # motor_stop() 
