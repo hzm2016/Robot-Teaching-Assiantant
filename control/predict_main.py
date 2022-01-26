@@ -21,7 +21,7 @@ np.set_printoptions(precision=5)
 
 
 if __name__ == "__main__":
-	write_name = 'chuan'
+	write_name = 'yi_10'
 	stroke_index = 0
 	file_fig_name = './data/predicted_images/'
 	re_sample_index = 10
@@ -123,23 +123,23 @@ if __name__ == "__main__":
 	# plt.tick_params(labelsize=20)
 	# plt.tight_layout()
 	# plt.savefig(folder_name + '/' + 'GMM_' + write_name + '_stroke_' + str(stroke_index) + '.png')
-	#
-	# plt.figure(figsize=(5, 5))
-	# for p in range(epi_times):
-	# 	plt.plot(Y[p*nb_data:(p+1)*nb_data, 0], Y[p*nb_data:(p+1)*nb_data, 1], color=[.7, .7, .7])
-	# 	plt.scatter(Y[p*nb_data, 0], Y[p*nb_data, 1], color=[.7, .7, .7], marker='X', s=50)
-	# plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
-	# plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=50)
-	# plot_gmm(mu_gmr, sigma_gmr, alpha=0.05, color=[0.20, 0.54, 0.93])
-	# axes = plt.gca()
-	# axes.set_xlim([0.1, 0.45])
-	# axes.set_ylim([-0.25, 0.25])
-	# plt.xlabel('$x(m)$', fontsize=font_size)
-	# plt.ylabel('$y(m)$', fontsize=font_size)
-	# plt.locator_params(nbins=3)
-	# plt.tick_params(labelsize=20)
-	# plt.tight_layout()
-	# plt.savefig(folder_name + '/' + 'GMR_' + write_name + '_stroke_' + str(stroke_index) + '.png')
+	
+	plt.figure(figsize=(5, 5))
+	for p in range(epi_times):
+		plt.plot(Y[p*nb_data:(p+1)*nb_data, 0], Y[p*nb_data:(p+1)*nb_data, 1], color=[.7, .7, .7])
+		plt.scatter(Y[p*nb_data, 0], Y[p*nb_data, 1], color=[.7, .7, .7], marker='X', s=50)
+	plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
+	plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=50)
+	plot_gmm(mu_gmr, sigma_gmr, alpha=0.05, color=[0.20, 0.54, 0.93])
+	axes = plt.gca()
+	axes.set_xlim([0.1, 0.45])
+	axes.set_ylim([-0.25, 0.25])
+	plt.xlabel('$x(m)$', fontsize=font_size)
+	plt.ylabel('$y(m)$', fontsize=font_size)
+	plt.locator_params(nbins=3)
+	plt.tick_params(labelsize=20)
+	plt.tight_layout()
+	plt.savefig(folder_name + '/' + 'GMR_' + write_name + '_stroke_' + str(stroke_index) + '.pdf')
 	
 	# # ##############################################
 	# # Train data for GPR
@@ -172,103 +172,103 @@ if __name__ == "__main__":
 	# for likelihood in likelihoods_list:
 	# 	likelihood.variance.constrain_bounded(0.001, 0.05)
 
-	# GPR model
-	K = Gmr_based_kernel(gmr_model=gmr_model, kernel_list=kernel_list)
-	
-	mf = GmrMeanMapping(2 * input_dim + 1, 1, gmr_model)
-	m = GPCoregionalizedWithMeanRegression(
-		X_list, Y_list, kernel=K,
-		likelihoods_list=likelihoods_list,
-		mean_function=mf
-	)
-	
-	# Parameters optimization
-	m.optimize('bfgs', max_iters=200, messages=True)
-
-	# GPR prior (no observations)
-	prior_traj = []
-	prior_mean = mf.f(Xtest)[:, 0]
-	prior_kernel = m.kern.K(Xtest)
-	for i in range(nb_prior_samples):
-		prior_traj_tmp = np.random.multivariate_normal(prior_mean, prior_kernel)
-		prior_traj.append(np.reshape(prior_traj_tmp, (output_dim, -1)))
-	prior_kernel_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
-	for i in range(output_dim):
-		for j in range(output_dim):
-			prior_kernel_tmp[:, :, i * output_dim + j] = prior_kernel[i * nb_data_test:(i + 1) * nb_data_test,
-														 j * nb_data_test:(j + 1) * nb_data_test]
-	prior_kernel_rshp = np.zeros((nb_data_test, output_dim, output_dim))
-	for i in range(nb_data_test):
-		prior_kernel_rshp[i] = np.reshape(prior_kernel_tmp[i, i, :], (output_dim, output_dim))
-
-	# GPR posterior -> new points observed (the training points are discarded as they are "included" in the GMM)
-	m_obs = \
-		GPCoregionalizedWithMeanRegression(
-		X_obs_list, Y_obs_list, kernel=K,
-		likelihoods_list=likelihoods_list,
-		mean_function=mf
-	)
-	mu_posterior_tmp = \
-		m_obs.posterior_samples_f(
-			Xtest, full_cov=True, size=nb_posterior_samples
-		)
-	mu_posterior = []
-	for i in range(nb_posterior_samples):
-		mu_posterior.append(np.reshape(mu_posterior_tmp[:, 0, i], (output_dim, -1)))
-
-	# GPR prediction
-	mu_gp, sigma_gp = m_obs.predict(Xtest, full_cov=True, Y_metadata={'output_index': output_index})
-	mu_gp_rshp = np.reshape(mu_gp, (output_dim, -1)).T
-	sigma_gp_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
-	for i in range(output_dim):
-		for j in range(output_dim):
-			sigma_gp_tmp[:, :, i * output_dim + j] = \
-				sigma_gp[i * nb_data_test:(i + 1) * nb_data_test,
-				j * nb_data_test:(j + 1) * nb_data_test]
-	sigma_gp_rshp = np.zeros((nb_data_test, output_dim, output_dim))
-	for i in range(nb_data_test):
-		sigma_gp_rshp[i] = np.reshape(sigma_gp_tmp[i, i, :], (output_dim, output_dim))
-
-	# Priors
-	plt.figure(figsize=(5, 5))
-	plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
-	plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=80)
-	plot_gmm(mu_gmr, prior_kernel_rshp, alpha=0.05, color=[0.64, 0.27, 0.73])
-	for i in range(nb_prior_samples):
-		plt.plot(prior_traj[i][0], prior_traj[i][1], color=[0.64, 0.27, 0.73], linewidth=1.)
-		plt.scatter(prior_traj[i][0, 0], prior_traj[i][1, 0], color=[0.64, 0.27, 0.73], marker='X', s=80)
-	axes = plt.gca()
-	axes.set_xlim([0.1, 0.6])
-	axes.set_ylim([-0.25, 0.25])
-	plt.xlabel('$x(m)$', fontsize=font_size)
-	plt.ylabel('$y(m)$', fontsize=font_size)
-	plt.locator_params(nbins=3)
-	plt.tick_params(labelsize=20)
-	plt.tight_layout()
-	plt.title('GMRbGP_priors', fontsize=font_size)
-	plt.savefig(folder_name + '/GMRbGP_' + write_name + '_stroke_' + str(stroke_index) + '_prior.png')
-
-	# Posterior
-	plt.figure(figsize=(5, 5))
-	plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=4.)
-	plot_gmm(mu_gp_rshp, sigma_gp_rshp, alpha=0.01, color=[0.83, 0.06, 0.06])
+	# # GPR model
+	# K = Gmr_based_kernel(gmr_model=gmr_model, kernel_list=kernel_list)
+	#
+	# mf = GmrMeanMapping(2 * input_dim + 1, 1, gmr_model)
+	# m = GPCoregionalizedWithMeanRegression(
+	# 	X_list, Y_list, kernel=K,
+	# 	likelihoods_list=likelihoods_list,
+	# 	mean_function=mf
+	# )
+	#
+	# # Parameters optimization
+	# m.optimize('bfgs', max_iters=200, messages=True)
+	#
+	# # GPR prior (no observations)
+	# prior_traj = []
+	# prior_mean = mf.f(Xtest)[:, 0]
+	# prior_kernel = m.kern.K(Xtest)
+	# for i in range(nb_prior_samples):
+	# 	prior_traj_tmp = np.random.multivariate_normal(prior_mean, prior_kernel)
+	# 	prior_traj.append(np.reshape(prior_traj_tmp, (output_dim, -1)))
+	# prior_kernel_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
+	# for i in range(output_dim):
+	# 	for j in range(output_dim):
+	# 		prior_kernel_tmp[:, :, i * output_dim + j] = prior_kernel[i * nb_data_test:(i + 1) * nb_data_test,
+	# 													 j * nb_data_test:(j + 1) * nb_data_test]
+	# prior_kernel_rshp = np.zeros((nb_data_test, output_dim, output_dim))
+	# for i in range(nb_data_test):
+	# 	prior_kernel_rshp[i] = np.reshape(prior_kernel_tmp[i, i, :], (output_dim, output_dim))
+	#
+	# # GPR posterior -> new points observed (the training points are discarded as they are "included" in the GMM)
+	# m_obs = \
+	# 	GPCoregionalizedWithMeanRegression(
+	# 	X_obs_list, Y_obs_list, kernel=K,
+	# 	likelihoods_list=likelihoods_list,
+	# 	mean_function=mf
+	# )
+	# mu_posterior_tmp = \
+	# 	m_obs.posterior_samples_f(
+	# 		Xtest, full_cov=True, size=nb_posterior_samples
+	# 	)
+	# mu_posterior = []
 	# for i in range(nb_posterior_samples):
-	# 	plt.plot(mu_posterior[i][0], mu_posterior[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
-	# 	plt.scatter(mu_posterior[i][0, 0], mu_posterior[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
-	plt.plot(mu_gp_rshp[:, 0], mu_gp_rshp[:, 1], color=[0.83, 0.06, 0.06], linewidth=4.5)
-	plt.scatter(mu_gp_rshp[0, 0], mu_gp_rshp[0, 1], color=[0.83, 0.06, 0.06], marker='X', s=80)
-	plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
-	axes = plt.gca()
-	axes.set_xlim([0.1, 0.6])
-	axes.set_ylim([-0.25, 0.25])
-	plt.xlabel('$x(m)$', fontsize=30)
-	plt.ylabel('$y(m)$', fontsize=30)
-	plt.locator_params(nbins=3)
-	plt.tick_params(labelsize=20)
-	plt.tight_layout()
-	plt.title('GMRbGP_posterior')
-	# plt.savefig(file_fig_name + 'GMRbGP_' + write_name + '_posterior_datasup.png')
-	plt.savefig(folder_name + '/GMRbGP_' + write_name + '_stroke_' + str(stroke_index) + '_posterior_datasup.png')
+	# 	mu_posterior.append(np.reshape(mu_posterior_tmp[:, 0, i], (output_dim, -1)))
+	#
+	# # GPR prediction
+	# mu_gp, sigma_gp = m_obs.predict(Xtest, full_cov=True, Y_metadata={'output_index': output_index})
+	# mu_gp_rshp = np.reshape(mu_gp, (output_dim, -1)).T
+	# sigma_gp_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
+	# for i in range(output_dim):
+	# 	for j in range(output_dim):
+	# 		sigma_gp_tmp[:, :, i * output_dim + j] = \
+	# 			sigma_gp[i * nb_data_test:(i + 1) * nb_data_test,
+	# 			j * nb_data_test:(j + 1) * nb_data_test]
+	# sigma_gp_rshp = np.zeros((nb_data_test, output_dim, output_dim))
+	# for i in range(nb_data_test):
+	# 	sigma_gp_rshp[i] = np.reshape(sigma_gp_tmp[i, i, :], (output_dim, output_dim))
+	#
+	# # Priors
+	# plt.figure(figsize=(5, 5))
+	# plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
+	# plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=80)
+	# plot_gmm(mu_gmr, prior_kernel_rshp, alpha=0.05, color=[0.64, 0.27, 0.73])
+	# for i in range(nb_prior_samples):
+	# 	plt.plot(prior_traj[i][0], prior_traj[i][1], color=[0.64, 0.27, 0.73], linewidth=1.)
+	# 	plt.scatter(prior_traj[i][0, 0], prior_traj[i][1, 0], color=[0.64, 0.27, 0.73], marker='X', s=80)
+	# axes = plt.gca()
+	# axes.set_xlim([0.1, 0.6])
+	# axes.set_ylim([-0.25, 0.25])
+	# plt.xlabel('$x(m)$', fontsize=font_size)
+	# plt.ylabel('$y(m)$', fontsize=font_size)
+	# plt.locator_params(nbins=3)
+	# plt.tick_params(labelsize=20)
+	# plt.tight_layout()
+	# plt.title('GMRbGP_priors', fontsize=font_size)
+	# plt.savefig(folder_name + '/GMRbGP_' + write_name + '_stroke_' + str(stroke_index) + '_prior.png')
+	#
+	# # Posterior
+	# plt.figure(figsize=(5, 5))
+	# plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=4.)
+	# plot_gmm(mu_gp_rshp, sigma_gp_rshp, alpha=0.01, color=[0.83, 0.06, 0.06])
+	# # for i in range(nb_posterior_samples):
+	# # 	plt.plot(mu_posterior[i][0], mu_posterior[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
+	# # 	plt.scatter(mu_posterior[i][0, 0], mu_posterior[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
+	# plt.plot(mu_gp_rshp[:, 0], mu_gp_rshp[:, 1], color=[0.83, 0.06, 0.06], linewidth=4.5)
+	# plt.scatter(mu_gp_rshp[0, 0], mu_gp_rshp[0, 1], color=[0.83, 0.06, 0.06], marker='X', s=80)
+	# plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
+	# axes = plt.gca()
+	# axes.set_xlim([0.1, 0.6])
+	# axes.set_ylim([-0.25, 0.25])
+	# plt.xlabel('$x(m)$', fontsize=30)
+	# plt.ylabel('$y(m)$', fontsize=30)
+	# plt.locator_params(nbins=3)
+	# plt.tick_params(labelsize=20)
+	# plt.tight_layout()
+	# plt.title('GMRbGP_posterior')
+	# # plt.savefig(file_fig_name + 'GMRbGP_' + write_name + '_posterior_datasup.png')
+	# plt.savefig(folder_name + '/GMRbGP_' + write_name + '_stroke_' + str(stroke_index) + '_posterior_datasup.png')
 
 	# plt.figure(figsize=(5, 4))
 	# for p in range(epi_times):

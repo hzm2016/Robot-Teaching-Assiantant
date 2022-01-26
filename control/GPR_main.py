@@ -21,8 +21,8 @@ np.set_printoptions(precision=5)
 
 if __name__ == "__main__":
 	file_fig_name = './data/predicted_images/'
-	write_name = 'mu'
-	stroke_num = 3
+	write_name = 'yi_30'
+	stroke_num = 1
 	stroke_index = 0
 	epi_times = 5
 	dt = 0.001
