@@ -23,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])   
 
-Angle_initial = np.array([-0.286060, 0.187528, 1.981514])   
+Angle_initial = np.array([-0.290392, 0.163629, 1.981514])   
 
 # impedance params :  
 Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])  
@@ -482,10 +482,10 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
 if __name__ == "__main__":  
     # =========================================================== 
-    flag_write_word = True  
+    flag_write_word = True
     flag_plot_result = False  
     flag_demo_write = False  
-    write_name = 'mu'  
+    write_name = 'tian_1'  
 
     # set_pen_down() 
     # motor_stop() 
@@ -512,12 +512,12 @@ if __name__ == "__main__":
 
     # =========================================================== 
     if flag_write_word == True:   
-        eval_times = 4 
+        eval_times = 5 
         word_path, word_params, real_path = load_word_path(
             word_name=write_name,   
-            joint_params=np.array([35, 30, 2, 0.5])    
+            joint_params=np.array([30, 30, 2, 0.5])    
             )   
-        for i in range(eval_times, eval_times+1):   
+        for i in range(eval_times):   
             write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)   
 
     # =========================================================== 
