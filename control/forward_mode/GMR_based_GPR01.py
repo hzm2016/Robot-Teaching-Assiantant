@@ -4,7 +4,8 @@
 # License: MIT
 # Contact: noemie.jaquier@idiap.ch
 ##################################################
-
+import os
+# from ..forward_mode.path_planning.utils import *
 import numpy as np
 import GPy
 import matplotlib.pyplot as plt
@@ -16,42 +17,156 @@ from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
 from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 
 
+def cope_real_word_path(
+        root_path=None,
+        file_name='mu',
+        stroke_index=1,
+        epi_times=1,
+        delimiter=' ',
+        skiprows=1,
+):
+    Length = [0.30, 0.150, 0.25, 0.125]
+    L_1 = Length[0]
+    L_2 = Length[2]
+    
+    action_dim = 2
+    Ts = 0.001
+    
+    # writing space
+    WIDTH = 0.360
+    HEIGHT = 0.360
+    
+    linewidth = 3.0
+    x_list = []
+    y_list = []
+    for epi_index in range(epi_times):
+        angle_list = np.loadtxt(
+            root_path + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
+            delimiter=delimiter,
+            skiprows=skiprows
+            )
+
+        # angle_list : desired and real-time
+        angle_list_1_e = angle_list[:, 0]
+        angle_list_2_e = angle_list[:, 3]
+        angle_list_1_t = angle_list[:, 1]
+        angle_list_2_t = angle_list[:, 4]
+
+        x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+        y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+
+        x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
+        y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
+
+        x_list.append(x_t)
+        y_list.append(y_t)
+
+    return x_list, y_list
+
+
 # GMR-based GPR on 2D trajectories with time as input
 if __name__ == '__main__':
-    file_name = './forward_mode'
-    letter = 'B'  # choose a letter in the alphabet
-    datapath = file_name + '/data/2Dletters/'
-    data = loadmat(datapath + '%s.mat' % letter)
-    demos = [d['pos'][0][0].T for d in data['demos'][0]]
+    # file_name = './forward_mode'
+    # datapath = file_name + '/data/2Dletters/'
+    # letter = 'B'  # choose a letter in the alphabet
+    # data = loadmat(datapath + '%s.mat' % letter)
+    # demos = [d['pos'][0][0].T for d in data['demos'][0]]
+    #
+    # # Parameters
+    # nb_data = demos[0].shape[0]
+    # print("nb_data :", nb_data)
+    # nb_data_sup = 50
+    # nb_samples = 5
+    # dt = 0.01
+    # input_dim = 1
+    # output_dim = 2
+    # in_idx = [0]
+    # out_idx = [1, 2]
+    # nb_states = 6
+    #
+    # nb_prior_samples = 10
+    # nb_posterior_samples = 5
+    #
+    # # Create time data
+    # demos_t = [np.arange(demos[i].shape[0])[:, None] + 1 for i in range(nb_samples)]
+    #
+    # # Stack time and position data
+    # demos_tx = [np.hstack([demos_t[i] * dt, demos[i]]) for i in range(nb_samples)]
+    #
+    # # Stack demos
+    # demos_np = demos_tx[0]
+    # for i in range(1, nb_samples):
+    #     demos_np = np.vstack([demos_np, demos_tx[i]])
+    #
+    # X = demos_np[:, 0][:, None]
+    # Y = demos_np[:, 1:]
 
-    # Parameters
-    nb_data = demos[0].shape[0]
-    print("nb_data :", nb_data)
-    nb_data_sup = 50
-    nb_samples = 5
-    dt = 0.01
+    write_name = 'chuan'
+    stroke_index = 0
+    file_fig_name = './data/predicted_images/'
+    re_sample_index = 10
+    epi_times = 5
+    nb_samples = epi_times
+    dt = 0.001
+
     input_dim = 1
     output_dim = 2
     in_idx = [0]
     out_idx = [1, 2]
-    nb_states = 6
+    nb_states = 5
 
+    nb_data_sup = 20
+    
     nb_prior_samples = 10
     nb_posterior_samples = 5
 
+    # plot font size
+    font_size = 20
+
+    # =====================================================
+    ############# process data before prediction ##########
+    # =====================================================
+    x_list, y_list = cope_real_word_path(
+        root_path='./data/font_data/' + write_name + '/',
+        file_name='real_angle_list_',
+        stroke_index=stroke_index,
+        epi_times=5,
+        delimiter=',',
+        skiprows=1
+    )
+
+    folder_name = './data/predicted_images/' + write_name
+    if os.path.exists(folder_name):
+        pass
+    else:
+        os.makedirs(folder_name)
+
+    x_down_list = []
+    y_down_list = []
+    for i in range(len(x_list)):
+        x_down_list.append(x_list[i][::re_sample_index])
+        y_down_list.append(y_list[i][::re_sample_index])
+    # print('x_list shape :', np.array(x_down_list).shape, 'y list shape :', np.array(y_down_list).shape)
+    demos = np.zeros_like(x_down_list[0])
+    nb_data = x_down_list[0].shape[0]
+
     # Create time data
-    demos_t = [np.arange(demos[i].shape[0])[:, None] + 1 for i in range(nb_samples)]
-    
+    demos_t = [np.arange(x_down_list[i].shape[0])[:, None] for i in range(epi_times)]
+    # print("demos_t :", demos_t)
+
     # Stack time and position data
-    demos_tx = [np.hstack([demos_t[i] * dt, demos[i]]) for i in range(nb_samples)]
+    demos_tx = [np.hstack([demos_t[i] * dt, x_down_list[i][:, None], y_down_list[i][:, None]]) for i in
+                range(epi_times)]
+    # print("demos_tx :", demos_tx)
 
     # Stack demos
     demos_np = demos_tx[0]
-    for i in range(1, nb_samples):
+    for i in range(1, epi_times):
         demos_np = np.vstack([demos_np, demos_tx[i]])
 
     X = demos_np[:, 0][:, None]
     Y = demos_np[:, 1:]
+    
     print("X shape :", X.shape, "Y shape :", Y.shape)
 
     # Train data for GPR
@@ -59,16 +174,21 @@ if __name__ == '__main__':
     Y_list = [Y[:, i][:, None] for i in range(output_dim)]
 
     # Test data
-    Xt = dt * np.arange(demos[0].shape[0] + nb_data_sup)[:, None]
+    # Xt = dt * np.arange(demos[0].shape[0] + nb_data_sup)[:, None]
+    Xt = dt * np.arange(nb_data + nb_data_sup)[:, None]
+    
     print("Xt :", Xt.shape)
     nb_data_test = Xt.shape[0]
     Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
     
     # Define via-points (new set of observations)
-    X_obs = np.array([0.0, 1., 1.9])[:, None]
-    Y_obs = np.array([[-12.5, -11.5], [-0.5, -1.5], [-14.0, -7.5]])
+    # X_obs = np.array([0.0, 1., 1.9])[:, None]
+    # Y_obs = np.array([[-12.5, -11.5], [-0.5, -1.5], [-14.0, -7.5]])
     # X_obs = np.array([0.5, 0.8, 1., 1.5])[:, None]
     # Y_obs = np.array([[-10.0, -0.0], [-5, 8.0], [-0.5, -1.5], [0.0, -11.]])
+
+    X_obs = np.array([0.05, 0.12, 0.22])[:, None]
+    Y_obs = np.array([[0.28, -0.10], [0.35, -0.13], [0.42, -0.16]])
     X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
     Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
 
@@ -89,7 +209,7 @@ if __name__ == '__main__':
     sigma_gmr = np.array(sigma_gmr)
 
     # Define GPR likelihood and kernels ::: original : 0.01
-    likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=0.05) for j in range(output_dim)]
+    likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=5) for j in range(output_dim)]
 
     kernel_list = [GPy.kern.RBF(1, variance=0.5, lengthscale=1) for i in range(gmr_model.nb_states)]
     # kernel_list = [GPy.kern.RBF(1, variance=1., lengthscale=0.1) for i in range(gmr_model.nb_states)]
@@ -145,7 +265,9 @@ if __name__ == '__main__':
             mean_function=mf
         )
     mu_posterior_tmp = \
-        m_obs.posterior_samples_f(Xtest, full_cov=True, size=nb_posterior_samples)
+        m_obs.posterior_samples_f(
+            Xtest, full_cov=True, size=nb_posterior_samples
+        )
 
     mu_posterior = []
     for i in range(nb_posterior_samples):
@@ -182,14 +304,14 @@ if __name__ == '__main__':
         plt.scatter(prior_traj[i][0, 0], prior_traj[i][1, 0], color=[0.64, 0.27, 0.73], marker='X', s=80)
     
     axes = plt.gca()
-    axes.set_xlim([-17., 17.])
-    axes.set_ylim([-17., 17.])
+    # axes.set_xlim([-17., 17.])
+    # axes.set_ylim([-17., 17.])
     plt.xlabel('$y_1$', fontsize=30)
     plt.ylabel('$y_2$', fontsize=30)
     plt.locator_params(nbins=3)
     plt.tick_params(labelsize=20)
     plt.tight_layout()
-    plt.savefig(file_name + '/figures/GMRbGP_B_priors_datasup.png')
+    # plt.savefig(file_name + '/figures/GMRbGP_B_priors_datasup.png')
 
     # plt.figure(figsize=(5, 4))
     # plt.plot(Xt[:, 0], mu_gmr[:, 0], color=[0.20, 0.54, 0.93], linewidth=3)
@@ -236,14 +358,14 @@ if __name__ == '__main__':
     plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
     
     axes = plt.gca()
-    axes.set_xlim([-17., 17.])
-    axes.set_ylim([-17., 17.])
+    # axes.set_xlim([-17., 17.])
+    # axes.set_ylim([-17., 17.])
     plt.xlabel('$y_1$', fontsize=30)
     plt.ylabel('$y_2$', fontsize=30)
     plt.locator_params(nbins=3)
     plt.tick_params(labelsize=20)
     plt.tight_layout()
-    plt.savefig(file_name + '/figures/GMRbGP_B_posterior_datasup.png')
+    # plt.savefig(file_name + '/figures/GMRbGP_B_posterior_datasup.png')
 
     # plt.figure(figsize=(5, 4))
     # plt.plot(Xt[:, 0], mu_gmr[:, 0], color=[0.20, 0.54, 0.93], linewidth=3.)

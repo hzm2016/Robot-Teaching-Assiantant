@@ -20,10 +20,10 @@ sns.set(font_scale=1.5)
 np.set_printoptions(precision=5)
 
 if __name__ == "__main__":
+	file_fig_name = './data/predicted_images/'
 	write_name = 'mu'
 	stroke_num = 3
 	stroke_index = 0
-	file_fig_name = './data/predicted_images/'
 	epi_times = 5
 	dt = 0.001
 	nb_samples = 5
@@ -129,8 +129,8 @@ if __name__ == "__main__":
 	axes = plt.gca()
 	# axes.set_xlim([-14., 14.])
 	# axes.set_ylim([-14., 14.])
-	axes.set_xlim([-0.15, 0.15])
-	axes.set_ylim([0.0, 0.45])
+	axes.set_xlim([0.0, 0.45])
+	axes.set_ylim([-0.15, 0.15])
 	plt.xlabel('$x_1(m)$', fontsize=30)
 	plt.ylabel('$x_2(m)$', fontsize=30)
 	plt.locator_params(nbins=3)
@@ -186,8 +186,8 @@ if __name__ == "__main__":
 	Xtest, _, output_index = GPy.util.multioutput.build_XY([Xt for i in range(output_dim)])
 
 	# Create coregionalisation model
-	kernel = GPy.kern.Matern52(input_dim, variance=0.01, lengthscale=0.01)
-	# kernel = GPy.kern.RBF(input_dim, variance=0.001, lengthscale=0.1)
+	# kernel = GPy.kern.Matern52(input_dim, variance=0.01, lengthscale=0.01)
+	kernel = GPy.kern.RBF(input_dim, variance=0.001, lengthscale=0.1)
 	K = kernel.prod(GPy.kern.Coregionalize(1, output_dim, active_dims=[input_dim], name='B'))
 	m = GPy.models.GPCoregionalizedRegression(X_list=X_list, Y_list=Y_list)
 	m.randomize()
@@ -205,7 +205,6 @@ if __name__ == "__main__":
 	sigma_gp = k_test + np.dot(np.dot(k_test_obs, np.linalg.inv(k_obs)), k_test_obs.T)
 
 	mu_gp_rshp = np.reshape(mu_gp, (output_dim, -1))
-
 	sigma_gp_tmp = np.zeros((nb_data_test, nb_data_test, output_dim*output_dim))
 	for i in range(output_dim):
 		for j in range(output_dim):
@@ -226,8 +225,8 @@ if __name__ == "__main__":
 	axes = plt.gca()
 	# axes.set_xlim([-17., 17.])
 	# axes.set_ylim([-17., 17.])
-	axes.set_xlim([-0.15, 0.15])
-	axes.set_ylim([0.0, 0.45])
+	axes.set_xlim([0.0, 0.45])
+	axes.set_ylim([-0.15, 0.15])
 	plt.xlabel('$x_1(m)$', fontsize=30)
 	plt.ylabel('$x_2(m)$', fontsize=30)
 	plt.locator_params(nbins=3)
