@@ -124,7 +124,7 @@ if __name__ == "__main__":
     flag_write_word = True
     flag_plot_result = False
     flag_demo_write = False
-    write_name = 'yi_30'
+    write_name = 'ren_10'
     resample_index = 10
     stroke_num = 1
     epi_times = 5
@@ -162,39 +162,39 @@ if __name__ == "__main__":
     )
 
     # build filter based on signals
-    # b, a = signal.butter(8, 0.02, 'lowpass')
-    # all_forces = []
-    # for epi_time in range(epi_times):
-    #     external_force, index_list = \
-    #         plot_torque_path(
-    #         root_path='./data/font_data/' + write_name + '/',
-    #         file_name='real_torque_list_',
-    #         stroke_num=stroke_num,
-    #         epi_time=epi_time,
-    #         delimiter=',',
-    #         skiprows=1,
-    #         render=False
-    #     )
-    #
-    #     filtered_force = np.zeros_like(external_force)
-    #     filtered_force[:, 0] = signal.filtfilt(b, a, external_force[:, 0])
-    #     filtered_force[:, 1] = signal.filtfilt(b, a, external_force[:, 1])
-    #     print('shape_ori :', external_force.shape, 'shape_filter ', filtered_force.shape)
-    #     all_forces.append(filtered_force[::resample_index, :])
-    #     index_list = index_list/resample_index
-    #     plot_force_velocity(filtered_force, data_type='force')
-    #
-    # print(np.array(all_forces).shape)
-    # print("index_list :", index_list)
-    # GMR(
-    #     np.array(all_forces),
-    #     index_list,
-    #     word_name=write_name,
-    #     label_1='$F_x$',
-    #     label_2='$F_y$',
-    #     label_y='Force(N)',  #Force(N)
-    #     file_name=write_name + '_force'
-    # )
+    b, a = signal.butter(8, 0.02, 'lowpass')
+    all_forces = []
+    for epi_time in range(epi_times):
+        external_force, index_list = \
+            plot_torque_path(
+            root_path='./data/font_data/' + write_name + '/',
+            file_name='real_torque_list_',
+            stroke_num=stroke_num,
+            epi_time=epi_time,
+            delimiter=',',
+            skiprows=1,
+            render=False
+        )
+
+        filtered_force = np.zeros_like(external_force)
+        filtered_force[:, 0] = signal.filtfilt(b, a, external_force[:, 0])
+        filtered_force[:, 1] = signal.filtfilt(b, a, external_force[:, 1])
+        print('shape_ori :', external_force.shape, 'shape_filter ', filtered_force.shape)
+        all_forces.append(filtered_force[::resample_index, :])
+        index_list = index_list/resample_index
+        plot_force_velocity(filtered_force, data_type='force')
+
+    print(np.array(all_forces).shape)
+    print("index_list :", index_list)
+    GMR(
+        np.array(all_forces),
+        index_list,
+        word_name=write_name,
+        label_1='$F_x$',
+        label_2='$F_y$',
+        label_y='Force(N)',  #Force(N)
+        file_name=write_name + '_force'
+    )
 
     ###########################################################
     # # DTW

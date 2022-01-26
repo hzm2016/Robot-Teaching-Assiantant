@@ -21,7 +21,7 @@ np.set_printoptions(precision=5)
 
 
 if __name__ == "__main__":
-	write_name = 'yi_10'
+	write_name = 'ren_10'
 	stroke_index = 0
 	file_fig_name = './data/predicted_images/'
 	re_sample_index = 10
