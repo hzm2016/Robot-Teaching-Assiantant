@@ -6,6 +6,7 @@ import numpy as np
 # from path_planning.path_generate import *
 from matplotlib.animation import FuncAnimation
 from path_planning.utils import Jacobian
+from scipy import signal
 
 """ ================================= Plot result ===================================== """
 COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple', 'pink',
@@ -658,9 +659,11 @@ def plot_velocity_path(
 ):
     """ plot angle trajectory and cartesian path """ 
     FONT_SIZE = 28   
-    linewidth = 4   
+    linewidth = 4
 
-    fig = plt.figure(figsize=(20, 8))  
+    b, a = signal.butter(6, 0.02, 'lowpass')
+    
+    fig = plt.figure(figsize=(20, 8))
 
     velocity_list = np.array([0.0, 0.0])
     angle_list = np.zeros(2)
@@ -671,11 +674,11 @@ def plot_velocity_path(
             delimiter=delimiter, skiprows=skiprows
         )
         print("velocity list shape:", np.array(stroke_velocity_list).shape)     
-        velocity_list = np.vstack((velocity_list.copy(), stroke_velocity_list[:, [2,5]]))
+        velocity_list = np.vstack((velocity_list.copy(), stroke_velocity_list[:, [2, 5]]))
         angle_list = np.vstack((angle_list.copy(), stroke_velocity_list[:, [1, 4]]))
         index_list[index] = np.array(stroke_velocity_list).shape[0]
 
-    osc_velocity_list = [] 
+    osc_velocity_list = []
     for i in range(1, velocity_list.shape[0]):
         osc_velocity_list.append(Jacobian(angle_list[i]).dot(velocity_list[i]))
     

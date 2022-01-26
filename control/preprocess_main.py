@@ -124,10 +124,10 @@ if __name__ == "__main__":
     flag_write_word = True
     flag_plot_result = False
     flag_demo_write = False
-    write_name = 'xing_sho'
+    write_name = 'yi'
     resample_index = 10
-    stroke_num = 6
-    epi_times = 5
+    stroke_num = 1
+    epi_times = 1
 
     # build filter based on signals
     # b, a = signal.butter(6, 0.02, 'lowpass')
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     #         file_name='real_angle_list_',
     #         stroke_num=stroke_num,
     #         epi_time=epi_time,
-    #         delimiter=' ',
+    #         delimiter=',',
     #         skiprows=1
     #     )
     #     filtered_osc_velocity = np.zeros_like(osc_velocity_list)
@@ -171,7 +171,7 @@ if __name__ == "__main__":
             file_name='real_torque_list_',
             stroke_num=stroke_num,
             epi_time=epi_time,
-            delimiter=' ',
+            delimiter=',',
             skiprows=1,
             render=False
         )
