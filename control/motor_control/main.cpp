@@ -496,9 +496,6 @@ string angle_path_name, string torque_path_name
     ////////////////////////////////////////////////////////
     // Impedance Parameters 
     ////////////////////////////////////////////////////////
-    // double torque_lower_bound = -2.5;   
-    // double torque_upper_bound = 2.5;   
-
     double params[4] = {30, 20, 0.0, 0.0};   
     
     double theta_t_list[2] = {0.0, 0.0};   
@@ -523,12 +520,15 @@ string angle_path_name, string torque_path_name
     double torque_1_t = 0.0;   
     double torque_2_t = 0.0;   
 
+    double torque_1_o = 0.0; 
+    double torque_2_o = 0.0; 
+
     double pos_1 = 0.0;   
     double pos_2 = 0.0;   
 
-    ////////////////////////////////////////////////////////
-    /////// Input data 
-    ////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////
+    // Input data 
+    //////////////////////////////////////////////////////
     py::buffer_info theta_1_list_buf = theta_1_target.request();   
     py::buffer_info theta_2_list_buf = theta_2_target.request();   
     double *theta_1_list = (double *)theta_1_list_buf.ptr;   
@@ -544,10 +544,8 @@ string angle_path_name, string torque_path_name
     double *damping_1_list = (double *)damping_1_list_buf.ptr;   
     double *damping_2_list = (double *)damping_2_list_buf.ptr;    
 
-    // allocate the output buffer
 	py::array_t<double> result = py::array_t<double>(theta_1_list_buf.size); 
 
-    // acquire buffer info 
 	py::buffer_info result_buf = result.request();  
 
     double *return_list = (double *)result_buf.ptr; 
@@ -566,6 +564,9 @@ string angle_path_name, string torque_path_name
         pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
     }   
 
+    ///////////////////////////////////////////////////////
+    // tracking all way points 
+    ///////////////////////////////////////////////////////
     for (int epi=0; epi < num_episodes; epi=epi+1)    
     {    
         // Catch a Ctrl-C event:    
@@ -603,8 +604,8 @@ string angle_path_name, string torque_path_name
             torque_1, torque_2   
             );   
 
-            // double torque_1_o = - params[0] * (theta_1_e - theta_1_t) - params[2] * (d_theta_1_e - d_theta_1_t);    
-            // double torque_2_o = - params[1] * (theta_2_e - theta_2_t) - params[3] * (d_theta_2_e - d_theta_2_t);    
+            torque_1_o = torque_1/ctl_ratio_1;     
+            torque_2_o = torque_2/ctl_ratio_2;    
 
             pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);     
             pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);    

@@ -21,13 +21,13 @@ np.set_printoptions(precision=5)
 
 if __name__ == "__main__":
 	file_fig_name = './data/predicted_images/'
-	write_name = 'yi_30'
+	write_name = 'yi_10'
 	stroke_num = 1
 	stroke_index = 0
 	epi_times = 5
 	dt = 0.001
 	nb_samples = 5
-	re_sample_index = 10
+	re_sample_index = 20
 
 	input_dim = 1
 	output_dim = 2
@@ -129,8 +129,8 @@ if __name__ == "__main__":
 	axes = plt.gca()
 	# axes.set_xlim([-14., 14.])
 	# axes.set_ylim([-14., 14.])
-	axes.set_xlim([0.0, 0.45])
-	axes.set_ylim([-0.15, 0.15])
+	axes.set_xlim([0.1, 0.6])
+	axes.set_ylim([-0.25, 0.25])
 	plt.xlabel('$x_1(m)$', fontsize=30)
 	plt.ylabel('$x_2(m)$', fontsize=30)
 	plt.locator_params(nbins=3)
@@ -173,8 +173,11 @@ if __name__ == "__main__":
 	# New observations (via-points to go through)
 	# X_obs = np.array([0.0, 0.15, 0.21])[:, None]
 	# Y_obs = np.array([[0.3, -0.02], [0.40, -0.10], [0.42, -0.17]])
-	X_obs = np.array([0.05, 0.22])[:, None]
-	Y_obs = np.array([[0.28, -0.10], [0.26, 0.06]])
+	# X_obs = np.array([0.05, 0.22])[:, None]
+	# Y_obs = np.array([[0.28, -0.10], [0.26, 0.06]])
+	# X_obs = np.array([0.05, 0.12, 0.22])[:, None]
+	X_obs = np.array([0.01, 0.08, 0.176])[:, None]
+	Y_obs = np.array([[0.32, -0.15], [0.3, -0.03], [0.35, 0.16]])
 	X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
 	Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
 	Xobstest, _, output_index_obs = GPy.util.multioutput.build_XY([X_obs for i in range(output_dim)])
@@ -225,8 +228,8 @@ if __name__ == "__main__":
 	axes = plt.gca()
 	# axes.set_xlim([-17., 17.])
 	# axes.set_ylim([-17., 17.])
-	axes.set_xlim([0.0, 0.45])
-	axes.set_ylim([-0.15, 0.15])
+	axes.set_xlim([0.1, 0.6])
+	axes.set_ylim([-0.25, 0.25])
 	plt.xlabel('$x_1(m)$', fontsize=30)
 	plt.ylabel('$x_2(m)$', fontsize=30)
 	plt.locator_params(nbins=3)

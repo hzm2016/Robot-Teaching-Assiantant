@@ -288,8 +288,6 @@ def write_stroke(
                 ):   
     way_points = stroke_points  
     Num_way_points = way_points.shape[0]  
-    # print("Write stroke !!!")  
-    # print("Num_way_points :", Num_way_points)  
 
     initial_angle = np.zeros(2)  
     initial_angle[0] = way_points[0, 0]  
@@ -320,7 +318,7 @@ def write_stroke(
                             params_list[:, 2].copy(), params_list[:, 3].copy(),  
                             Num_way_points,   
                             Angle_initial[0], Angle_initial[1], 1, stroke_angle_name, stroke_torque_name 
-                            )   
+                        )   
     # print("curr_path_list", curr_path_list.shape)  
     # np.savetxt('curr_path_list.txt', curr_path_list)  
     
@@ -437,14 +435,17 @@ def eval(stroke_angle, impedance_params=np.array([35.0, 30.0, 0.4, 0.1])):
     print("Eval one stroke once done !!!") 
 
 
-def load_word_path(root_path='./data/font_data', word_name=None, joint_params=None):
+def load_word_path(
+    root_path='./data/font_data', word_name=None, joint_params=None):
+    
+    # load data
     word_file = root_path + '/' + word_name + '/'
-    stroke_list_file = glob.glob(word_file + 'angle_list_*txt')
+    stroke_list_file = glob.glob(word_file + 'angle_list_*txt') 
     print("Load stroke data %d", len(stroke_list_file)) 
 
-    word_path = []
-    word_params = [] 
-    real_path = []
+    word_path = []  
+    word_params = []   
+    real_path = []  
     for i in range(len(stroke_list_file)): 
         way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
 
@@ -452,7 +453,7 @@ def load_word_path(root_path='./data/font_data', word_name=None, joint_params=No
 
         if joint_params is not None:  
             params_list = np.tile(joint_params, (way_points.shape[0], 1))   
-        else:
+        else:  
             params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')   
          
         N_way_points = way_points.shape[0]   

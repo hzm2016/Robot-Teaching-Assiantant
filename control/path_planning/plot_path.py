@@ -526,22 +526,28 @@ def plot_force_velocity(
     """
         torque_list
     """
+    fig = plt.figure(figsize=(10, 10))
     if data_type == 'force':
         label_1 = '$F_x$'
         label_2 = '$F_y$'
         label_y = 'Force(N)'
+        plt.ylim([-15, 15])
     else:
         label_1 = '$v_x$'
         label_2 = '$v_y$'
         label_y = 'Velocity($m/s$)'
 
-    fig = plt.figure(figsize=(10, 10))
     plt.subplot(1, 1, 1)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
 
     plt.plot(force_list[:, 0], linewidth=linewidth, label=label_1)
     plt.plot(force_list[:, 1], linewidth=linewidth, label=label_2)
-
+    
+    if data_type == 'force':
+        plt.ylim([-15, 15])
+    else:
+        plt.ylim([-0.5, 0.5])
+    
     plt.xlabel('Time (s)')
     plt.ylabel(label_y)
     plt.legend()
