@@ -289,19 +289,19 @@ def write_stroke(
     way_points = stroke_points  
     Num_way_points = way_points.shape[0]  
 
-    initial_angle = np.zeros(2)  
-    initial_angle[0] = way_points[0, 0]  
+    initial_angle = np.zeros(2)
+    initial_angle[0] = way_points[0, 0]
     initial_angle[1] = way_points[0, 1]   
     start_point = forward_ik(initial_angle)    
 
     # move to target point
-    done = set_pen_up()  
-    # time.sleep(0.5) 
+    done = set_pen_up()
+    # time.sleep(0.5)
 
-    done = move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)  
-    # time.sleep(0.5) 
+    done = move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)
+    # time.sleep(0.5)
 
-    done = set_pen_down()   
+    done = set_pen_down()
     # time.sleep(0.5)
     
     # params_list = np.tile(impedance_params, (Num_way_points, 1))  
@@ -380,14 +380,14 @@ def eval_writting(run_on=True, Load_path=False):
     print("Input impedance parameters :::", np.array(impedance_params))  
     print("+"*50)
 
-    num_eval = 3 
-    for i in range(num_eval):  
-        print('Writting episode %d:'%i) 
-        if run_on: 
+    num_eval = 3
+    for i in range(num_eval):
+        print('Writting episode %d:'%i)
+        if run_on:
             write_stroke(stroke_points=stroke_angle, impedance_params=np.array([35.0, 30.0, 1.4, 0.2]), target_point=Initial_point) 
 
-            print("*" * 50) 
-            print("Eval one stroke once done !!!") 
+            print("*" * 50)
+            print("Eval one stroke once done !!!")
         
         # send movement_done command 
         _server.send_movement_done() 
@@ -443,10 +443,10 @@ def load_word_path(
     stroke_list_file = glob.glob(word_file + 'angle_list_*txt') 
     print("Load stroke data %d", len(stroke_list_file)) 
 
-    word_path = []  
+    word_path = []   
     word_params = []   
     real_path = []  
-    for i in range(len(stroke_list_file)): 
+    for i in range(len(stroke_list_file)):  
         way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
 
         # real_way_points = np.loadtxt(word_file + 'real_angle_list_' + str(i) + '.txt', delimiter=' ', skiprows=1)
@@ -458,8 +458,8 @@ def load_word_path(
          
         N_way_points = way_points.shape[0]   
         print("N_way_points :", N_way_points)   
-        word_path.append(way_points.copy())  
-        word_params.append(params_list.copy())  
+        word_path.append(way_points.copy())   
+        word_params.append(params_list.copy())   
         
         # truth_data = scipy.signal.resample(real_way_points, 100)
         # down_sample = scipy.signal.resample(real_way_points, 100)

@@ -149,7 +149,7 @@ if __name__ == "__main__":
     #     all_velocity.append(filtered_osc_velocity[::resample_index, :])
     #     index_list = index_list/resample_index
     #     plot_force_velocity(filtered_osc_velocity, data_type='vel')
-    #
+    
     # print(np.array(all_velocity).shape)
     # GMR(
     #     np.array(all_velocity),
