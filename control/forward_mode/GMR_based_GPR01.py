@@ -115,7 +115,9 @@ def word_process_main(
             scale_factor=np.array([100, 100]),
             trans_value=np.array([0.3, 0.0])
         )
-
+    
+    print("x_list :", x_list.shape, len(x_list))
+    
     folder_name = file_fig_name + write_name
     if os.path.exists(folder_name):
         pass
@@ -155,7 +157,7 @@ def word_process_main(
     Y_list = [Y[:, i][:, None] for i in range(output_dim)]
 
     Xt = dt * np.arange(nb_data + nb_data_sup)[:, None]
-    print("X shape :", X.shape, "Y shape :", Y.shape, "Xt :", Xt)
+    print("X shape :", X.shape, "Y shape :", Y.shape, "Xt :", Xt.shape, "demos_np :", demos_np.shape)
 
     # word : yi
     X_obs = np.array([0.1, 0.65, 1.75])[:, None]
@@ -332,7 +334,7 @@ if __name__ == '__main__':
     # # plt.tick_params(labelsize=20)
     # # plt.tight_layout()
     # # # plt.savefig(file_name + '/figures/GMR_B01.png')
-    #
+
     #
     # # ========================= GPR ==========================
     # # ========================================================
