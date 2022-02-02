@@ -20,7 +20,7 @@ using namespace std;
 
 #include <Eigen/Dense>
 
-// using namespace Eigen;
+using namespace Eigen; 
 
 #include <pybind11/numpy.h>
 namespace py = pybind11; 
@@ -41,6 +41,28 @@ void
 sigint_1_step(int dummy) { 
     if (run_on == 1) 
 		run_on = 0; 
+}
+
+
+MatrixXd Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t) 
+{
+    // const <MatrixXd> J 
+    MatrixXd m(2,2); 
+    Vector3d F_t(F_1_t,F_2_t); 
+    Vector3d tau_t(0.0, 0.0); 
+
+    m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t); 
+    m(0, 1) = L_1 * cos(theta_2_t) + L_2 * cos(theta_1_t + theta_2_t);  
+
+    m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t); 
+    m(1, 1) = L_2 * sin(theta_2_t);  
+
+    tau_t = m.dot(F_t); 
+
+    printf("matrix :%f\n", clip(m(1, 1), -1, 1));  
+    printf("vector :%f\n", tau_t(0)); 
+
+    return m; 
 }
 
 
@@ -876,6 +898,13 @@ PYBIND11_MODULE(motor_control, m) {
     m.def(
         "Jacobian", &Jacobian, R"pbdoc( 
         Calculate Jacobian
+
+        Some other explanation about the add function. 
+    )pbdoc"); 
+
+    m.def(
+        "Cal_torque", &Cal_torque, R"pbdoc( 
+        Calculate torque
 
         Some other explanation about the add function. 
     )pbdoc"); 
