@@ -122,15 +122,15 @@ def Jacobian(theta):
     return J
 
 
-def Stiff_convert(theta, stiffness, damping):
-    """
+def Stiff_convert(theta, stiffness, damping): 
+    """ 
         convert stiffness from task space to joint space
-    """
-    J = Jacobian(theta)
-    stiff_joint = J.transpose().dot(stiffness).dot(J)
-    damping_joint = J.transpose().dot(damping).dot(J)
+    """ 
+    J = Jacobian(theta)   
+    stiff_joint = J.transpose().dot(stiffness).dot(J)  
+    damping_joint = J.transpose().dot(damping).dot(J) 
 
-    return stiff_joint, damping_joint
+    return stiff_joint, damping_joint 
 
 
 def path_planning(start_point, target_point, velocity=0.04):

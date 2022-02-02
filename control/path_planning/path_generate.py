@@ -73,7 +73,7 @@ def transform_task_space(x_list, y_list, offset=np.array([0.0, 0.0])):
 def generate_stroke_stiffness_path(
         angle_list, stiffness_list, damping_list,
         save_path=False, save_root='', word_name='yi', stroke_name=0
-):
+):  
     """
     :param angle_list:
     :param stiffness_list:
@@ -82,26 +82,29 @@ def generate_stroke_stiffness_path(
     """
     stiff_joint_list = []
     damping_joint_list = []
-    for i in range(angle_list.shape[0]):
-        stiff_task = np.diag(stiffness_list[i, :]).copy()
-        damping_task = np.diag(damping_list[i, :]).copy()
-        stiff_joint, damping_joint = Stiff_convert(angle_list[i, :], stiff_task, damping_task)
+    for i in range(angle_list.shape[0]):  
+        stiff_task = np.diag(stiffness_list[i, :]).copy()    
+        damping_task = np.diag(damping_list[i, :]).copy()    
+        
+        stiff_joint, damping_joint = Stiff_convert(angle_list[i, :], stiff_task, damping_task)  
+        
+        # calculate stiffness and damping in joint space
         stiff_joint_list.append([stiff_joint[0, 0], stiff_joint[1, 1]])
         damping_joint_list.append([damping_joint[0, 0], damping_joint[1, 1]])
 
-    params_list = np.hstack((stiff_joint_list, damping_joint_list))
-    print("params_list :", params_list.shape)
-    if save_path:
-        np.savetxt(save_root + '/' + word_name + '/' + 'params_list_' + str(stroke_name) + '.txt',
-                   params_list, fmt='%.05f')
+    params_list = np.hstack((stiff_joint_list, damping_joint_list))   
+    print("params_list :", params_list.shape)   
+    # if save_path:   
+    #     np.savetxt(save_root + '/' + word_name + '/' + 'params_list_' + str(stroke_name) + '.txt',
+    #                params_list, fmt='%.05f')   
 
-    return params_list
+    return params_list   
 
 
 def generate_stroke_path(
-    traj, inter_type=1, inverse=True,
-    center_shift=np.array([-WIDTH/2, 0.23]),
-    velocity=0.04, Ts=0.001, filter_size=17,
+    traj, inter_type=1, inverse=True,  
+    center_shift=np.array([-WIDTH/2, 0.23]),  
+    velocity=0.04, Ts=0.001, filter_size=17,  
     plot_show=False, save_path=False, word_name=None, stroke_name=0
 ):
     """
@@ -248,15 +251,15 @@ def generate_word_path(
         traj_list,
         stiffness,
         damping,
-        inter_list=None,
-        inverse_list=None,
-        center_shift=np.array([0.23, -WIDTH/2]),
-        velocity=0.04,
-        filter_size=17,
-        plot_show=False,
-        save_path=False,
-        save_root='control/font_data',
-        word_name='tian'):
+        inter_list=None,  
+        inverse_list=None,  
+        center_shift=np.array([0.23, -WIDTH/2]),  
+        velocity=0.04,  
+        filter_size=17,  
+        plot_show=False,  
+        save_path=False,  
+        save_root='control/font_data',  
+        word_name='tian'):  
     """
         generate word path
     """
@@ -299,5 +302,5 @@ def generate_word_path(
         plot_word_path(period_list, traj_list, word_image_points, word_task_points, word_angle_list,
                        word_folder=save_root,
                        word_name=word_name
-                       )
+                       )  
         # plot_torque(word_params_list, period_list)

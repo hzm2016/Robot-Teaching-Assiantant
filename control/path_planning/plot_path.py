@@ -165,7 +165,7 @@ def plot_real_2d_path(
     FONT_SIZE = 28 
     linewidth = 4 
 
-    fig = plt.figure(figsize=(20, 8))
+    fig = plt.figure(figsize=(8, 8))
     
     plt.subplot(1, 1, 1) 
     for i in range(stroke_num):  
@@ -187,12 +187,12 @@ def plot_real_2d_path(
         plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
 
 
-    plt.xlabel('x(m)', fontsize=FONT_SIZE)   
-    plt.ylabel('y(m)', fontsize=FONT_SIZE)   
+    plt.xlabel(r'$x(m)$', fontsize=FONT_SIZE)   
+    plt.ylabel(r'$y(m)$', fontsize=FONT_SIZE)   
     plt.ylim([-WIDTH/2, WIDTH/2])   
     plt.xlim([0.13, 0.13 + WIDTH])   
     # plt.legend()  
-    plt.savefig('xing' + str(epi_time) + '.png') 
+    # plt.savefig('xing' + str(epi_time) + '.png') 
     plt.show()   
 
 
@@ -485,7 +485,7 @@ def plot_real_osc_2d_path(
 def plot_torque(
     torque_list,  
     period_list
-):
+): 
     """
         torque_list
     """
@@ -493,12 +493,12 @@ def plot_torque(
     plt.subplot(1, 1, 1)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
 
-    total_period = sum(period_list)
-    print('*' * 50)
-    print("total_period :", total_period)
-    for i in range(len(torque_list)):
+    total_period = sum(period_list) 
+    print('*' * 50)  
+    print("total_period :", total_period)  
+    for i in range(len(torque_list)):  
         if i == 0:
-            start_period = 0.0
+            start_period = 0.0  
         else:
             start_period = sum(period_list[:i])
 
@@ -516,7 +516,7 @@ def plot_torque(
     plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
     # plt.tight_layout()
 
-    plt.show()
+    plt.show()  
 
 
 def plot_force_velocity(
@@ -655,6 +655,37 @@ def plot_external_force(
     plt.show()
 
 
+def plot_impedance_path(
+    word_joint_params=None,
+    word_task_params=None, 
+    stroke_num=1, 
+    line_width=3.0
+): 
+    plt.figure(figsize=(20, 8)) 
+
+    plt.subplot(1, 2, 1)  
+    for i in range(stroke_num):
+        plt.plot(word_joint_params[i][:, 0], linewidth=line_width, label=r'$Kj_{1p}$')    
+        plt.plot(word_joint_params[i][:, 1], linewidth=line_width, label=r'$Kj_{2p}$')  
+        plt.plot(word_task_params[i][:, 0], linewidth=line_width, label=r'$Kc_{1p}$')    
+        plt.plot(word_task_params[i][:, 1], linewidth=line_width, label=r'$Kc_{2p}$')
+    plt.xlabel('time($t$)')    
+    plt.ylabel(r'$N/rad$')   
+    plt.legend()  
+
+    plt.subplot(1, 2, 2) 
+    for i in range(stroke_num): 
+        plt.plot(word_joint_params[i][:, 2], linewidth=line_width, label=r'$Kj_{1d}$')    
+        plt.plot(word_joint_params[i][:, 3], linewidth=line_width, label=r'$Kj_{2d}$')  
+        plt.plot(word_task_params[i][:, 2], linewidth=line_width, label=r'$Kc_{1d}$')    
+        plt.plot(word_task_params[i][:, 3], linewidth=line_width, label=r'$Kc_{2d}$')
+    plt.xlabel('time($t$)')    
+    plt.ylabel(r'$N/rad$')   
+    plt.legend()  
+
+    plt.show() 
+
+
 def plot_velocity_path(
     root_path='./motor_control/bin/data/',   
     file_name='',  
@@ -691,9 +722,9 @@ def plot_velocity_path(
     plt.subplot(1, 2, 1)
     plt.plot(velocity_list[1:, 0], linewidth=linewidth, label='velocity 1')    
     plt.plot(velocity_list[1:, 1], linewidth=linewidth, label='velocity 2')
-    plt.xlabel('time($t$)')  
+    plt.xlabel('time($t$)')   
     plt.ylabel('rad/s')  
-    plt.legend()
+    plt.legend()  
 
     osc_velocity_list = np.array(osc_velocity_list)
     plt.subplot(1, 2, 2)
@@ -701,9 +732,9 @@ def plot_velocity_path(
     plt.plot(osc_velocity_list[:, 1], linewidth=linewidth, label='osc velocity 2')
     plt.xlabel('time($t$)')
     plt.ylabel('m/s')
-    plt.legend()
+    plt.legend() 
 
-    plt.show()
+    plt.show() 
     
     return osc_velocity_list, index_list
     

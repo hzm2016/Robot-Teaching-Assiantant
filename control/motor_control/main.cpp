@@ -18,7 +18,7 @@ using namespace std;
 #include <cmath> 
 #include <stdio.h>
 
-#include <Eigen/Dense>
+// #include <Eigen/Dense>
 
 using namespace Eigen;
 
@@ -43,147 +43,6 @@ sigint_1_step(int dummy) {
 		run_on = 0; 
 }
 
-
-double read_analog_encoder(){
-    ///////////////////////////////////////////////////////////////////////////
-	// Initialize Sensoray 526:
-	///////////////////////////////////////////////////////////////////////////
-
-    const int NUM_ADC_CHAN			= 6; 
-    
-    int32_t ADC_CHAN[NUM_ADC_CHAN]	= {0, 1, 2, 3, 4, 5};  
-    // int32_t ADC_CHAN[NUM_ADC_CHAN]	= {7, 6, 5, 4, 3, 2, 1, 0}; 
-
-    double adc_data[NUM_ADC_CHAN]	= {0, 0, 0, 0, 0, 0};  
-
-    cout << "initial s526 !!!" << endl;  
-
-    // s526_read_id();  
-
-	// // Initialize hardware: 
-	// s526_init();  
-
-    // cout << "initial DAC !!!" << endl; 
-    
-    // s526_adc_init(ADC_CHAN, NUM_ADC_CHAN);  
-
-    // cout << "Test ADC read !!!" << endl; 
-
-    // // Read ADC:
-    // s526_adc_read(ADC_CHAN, NUM_ADC_CHAN, adc_data); 
-
-    // printf("FT data:: Tz %f\t Ty: %f\t Tx: %f Fz %f\t Fy: %f\t Fx: %f\n", adc_data[0], adc_data[1], adc_data[2], adc_data[3], adc_data[4], adc_data[5]);
-
-} 
-
-
-int read_encoder_angles(double q_1_initial, double q_2_initial) 
-{
-    double encoder_values[2] = {0.0, 0.0};  
-    read_initial_encode(encoder_values);  
-    printf("encoder1: %f, encoder2: %f", encoder_values[0] - q_1_initial, encoder_values[1] - q_2_initial); 
-
-    return 1;  
-}
-
-
-int set_position(double theta_3_initial, int32_t angle)   
-{
-    ////////////////////////////////////////////
-    // Read motor angle 3 
-    ////////////////////////////////////////////
-    CANDevice can0((char *) "can3");   
-    can0.begin();   
-
-    Gcan motor_3(can0);   
-    motor_3.begin();   
- 
-    double theta_3_t=0.0;   
-
-    // theta_3_t = motor_3.read_single_turn(1);  
-    // printf("Motor 3 position: %f\n", theta_3_t/3.14*180);   
-
-    // int32_t angle = theta_3_t + 10; 
-    uint16_t max_speed = 20;   
-    int32_t angle_fixed = 200;   
-
-    motor_3.pack_position_2_cmd(1, angle, max_speed);   
-    // motor_3.pack_position_1_cmd(1, angle_fixed); 
-
-    // motor_3.read_encoder(1);   
-    // motor_3.readcan();  
-
-    run_on = 1;   
-    // Catch a Ctrl-C event:  
-	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
-
-    // while(run_on) 
-    // {
-    //     // Catch a Ctrl-C event: 
-    //     signal(SIGINT, sig_h);  
-
-    //     motor_3.set_torque(1, 50, &d_theta_1_t, &torque_1_t); 
-    // } 
-    
-    // motor_3.pack_stop_cmd(1);  
-
-    return 1;   
-}   
-
-
-double set_two_link_position(
-double theta_1_initial, double theta_2_initial, 
-int32_t angle_1, int32_t angle_2
-)   
-{
-    ////////////////////////////////////////////
-    // Read motor angle 3  
-    //////////////////////////////////////////// 
-    CANDevice can1((char *) "can1");  
-    can1.begin();  
-
-    Gcan motor_1(can1);   
-    motor_1.begin();  
-    
-    double theta_1 = motor_1.read_sensor(2) - theta_1_initial;  
-
-    CANDevice can0((char *) "can0");   
-    can0.begin();   
-
-    Gcan motor_2(can0);   
-    motor_2.begin();   
-
-    double theta_2 = -1 * (motor_2.read_sensor(1) + theta_1 - theta_2_initial);   
-    printf("Motor 1 position: %f%f\n", theta_1, theta_1/PI*180);   
-    printf("Motor 2 position: %f%f\n", theta_2, theta_2/PI*180);    
-    // printf("Motor 3 position: %f\n", theta_3_t/3.14*180);   
-
-    // int32_t angle = theta_3_t + 10; 
-    uint16_t max_speed = 20; 
-    int32_t angle_fixed = 200;  
-
-    motor_1.pack_position_2_cmd(2, angle_1, max_speed);  
-    motor_2.pack_position_2_cmd(1, angle_2, max_speed);  
-
-    // motor_3.read_encoder(1); 
-    // motor_3.readcan(); 
-
-    run_on = 1;  
-    // Catch a Ctrl-C event:
-	void  (*sig_h)(int) = sigint_1_step;   // pointer to signal handler
-
-    // while(run_on) 
-    // {
-    //     // Catch a Ctrl-C event: 
-    //     signal(SIGINT, sig_h);  
-
-    //     motor_3.set_torque(1, 50, &d_theta_1_t, &torque_1_t); 
-    // }
-    
-    // motor_3.pack_stop_cmd(1); 
-
-    return 1; 
-}
 
 
 double torque_calculation(
@@ -460,12 +319,13 @@ double dist_threshold
 }
 
 
-int run_one_loop(
-py::array_t<double> theta_1_target, py::array_t<double> theta_2_target, 
-py::array_t<double> stiff_1_target, py::array_t<double> stiff_2_target, 
-py::array_t<double> damping_1_target, py::array_t<double> damping_2_target, 
+int run_one_loop(  
+py::array_t<double> theta_1_target, py::array_t<double> theta_2_target,  
+py::array_t<double> stiff_1_target, py::array_t<double> stiff_2_target,  
+py::array_t<double> damping_1_target, py::array_t<double> damping_2_target,  
 int Num_waypoints,  
-double theta_1_initial, double theta_2_initial, int num_episodes,  
+double theta_1_initial, double theta_2_initial,  
+int num_episodes,  
 string angle_path_name, string torque_path_name  
 )  
 {
@@ -575,7 +435,7 @@ string angle_path_name, string torque_path_name
         for (int index = 0; index<Num_waypoints; index=index+1)
         { 
             /////////////////////////////////////////////////////
-            // read-time data
+            // read-time data  
             ///////////////////////////////////////////////////// 
             theta_1_t = motor_1.read_sensor(motor_id_1) - theta_1_initial;    
             theta_2_t = -1 * (motor_2.read_sensor(motor_id_2) + theta_1_t - theta_2_initial);    
@@ -615,7 +475,7 @@ string angle_path_name, string torque_path_name
             ////////////////////////////////////////////////////////
             OutFileAngle << theta_e_list[0] << "," << theta_t_list[0] << "," << d_theta_t_list[0] << "," << theta_e_list[1] << "," << theta_t_list[1] << "," << d_theta_t_list[1] << "\n";   
 
-            OutFileTorque << torque_1/ctl_ratio_1 << "," << torque_1_t << "," << torque_2/ctl_ratio_2 << "," << torque_2_t << "\n";  
+            OutFileTorque << torque_1_o << "," << torque_1_t << "," << torque_2_o << "," << torque_2_t << "\n";  
             
             if (run_on==0) 
             {
