@@ -467,7 +467,7 @@ void split(const string& s, vector<string>& tokens, const string& delim)
 }  
 
 
-MatrixXd Jacobian(double theta_1_t, double theta_2_t) 
+void Jacobian(double theta_1_t, double theta_2_t) 
 {
     // const <MatrixXd> J 
     MatrixXd m(2,2); 
@@ -480,7 +480,7 @@ MatrixXd Jacobian(double theta_1_t, double theta_2_t)
 
     printf("matrix :%f\n", clip(m(1, 1), -1, 1)); 
 
-    return m; 
+    // return m; 
 }
 
 

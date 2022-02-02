@@ -44,12 +44,12 @@ sigint_1_step(int dummy) {
 }
 
 
-MatrixXd Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t) 
+void Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t) 
 {
     // const <MatrixXd> J 
     MatrixXd m(2,2); 
-    Vector3d F_t(F_1_t,F_2_t); 
-    Vector3d tau_t(0.0, 0.0); 
+    Vector2d F_t(F_1_t,F_2_t); 
+    Vector2d tau_t(0.0, 0.0); 
 
     m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t); 
     m(0, 1) = L_1 * cos(theta_2_t) + L_2 * cos(theta_1_t + theta_2_t);  
@@ -57,12 +57,12 @@ MatrixXd Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2
     m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t); 
     m(1, 1) = L_2 * sin(theta_2_t);  
 
-    tau_t = m.dot(F_t); 
+    tau_t = m * F_t; 
 
     printf("matrix :%f\n", clip(m(1, 1), -1, 1));  
-    printf("vector :%f\n", tau_t(0)); 
+    printf("vector :%f%f\n", tau_t(0), tau_t(1)); 
 
-    return m; 
+    // return m; 
 }
 
 
@@ -216,6 +216,27 @@ double &torque_1, double &torque_2
 
     torque_1 = clip(-1 * params[0] * (theta_e_list[0] - theta_t_list[0]) - params[2] * (d_theta_e_list[0] - d_theta_t_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
     torque_2 = clip(-1 * params[1] * (theta_e_list[1] - theta_t_list[1]) - params[3] * (d_theta_e_list[1] - d_theta_t_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+}
+
+
+double calculate_task_torque(
+double params[4], 
+double theta_e_list[2], double d_theta_e_list[2],  
+double theta_t_list[2], double d_theta_t_list[2],  
+double &torque_1, double &torque_2  
+)
+{
+    /////////////////////////////////////////////////////
+    // calculate torque control command 
+    ///////////////////////////////////////////////////// 
+    double stiffness_1 = params[0]   
+    double stiffness_2 = params[1]   
+
+    // double damping_1 = params[2]   
+    // double damping_2 = params[3]   
+
+    double force_1 = clip(-1 * params[0] * (theta_e_list[0] - theta_t_list[0]) - params[2] * (d_theta_e_list[0] - d_theta_t_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+    double force_2 = clip(-1 * params[1] * (theta_e_list[1] - theta_t_list[1]) - params[3] * (d_theta_e_list[1] - d_theta_t_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
 }
 
 
