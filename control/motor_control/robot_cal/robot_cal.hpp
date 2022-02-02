@@ -12,6 +12,10 @@
 #include <errno.h> 
 #include<cstring> 
 
+#include <Eigen/Dense>  
+
+using namespace Eigen; 
+
 #define PI 3.1415926 
 
 const double ctl_ratio = 2000.0/32;   
@@ -33,7 +37,7 @@ const int motor_id_3 = 1;
 
 double clip(double angle, double lower_bound, double upper_bound); 
 
-void Jacobian(double theta_1_t, double theta_2_t); 
+MatrixXd Jacobian(double theta_1_t, double theta_2_t); 
 
 void split(const string& s, vector<string>& tokens, const string& delim); 
 

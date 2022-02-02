@@ -519,12 +519,15 @@ def load_word_path(
 if __name__ == "__main__":  
     # =========================================================== 
     flag_write_word = False   
-    flag_plot_result = True   
+    flag_plot_result = False 
     flag_demo_write = False   
     flag_hardware_test = False
 
     write_name = 'yi_20'   
 
+    motor_control.Jacobian(1.0, 1.0) 
+
+    # =========================================================== 
     if flag_hardware_test:   
         # set_pen_down()   
         # motor_stop()   
