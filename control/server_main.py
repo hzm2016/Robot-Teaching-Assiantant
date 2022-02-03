@@ -246,16 +246,6 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close()
 
 
-
-# def cal_impedance(word_params, word):
-#     """
-#         Input path :   
-#         Return impedance in joint space :   
-#     """
-#     joint_params = 
-#     return 
-
-
 def write_word(word_path, word_params=None, word_name='yi', epi_times=0): 
     """
         write a word and plot  
@@ -516,6 +506,14 @@ def load_word_path(
     return word_path, word_joint_params, word_task_params, np.array(real_path)  
 
 
+# def cal_impedance(word_params, word):
+#     """
+#         Input path :   
+#         Return impedance in joint space :   
+#     """
+#     joint_params = 
+#     return 
+
 if __name__ == "__main__":  
     # =========================================================== 
     flag_write_word = False    
@@ -549,15 +547,19 @@ if __name__ == "__main__":
         print("angle :", angle)   
         print("point :", point)   
 
-        target_point = np.array([0.19, 0.0])   
+        target_point = np.array([0.39, 0.0])   
         move_to_target_point(
             target_point,  
-            impedance_params=Move_Impedance_Params,  
+            # impedance_params=np.array([110.0, 100.0, 10.0, 0.2]) ,  
+            impedance_params=np.array([20.0, 20.0, 2.0, 0.2]) , 
             velocity=0.05  
         )  
         
-        # motor_control.read_analog_encoder()  
-        # motor_control.phri_get_demonstration(-0.392035, -0.500249, 2.516857, 4.574669, 0.0, 0.0, 0.0, 0.0)  
+        angle, point = get_observation()   
+        print("angle :", angle)   
+        print("point :", point)   
+
+        # motor_control.read_analog_encoder()   
 
     # =========================================================== 
     if flag_write_word == True:   
