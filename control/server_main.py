@@ -23,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])   
 
-Angle_initial = np.array([-0.293096, -0.047478, 1.981514])   
+Angle_initial = np.array([-0.287426, 0.008257, 1.981514])   
 
 # impedance params :::  
 Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])   
@@ -538,20 +538,17 @@ if __name__ == "__main__":
         theta_2 = motor_control.read_initial_angle_2()   
         print("theta_2 :", theta_2)    
 
-        # theta_1_t = motor_control.read_angle_1(Angle_initial[0])  
-        # print("theta_1_t :", theta_1_t)
-        # theta_2_t = motor_control.read_angle_2(Angle_initial[1], theta_1_t) 
-        # print("theta_2_t :", theta_2_t)   
-
         angle, point = get_observation()   
         print("angle :", angle)   
         print("point :", point)   
 
-        target_point = np.array([0.25, 0.0])   
-        move_to_target_point(
+        # motor_control.motor_two_link_stop()  
+
+        target_point = np.array([0.50, 0.0])   
+        move_to_target_point(  
             target_point,  
-            # impedance_params=np.array([80.0, 80.0, 5.0, 0.2]),   
-            impedance_params=np.array([20.0, 20.0, 2.0, 0.2]),   
+            impedance_params=np.array([420.0, 420.0, 15.5, 15.5]),   
+            # impedance_params=np.array([25.0, 25.0, 4.0, 0.2]),   
             velocity=0.05    
         )  
         
@@ -559,7 +556,11 @@ if __name__ == "__main__":
         print("angle :", angle)   
         print("point :", point)   
 
-        # motor_control.motor_two_link_stop()  
+        # stiff_joint, damping_joint = Stiff_convert(np.array([0.5, 0.5]), 
+        # np.diag([40, 40]), np.diag([1.0, 1.0]))  
+        # print("stiff_joint :", stiff_joint)   
+        # print("damping_joint :", damping_joint) 
+        # motor_control.Convert_stiffness(40.0, 40.0, 0.5, 0.5)
 
         # motor_control.read_analog_encoder()   
 
@@ -644,6 +645,40 @@ if __name__ == "__main__":
         # skiprows=1 
         # )
 
+    angle_list = np.loadtxt('./data/move_target_angle_list.txt', delimiter=',', skiprows=1)  
+    torque_list = np.loadtxt('./data/move_target_torque_list.txt', delimiter=',', skiprows=1)  
+
+    fig = plt.figure(figsize=(20, 8))  
+    plt.subplot(1, 2, 1)  
+    plt.subplots_adjust(wspace=2, hspace=0)  
+    
+    plt.plot(angle_list[:, 0], linewidth=linewidth, label=r'$q_{1t}$')  
+    plt.plot(angle_list[:, 1], linewidth=linewidth, label=r'$q_{1e}$')  
+    plt.plot(angle_list[:, 3], linewidth=linewidth, label=r'$q_{2t}$')  
+    plt.plot(angle_list[:, 4], linewidth=linewidth, label=r'$q_{2e}$')  
+    # plt.xlim([0, 128])  
+    # plt.ylim([0, 128])  
+    plt.xlabel('time($t$)')    
+    plt.ylabel('angle(rad)')    
+    # plt.axis('equal') 
+    plt.legend()   
+    
+    plt.subplot(1, 2, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    plt.plot(torque_list[:, 0], linewidth=linewidth, label=r'$\tau_{1o}$')  
+    plt.plot(torque_list[:, 2], linewidth=linewidth, label=r'$\tau_{2o}$')  
+    
+    # plt.xlim([0., 0.6])
+    # plt.ylim([0., 0.6])
+    plt.xlabel('time($t$)') 
+    plt.ylabel('torque(Nm)')   
+    plt.legend()
+
+    plt.tight_layout() 
+    plt.show() 
+
+
     # torque_list = np.loadtxt('./data/font_data/xing/real_angle_list_5.txt', delimiter=' ', skiprows=1)
 
     # fig = plt.figure(figsize=(20, 8))  
@@ -666,37 +701,6 @@ if __name__ == "__main__":
     # plt.plot(torque_list[:, 3], linewidth=linewidth, label='Input')  
     # plt.plot(torque_list[:, 4], linewidth=linewidth, label='Output')  
     # plt.plot(torque_list[:, 5], linewidth=linewidth, label='vel_2')  
-    
-    # # plt.xlim([0., 0.6])
-    # # plt.ylim([0., 0.6])
-    # plt.xlabel('time($t$)') 
-    # plt.ylabel('$q_2$(rad)')   
-    # plt.legend()
-
-    # plt.tight_layout() 
-    # plt.show() 
-
-    # angle_list = np.loadtxt('./data/font_data/yi/real_angle_list_0.txt', delimiter=' ', skiprows=1)  
-    # # angle_list = np.loadtxt('chuan_demonstrated_angle_list.txt', delimiter=',', skiprows=1)  
-
-    # fig = plt.figure(figsize=(20, 8))  
-    # plt.subplot(1, 2, 1)  
-    # plt.subplots_adjust(wspace=2, hspace=0)  
-    
-    # plt.plot(angle_list[:, 0], linewidth=linewidth, label='Input')  
-    # plt.plot(angle_list[:, 1], linewidth=linewidth, label='Output')  
-    # # plt.xlim([0, 128])  
-    # # plt.ylim([0, 128])  
-    # plt.xlabel('time($t$)')    
-    # plt.ylabel('$q_1$(rad)')    
-    # # plt.axis('equal') 
-    # plt.legend()   
-    
-    # plt.subplot(1, 2, 2)
-    # plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    
-    # plt.plot(angle_list[:, 1], linewidth=linewidth, label='Input')  
-    # plt.plot(angle_list[:, 3], linewidth=linewidth, label='Output')  
     
     # # plt.xlim([0., 0.6])
     # # plt.ylim([0., 0.6])

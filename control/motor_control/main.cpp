@@ -162,19 +162,22 @@ void Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t)
     // return m; 
 }
 
-void Convert_stiffness(double params[4], double theta_1_t, double theta_2_t)
+void Convert_stiffness(
+double stiffness_1_t, double stiffness_2_t, 
+double theta_1_t, double theta_2_t
+)
 {
     MatrixXd J_t(2,2);    
     Vector2d stiff_joint_t(0.0, 0.0);     
     MatrixXd stiff_task_t(2, 2);     
-    stiff_joint_t(0) = params[0];     
-    stiff_joint_t(1) = params[1];     
+    stiff_joint_t(0) = stiffness_1_t;     
+    stiff_joint_t(1) = stiffness_2_t;     
 
-    MatrixXd Stiff_Joint_Diag(Vector.asDiagonal());    
-    J_t = Jacobian(theta_t_list[0], theta_t_list[1]);    
+    MatrixXd Stiff_Joint_Diag(stiff_joint_t.asDiagonal());    
+    J_t = Jacobian(theta_1_t, theta_2_t);     
 
     stiff_task_t = J_t.transpose() * Stiff_Joint_Diag * J_t;    
-    printf("stiffness %f%f\n:", stiff_task_t(0, 0), stiff_task_t(1, 1));    
+    printf("stiffness %f %f\n:", stiff_task_t(0, 0), stiff_task_t(1, 1));    
 }
 
 
@@ -189,23 +192,43 @@ double &torque_1, double &torque_2
     // calculate torque control command 
     ///////////////////////////////////////////////////// 
     MatrixXd J_t(2,2);    
-    Vector2d stiff_joint_t(0.0, 0.0);     
-    MatrixXd stiff_task_t(2, 2);     
-    stiff_joint_t(0) = params[0];     
-    stiff_joint_t(1) = params[1];     
+    MatrixXd stiff_joint_t(2, 2);    
+    MatrixXd damping_joint_t(2, 2);    
 
-    MatrixXd Stiff_Joint_Diag(Vector.asDiagonal());    
-    J_t = Jacobian(theta_t_list[0], theta_t_list[1]);    
+    Vector2d stiff_task_t(0.0, 0.0);      
+    stiff_task_t(0) = params[0];     
+    stiff_task_t(1) = params[1];    
 
-    stiff_task_t = J_t.transpose() * Stiff_Joint_Diag * J_t;    
-    printf("stiffness %f%f\n:", stiff_task_t(0, 0), stiff_task_t(1, 1));    
+    Vector2d damping_task_t(0.0, 0.0);   
+    damping_task_t(0) = params[2];     
+    damping_task_t(1) = params[3];  
 
-    // double damping_1 = params[2]     
-    // double damping_2 = params[3]     
+    Vector2d torque_t(0.0, 0.0);  
+    Vector2d delta_angle_t(0.0, 0.0); 
+    Vector2d d_delta_angle_t(0.0, 0.0); 
+    delta_angle_t(0) =  theta_t_list[0] - theta_e_list[0]; 
+    delta_angle_t(1) =  theta_t_list[1] - theta_e_list[1];  
+    d_delta_angle_t(0) =  d_theta_t_list[0] - d_theta_e_list[0]; 
+    delta_angle_t(1) =  d_theta_t_list[1] - d_theta_e_list[1];  
 
-    torque_1 = clip(-1 * params[0] * (theta_e_list[0] - theta_t_list[0]) - params[2] * (d_theta_e_list[0] - d_theta_t_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-    torque_2 = clip(-1 * params[1] * (theta_e_list[1] - theta_t_list[1]) - params[3] * (d_theta_e_list[1] - d_theta_t_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
-}
+    MatrixXd Stiff_Task_Diag(stiff_task_t.asDiagonal());    
+    MatrixXd Damping_Task_Diag(damping_task_t.asDiagonal());    
+    J_t = Jacobian(theta_t_list[0], theta_t_list[1]);     
+
+    stiff_joint_t = J_t.transpose() * Stiff_Task_Diag * J_t;    
+    damping_joint_t = J_t.transpose() * Damping_Task_Diag * J_t;    
+
+    printf("stiffness %f - %f\n:", stiff_joint_t(0, 0), stiff_joint_t(1, 1));    
+
+    torque_t = - stiff_joint_t * delta_angle_t - damping_joint_t * d_delta_angle_t;  
+    printf("torque_t %f - %f\n:", torque_t(0), torque_t(1)); 
+
+    // torque_1 = clip(-1 * params[0] * (theta_t_list[0] - theta_e_list[0]) - params[2] * (d_theta_t_list[0] - d_theta_e_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+    // torque_2 = clip(-1 * params[1] * (theta_t_list[1] - theta_e_list[1]) - params[3] * (d_theta_t_list[1] - d_theta_e_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;     
+
+    torque_1 = clip(torque_t(0), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
+    torque_2 = clip(torque_t(1), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
+}   
 
 
 double calculate_task_torque( 
@@ -214,7 +237,7 @@ double theta_e_list[2], double d_theta_e_list[2],
 double theta_t_list[2], double d_theta_t_list[2],  
 double &torque_1, double &torque_2  
 )
-{
+{    
     /////////////////////////////////////////////////////
     // calculate torque control command 
     ///////////////////////////////////////////////////// 
@@ -232,7 +255,7 @@ double &torque_1, double &torque_2
     Vector2d F_t(0.0, 0.0); 
     Vector2d torque_t(0.0, 0.0);  
 
-    J_e = Jacobian(theta_e_list[0], theta_e_list[1]);
+    J_e = Jacobian(theta_e_list[0], theta_e_list[1]);  
     d_pos_e = J_e * d_angle_e;  
 
     J_t = Jacobian(theta_t_list[0], theta_t_list[1]);  
@@ -241,8 +264,8 @@ double &torque_1, double &torque_2
     pos_e = Forward_ik(theta_e_list[0], theta_e_list[1]);  
     pos_t = Forward_ik(theta_t_list[0], theta_t_list[1]);  
 
-    F_t(0) = - params[0] * (pos_e(0) - pos_t(0)) - params[2] * (d_pos_e(0) - d_pos_t(0));   
-    F_t(1) = - params[1] * (pos_e(1) - pos_t(1)) - params[3] * (d_pos_e(1) - d_pos_t(1));   
+    F_t(0) = - params[0] * (pos_t(0) - pos_e(0)) - params[2] * (d_pos_t(0) - d_pos_e(0));   
+    F_t(1) = - params[1] * (pos_t(1) - pos_e(1)) - params[3] * (d_pos_t(1) - d_pos_e(1));   
 
     torque_t = J_t.transpose() * F_t;   
 
@@ -390,7 +413,7 @@ double dist_threshold
     ////////////////////////////////////////////////////////
     string output_angle = "./data/move_target_angle_list.txt";    
     ofstream OutFileAngle(output_angle);    
-    OutFileAngle << "angle_1" << "," << "angle_1_t" << "," << "angle_2" << "," << "angle_2_t" << "\n";    
+    OutFileAngle << "angle_1" << "," << "angle_1_t" << "," << "d_angle_1_t" << "," << "angle_2" << "," << "angle_2_t" << "," << "d_angle_2_t"<< "\n";    
 
     string output_torque = "./data/move_target_torque_list.txt";    
     ofstream OutFileTorque(output_torque);    
@@ -475,20 +498,20 @@ double dist_threshold
         /////////////////////////////////////////////////////
         /////// calculate torque control command //////////// 
         ///////////////////////////////////////////////////// 
-        calculate_joint_torque(
-        params,  
-        theta_e_list, d_theta_e_list,  
-        theta_t_list, d_theta_t_list,  
-        torque_1, torque_2  
-        );  
-
-        /// Task space control
-        // calculate_task_torque( 
+        // calculate_joint_torque(
         // params,  
         // theta_e_list, d_theta_e_list,  
         // theta_t_list, d_theta_t_list,  
         // torque_1, torque_2  
         // );  
+
+        /// Task space control
+        calculate_task_torque( 
+        params,  
+        theta_e_list, d_theta_e_list,  
+        theta_t_list, d_theta_t_list,  
+        torque_1, torque_2  
+        );  
 
         double torque_1_o = torque_1/ctl_ratio_1;   
         double torque_2_o = torque_2/ctl_ratio_2;   
@@ -496,7 +519,7 @@ double dist_threshold
         pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);    
         pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);    
 
-        OutFileAngle << q_1_list[index] << "," << theta_1_t << "," << q_2_list[index] << "," << theta_2_t << "\n";  
+        OutFileAngle << q_1_list[index] << "," << theta_1_t << "," << d_theta_1_t << "," << q_2_list[index] << "," << theta_2_t << "," << d_theta_2_t << "\n";  
         OutFileTorque << torque_1_o << "," << torque_1 << "," << torque_2_o << "," << torque_2 << "\n";    
         printf("d_theta_1_t: %f\n", d_theta_1_t);   
         printf("d_theta_2_t: %f\n", d_theta_2_t);   

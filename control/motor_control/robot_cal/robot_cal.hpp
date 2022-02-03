@@ -20,8 +20,8 @@ using namespace Eigen;
 
 const double ctl_ratio = 2000.0/32;   
 
-const double ctl_ratio_1 = -2000.0/32;     
-const double ctl_ratio_2 = 2000.0/32;   
+const double ctl_ratio_1 = 2000.0/32;     
+const double ctl_ratio_2 = -2000.0/32;   
 
 const double torque_lower_bound = -2.0;      
 const double torque_upper_bound = 2.0;     
@@ -91,7 +91,7 @@ int32_t angle_1, int32_t angle_2
 );
 
 double
-read_analog_encoder(); 
+read_analog_encoder();  
 
 Vector2d Forward_ik(double theta_1_t, double theta_2_t); 
 
