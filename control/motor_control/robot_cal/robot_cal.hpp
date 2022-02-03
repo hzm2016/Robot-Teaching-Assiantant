@@ -37,9 +37,6 @@ const int motor_id_3 = 1;
 
 double clip(double angle, double lower_bound, double upper_bound); 
 
-// MatrixXd Jacobian(double theta_1_t, double theta_2_t); 
-
-void Jacobian(double theta_1_t, double theta_2_t); 
 
 void split(const string& s, vector<string>& tokens, const string& delim); 
 
@@ -97,3 +94,5 @@ double
 read_analog_encoder(); 
 
 Vector2d Forward_ik(double theta_1_t, double theta_2_t); 
+
+MatrixXd Jacobian(double theta_1_t, double theta_2_t); 

@@ -525,7 +525,9 @@ if __name__ == "__main__":
 
     write_name = 'yi_20'   
 
-    motor_control.Jacobian(1.0, 1.0) 
+    # motor_control.Jacobian(1.0, 1.0) 
+    J = Jacobian(np.array([1.0, 1.0])) 
+    print("J \n:", J, J.transpose().dot(np.array([0.5, 0.5])), forward_ik(np.array([1.0, 1.0])))
     motor_control.Cal_torque(1.0, 1.0, 0.5, 0.5)
 
     # =========================================================== 

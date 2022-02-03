@@ -138,6 +138,31 @@ int set_position(double theta_3_initial, int32_t angle)
 }  
 
 
+void Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t) 
+{
+    // const <MatrixXd> J 
+    MatrixXd m(2,2);  
+    Vector2d F_t(F_1_t, F_2_t);  
+    Vector2d tau_t(0.0, 0.0);   
+    Vector2d pos_t(0.0, 0.0);   
+
+    // m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t);  
+    // m(0, 1) = - L_2 * sin(theta_1_t + theta_2_t);  
+    // m(1, 0) = L_1 * cos(theta_1_t) + L_2 * cos(theta_1_t + theta_2_t);   
+    // m(1, 1) = L_2 * cos(theta_1_t + theta_2_t);  
+    m = Jacobian(theta_1_t, theta_2_t);   
+    pos_t = Forward_ik(theta_1_t, theta_2_t);   
+
+    tau_t = m.transpose() * F_t;   
+
+    printf("matrix :%f%f%f%f\n", m(0,0), m(0,1), m(1, 0), m(1, 1));   
+    printf("vector :%f%f\n", tau_t(0), tau_t(1));   
+    printf("vector :%f%f\n", pos_t(0), pos_t(1));   
+
+    // return m; 
+}
+
+
 double calculate_joint_torque(
 double params[4],  
 double theta_e_list[2], double d_theta_e_list[2],   
@@ -422,12 +447,12 @@ double dist_threshold
         /////////////////////////////////////////////////////
         /////// calculate torque control command //////////// 
         ///////////////////////////////////////////////////// 
-        torque_calculation(
+        calculate_joint_torque(
         params,  
         theta_e_list, d_theta_e_list,  
         theta_t_list, d_theta_t_list,  
         torque_1, torque_2  
-        ); 
+        );  
 
         double torque_1_o = -1 * stiffness_1 * (q_1_list[index] - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t);  
         double torque_2_o = -1 * stiffness_2 * (q_2_list[index] - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t);  
@@ -593,7 +618,7 @@ string angle_path_name, string torque_path_name
             // set torque control command 
             ///////////////////////////////////////////////////// 
             /// Joint space control
-            torque_calculation(
+            calculate_joint_torque(
             params,   
             theta_e_list, d_theta_e_list,   
             theta_t_list, d_theta_t_list,   
