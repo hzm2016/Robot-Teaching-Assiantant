@@ -209,15 +209,16 @@ double &torque_1, double &torque_2
     Vector2d torque_t(0.0, 0.0);  
 
     J_e = Jacobian(theta_e_list[0], theta_e_list[1]);
+    d_pos_e = J_e * d_angle_e;  
+
     J_t = Jacobian(theta_t_list[0], theta_t_list[1]);  
-    d_pos_t = J_t * d_angle_t; 
-    d_pos_e = J_e * d_angle_e; 
+    d_pos_t = J_t * d_angle_t;  
 
     pos_e = Forward_ik(theta_e_list[0], theta_e_list[1]);  
     pos_t = Forward_ik(theta_t_list[0], theta_t_list[1]);  
 
-    F_t(0) = -1 * params[0] * (pos_e(0) - pos_t(0)) - params[2] * (d_pos_e(0) - d_pos_t(0));   
-    F_t(1) = -1 * params[1] * (pos_e(1) - pos_t(1)) - params[3] * (d_pos_e(1) - d_pos_t(1));   
+    F_t(0) = - params[0] * (pos_e(0) - pos_t(0)) - params[2] * (d_pos_e(0) - d_pos_t(0));   
+    F_t(1) = - params[1] * (pos_e(1) - pos_t(1)) - params[3] * (d_pos_e(1) - d_pos_t(1));   
 
     torque_t = J_t.transpose() * F_t;   
 
@@ -396,6 +397,9 @@ double dist_threshold
     double torque_1_t = 0.0;   
     double torque_2_t = 0.0;   
 
+    double torque_1_o = 0.0;  
+    double torque_2_o = 0.0;  
+
     double pos_1 = 0.0;      
     double pos_2 = 0.0;      
  
@@ -433,7 +437,7 @@ double dist_threshold
         theta_1_t = motor_1.read_sensor(motor_id_1) - theta_1_initial;  
         theta_2_t = -1 * (motor_2.read_sensor(motor_id_2) + theta_1_t - theta_2_initial);   
 
-        dist = sqrt(pow((theta_1_t - q_1_list[index]), 2) + pow((theta_2_t - q_2_list[index]), 2));    
+        // dist = sqrt(pow((theta_1_t - q_1_list[index]), 2) + pow((theta_2_t - q_2_list[index]), 2));    
 
         theta_t_list[0] = theta_1_t;
         theta_t_list[1] = theta_2_t; 
@@ -462,8 +466,8 @@ double dist_threshold
         torque_1, torque_2  
         ); 
 
-        double torque_1_o = -1 * stiffness_1 * (q_1_list[index] - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t);  
-        double torque_2_o = -1 * stiffness_2 * (q_2_list[index] - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t);  
+        double torque_1_o = torque_1/ctl_ratio_1;   
+        double torque_2_o = torque_2/ctl_ratio_2;   
 
         pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);    
         pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);    
@@ -639,7 +643,7 @@ string angle_path_name, string torque_path_name
             theta_e_list, d_theta_e_list,  
             theta_t_list, d_theta_t_list,  
             torque_1, torque_2  
-            ); 
+            );   
 
             torque_1_o = torque_1/ctl_ratio_1;     
             torque_2_o = torque_2/ctl_ratio_2;    
