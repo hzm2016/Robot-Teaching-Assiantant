@@ -23,7 +23,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])   
 
-Angle_initial = np.array([-0.314204, 0.192674, 1.981514])   
+Angle_initial = np.array([-0.293096, -0.047478, 1.981514])   
 
 # impedance params :::  
 Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])   
@@ -547,10 +547,10 @@ if __name__ == "__main__":
         print("angle :", angle)   
         print("point :", point)   
 
-        target_point = np.array([0.39, 0.0])   
+        target_point = np.array([0.25, 0.0])   
         move_to_target_point(
             target_point,  
-            # impedance_params=np.array([110.0, 100.0, 10.0, 0.2]) ,  
+            # impedance_params=np.array([80.0, 80.0, 5.0, 0.2]) ,  
             impedance_params=np.array([20.0, 20.0, 2.0, 0.2]) , 
             velocity=0.05  
         )  
@@ -558,6 +558,8 @@ if __name__ == "__main__":
         angle, point = get_observation()   
         print("angle :", angle)   
         print("point :", point)   
+
+        # motor_control.motor_two_link_stop()  
 
         # motor_control.read_analog_encoder()   
 

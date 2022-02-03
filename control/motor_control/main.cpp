@@ -419,7 +419,7 @@ double dist_threshold
     // {
     //     pos_1 = motor_1.set_torque(motor_id_1, 0.0, &d_theta_1_t, &torque_1_t);  
     //     pos_2 = motor_2.set_torque(motor_id_2, 0.0, &d_theta_2_t, &torque_2_t);  
-    // } 
+    // }   
 
     run_on = 1;  
 
@@ -464,7 +464,7 @@ double dist_threshold
         // theta_e_list, d_theta_e_list,  
         // theta_t_list, d_theta_t_list,  
         // torque_1, torque_2  
-        // ); 
+        // );  
 
         double torque_1_o = torque_1/ctl_ratio_1;   
         double torque_2_o = torque_2/ctl_ratio_2;   
