@@ -327,8 +327,8 @@ def write_stroke(
                             way_points[:, 0].copy(), way_points[:, 1].copy(),  
                             params_list[:, 0].copy(), params_list[:, 1].copy(),  
                             params_list[:, 2].copy(), params_list[:, 3].copy(),  
-                            Num_way_points,   
-                            Angle_initial[0], Angle_initial[1],   
+                            Num_way_points,    
+                            Angle_initial[0], Angle_initial[1],    
                             1,  
                             stroke_angle_name, stroke_torque_name 
                         )   
@@ -503,13 +503,13 @@ def load_word_path(
         else:  
             task_params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')  
 
-        angle_list = way_points
-        stiffness_list = task_params_list[:, :2]
-        damping_list = task_params_list[:, 2:]
+        angle_list = way_points  
+        stiffness_list = task_params_list[:, :2]  
+        damping_list = task_params_list[:, 2:]  
         joint_params_list = generate_stroke_stiffness_path(
             angle_list, stiffness_list, damping_list, 
             save_path=False, save_root='', word_name='yi', stroke_name=0
-        )
+        )  
 
         word_task_params.append(joint_params_list)  
 

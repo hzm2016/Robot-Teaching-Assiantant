@@ -475,12 +475,44 @@ void Jacobian(double theta_1_t, double theta_2_t)
     m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t); 
     m(0, 1) = L_1 * cos(theta_2_t) + L_2 * cos(theta_1_t + theta_2_t);  
 
-    m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t); 
+    m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t);  
     m(1, 1) = L_2 * sin(theta_2_t);  
 
     printf("matrix :%f\n", clip(m(1, 1), -1, 1)); 
 
     // return m; 
+}
+
+void Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t) 
+{
+    // const <MatrixXd> J 
+    MatrixXd m(2,2); 
+    Vector2d F_t(F_1_t, F_2_t);  
+    Vector2d tau_t(0.0, 0.0);  
+
+    m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t);  
+    m(0, 1) = L_1 * cos(theta_2_t) + L_2 * cos(theta_1_t + theta_2_t);   
+
+    m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t);  
+    m(1, 1) = L_2 * sin(theta_2_t);  
+
+    tau_t = m * F_t; 
+
+    printf("matrix :%f\n", clip(m(1, 1), -1, 1));  
+    printf("vector :%f%f\n", tau_t(0), tau_t(1));  
+
+    // return m; 
+}
+
+Vector2d Forward_ik(double theta_1_t, double theta_2_t)
+{
+    /// forward kinematics
+    Vector2d pos_t(0.0, 0.0);  
+    
+    pos_t(0) = L_1 * cos(theta_1_t) + L_2 * cos(theta_1_t + theta_2_t);   
+    pos_t(1) = L_1 * sin(theta_1_t) + L_2 * sin(theta_1_t + theta_2_t);   
+
+    return pos_t;   
 }
 
 
@@ -497,3 +529,37 @@ int read_encoder_angles(double q_1_initial, double q_2_initial)
 
     return 1;  
 }
+
+
+double read_analog_encoder()
+{
+    ///////////////////////////////////////////////////////////////////////////
+	// Initialize Sensoray 526:
+	///////////////////////////////////////////////////////////////////////////
+
+    const int NUM_ADC_CHAN			= 6; 
+    
+    int32_t ADC_CHAN[NUM_ADC_CHAN]	= {0, 1, 2, 3, 4, 5};  
+    // int32_t ADC_CHAN[NUM_ADC_CHAN]	= {7, 6, 5, 4, 3, 2, 1, 0}; 
+
+    double adc_data[NUM_ADC_CHAN]	= {0, 0, 0, 0, 0, 0};  
+
+    cout << "initial s526 !!!" << endl;  
+
+    // s526_read_id();  
+
+	// // Initialize hardware: 
+	// s526_init();  
+
+    // cout << "initial DAC !!!" << endl; 
+    
+    // s526_adc_init(ADC_CHAN, NUM_ADC_CHAN);  
+
+    // cout << "Test ADC read !!!" << endl; 
+
+    // // Read ADC:
+    // s526_adc_read(ADC_CHAN, NUM_ADC_CHAN, adc_data); 
+
+    // printf("FT data:: Tz %f\t Ty: %f\t Tx: %f Fz %f\t Fy: %f\t Fx: %f\n", adc_data[0], adc_data[1], adc_data[2], adc_data[3], adc_data[4], adc_data[5]);
+
+} 

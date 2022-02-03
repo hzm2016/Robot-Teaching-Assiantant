@@ -73,11 +73,16 @@ int motor_two_link_stop();
 
 int motor_3_stop();  
 
-double set_two_link_position(double theta_1_initial, double theta_2_initial, 
-int32_t angle_1, int32_t angle_2); 
+double 
+set_two_link_position(
+double theta_1_initial, double theta_2_initial, 
+int32_t angle_1, int32_t angle_2
+); 
 
 int 
-read_encoder_angles(double q_1_initial, double q_2_initial); 
+read_encoder_angles(
+double q_1_initial, double q_2_initial
+); 
 
 int 
 set_position(double theta_3_initial, int32_t angle); 
@@ -87,3 +92,8 @@ set_two_link_position(
 double theta_1_initial, double theta_2_initial, 
 int32_t angle_1, int32_t angle_2
 );
+
+double
+read_analog_encoder(); 
+
+Vector2d Forward_ik(double theta_1_t, double theta_2_t); 

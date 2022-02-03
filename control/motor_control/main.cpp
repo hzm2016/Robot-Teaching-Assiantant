@@ -25,11 +25,6 @@ using namespace Eigen;
 #include <pybind11/numpy.h>
 namespace py = pybind11; 
 
-// #define PI 3.1415926 
-// const double ctl_ratio_1 = -2000.0/32;     
-// const double ctl_ratio_2 = 2000.0/32;  
-// const double d_t = 0.001; 
-// const double L_1 = 0.30, L_2 = 0.25;   
 
 #define STRINGIFY(x) #x 
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -42,61 +37,6 @@ sigint_1_step(int dummy) {
     if (run_on == 1) 
 		run_on = 0; 
 }
-
-
-void Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t) 
-{
-    // const <MatrixXd> J 
-    MatrixXd m(2,2); 
-    Vector2d F_t(F_1_t,F_2_t); 
-    Vector2d tau_t(0.0, 0.0); 
-
-    m(0, 0) = - L_1 * sin(theta_1_t) - L_2 * sin(theta_1_t + theta_2_t); 
-    m(0, 1) = L_1 * cos(theta_2_t) + L_2 * cos(theta_1_t + theta_2_t);  
-
-    m(1, 0) = -L_2 * sin(theta_1_t + theta_2_t); 
-    m(1, 1) = L_2 * sin(theta_2_t);  
-
-    tau_t = m * F_t; 
-
-    printf("matrix :%f\n", clip(m(1, 1), -1, 1));  
-    printf("vector :%f%f\n", tau_t(0), tau_t(1)); 
-
-    // return m; 
-}
-
-
-double read_analog_encoder(){
-    ///////////////////////////////////////////////////////////////////////////
-	// Initialize Sensoray 526:
-	///////////////////////////////////////////////////////////////////////////
-
-    const int NUM_ADC_CHAN			= 6; 
-    
-    int32_t ADC_CHAN[NUM_ADC_CHAN]	= {0, 1, 2, 3, 4, 5};  
-    // int32_t ADC_CHAN[NUM_ADC_CHAN]	= {7, 6, 5, 4, 3, 2, 1, 0}; 
-
-    double adc_data[NUM_ADC_CHAN]	= {0, 0, 0, 0, 0, 0};  
-
-    cout << "initial s526 !!!" << endl;  
-
-    // s526_read_id();  
-
-	// // Initialize hardware: 
-	// s526_init();  
-
-    // cout << "initial DAC !!!" << endl; 
-    
-    // s526_adc_init(ADC_CHAN, NUM_ADC_CHAN);  
-
-    // cout << "Test ADC read !!!" << endl; 
-
-    // // Read ADC:
-    // s526_adc_read(ADC_CHAN, NUM_ADC_CHAN, adc_data); 
-
-    // printf("FT data:: Tz %f\t Ty: %f\t Tx: %f Fz %f\t Fy: %f\t Fx: %f\n", adc_data[0], adc_data[1], adc_data[2], adc_data[3], adc_data[4], adc_data[5]);
-
-} 
 
 
 double set_two_link_position(
@@ -198,11 +138,11 @@ int set_position(double theta_3_initial, int32_t angle)
 }  
 
 
-double torque_calculation(
-double params[4], 
-double theta_e_list[2], double d_theta_e_list[2], 
-double theta_t_list[2], double d_theta_t_list[2], 
-double &torque_1, double &torque_2  
+double calculate_joint_torque(
+double params[4],  
+double theta_e_list[2], double d_theta_e_list[2],   
+double theta_t_list[2], double d_theta_t_list[2],   
+double &torque_1, double &torque_2   
 ) 
 {
     /////////////////////////////////////////////////////
@@ -219,8 +159,8 @@ double &torque_1, double &torque_2
 }
 
 
-double calculate_task_torque(
-double params[4], 
+double calculate_task_torque( 
+double params[4],  
 double theta_e_list[2], double d_theta_e_list[2],  
 double theta_t_list[2], double d_theta_t_list[2],  
 double &torque_1, double &torque_2  
@@ -229,14 +169,35 @@ double &torque_1, double &torque_2
     /////////////////////////////////////////////////////
     // calculate torque control command 
     ///////////////////////////////////////////////////// 
-    double stiffness_1 = params[0]   
-    double stiffness_2 = params[1]   
+    Vector2d pos_t(0.0, 0.0);   
+    Vector2d pos_e(0.0, 0.0);   
 
-    // double damping_1 = params[2]   
-    // double damping_2 = params[3]   
+    Vector2d d_pos_t(0.0, 0.0);   
+    Vector2d d_pos_e(0.0, 0.0);   
 
-    double force_1 = clip(-1 * params[0] * (theta_e_list[0] - theta_t_list[0]) - params[2] * (d_theta_e_list[0] - d_theta_t_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-    double force_2 = clip(-1 * params[1] * (theta_e_list[1] - theta_t_list[1]) - params[3] * (d_theta_e_list[1] - d_theta_t_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2; 
+    Vector2d d_angle_t(theta_t_list[0], theta_t_list[1]);   
+    Vector2d d_angle_e(theta_e_list[0], theta_e_list[1]);   
+
+    MatrixXd J_t(2,2), J_e(2,2); 
+
+    Vector2d F_t(0.0, 0.0); 
+    Vector2d torque_t(0.0, 0.0);  
+
+    J_e = Jacobian(theta_e_list[0], theta_e_list[1]);
+    J_t = Jacobian(theta_t_list[0], theta_t_list[1]);  
+    d_pos_t = J_t * d_angle_t; 
+    d_pos_e = J_e * d_angle_e; 
+
+    pos_e = Forward_ik(theta_e_list[0], theta_e_list[1]);  
+    pos_t = Forward_ik(theta_t_list[0], theta_t_list[1]);  
+
+    F_t(0) = -1 * params[0] * (pos_e(0) - pos_t(0)) - params[2] * (d_pos_e(0) - d_pos_t(0));   
+    F_t(1) = -1 * params[1] * (pos_e(1) - pos_t(1)) - params[3] * (d_pos_e(1) - d_pos_t(1));   
+
+    torque_t = J_t.transpose() * F_t;   
+
+    torque_1 = clip(torque_t(0), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
+    torque_2 = clip(torque_t(1), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
 }
 
 
@@ -582,7 +543,7 @@ string angle_path_name, string torque_path_name
 
 	py::buffer_info result_buf = result.request();  
 
-    double *return_list = (double *)result_buf.ptr; 
+    double *return_list = (double *)result_buf.ptr;   
     
     run_on = 1; 
 
@@ -631,12 +592,21 @@ string angle_path_name, string torque_path_name
             /////////////////////////////////////////////////////
             // set torque control command 
             ///////////////////////////////////////////////////// 
+            /// Joint space control
             torque_calculation(
             params,   
             theta_e_list, d_theta_e_list,   
             theta_t_list, d_theta_t_list,   
             torque_1, torque_2   
             );   
+
+            /// Task space control
+            calculate_task_torque( 
+            params,  
+            theta_e_list, d_theta_e_list,  
+            theta_t_list, d_theta_t_list,  
+            torque_1, torque_2  
+            ); 
 
             torque_1_o = torque_1/ctl_ratio_1;     
             torque_2_o = torque_2/ctl_ratio_2;    
