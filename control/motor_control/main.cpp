@@ -447,12 +447,20 @@ double dist_threshold
         /////////////////////////////////////////////////////
         /////// calculate torque control command //////////// 
         ///////////////////////////////////////////////////// 
-        calculate_joint_torque(
+        // calculate_joint_torque(
+        // params,  
+        // theta_e_list, d_theta_e_list,  
+        // theta_t_list, d_theta_t_list,  
+        // torque_1, torque_2  
+        // );  
+
+        /// Task space control
+        calculate_task_torque( 
         params,  
         theta_e_list, d_theta_e_list,  
         theta_t_list, d_theta_t_list,  
         torque_1, torque_2  
-        );  
+        ); 
 
         double torque_1_o = -1 * stiffness_1 * (q_1_list[index] - theta_1_t) - damping_1 * (d_theta_1_e - d_theta_1_t);  
         double torque_2_o = -1 * stiffness_2 * (q_2_list[index] - theta_2_t) - damping_2 * (d_theta_2_e - d_theta_2_t);  

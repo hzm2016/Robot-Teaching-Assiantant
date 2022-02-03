@@ -23,10 +23,10 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])   
 
-Angle_initial = np.array([-0.290392, 0.163629, 1.981514])   
+Angle_initial = np.array([-0.314204, 0.192674, 1.981514])   
 
 # impedance params :::  
-Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])  
+Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])   
 
 
 def set_pen_up():  
@@ -518,17 +518,17 @@ def load_word_path(
 
 if __name__ == "__main__":  
     # =========================================================== 
-    flag_write_word = False   
-    flag_plot_result = False 
-    flag_demo_write = False   
-    flag_hardware_test = False
+    flag_write_word = False    
+    flag_plot_result = False    
+    flag_demo_write = False    
+    flag_hardware_test = True   
 
     write_name = 'yi_20'   
 
-    # motor_control.Jacobian(1.0, 1.0) 
-    J = Jacobian(np.array([1.0, 1.0])) 
-    print("J \n:", J, J.transpose().dot(np.array([0.5, 0.5])), forward_ik(np.array([1.0, 1.0])))
-    motor_control.Cal_torque(1.0, 1.0, 0.5, 0.5)
+    # motor_control.Jacobian(1.0, 1.0)   
+    # J = Jacobian(np.array([1.0, 1.0]))   
+    # print("J \n:", J, J.transpose().dot(np.array([0.5, 0.5])), forward_ik(np.array([1.0, 1.0])))
+    # motor_control.Cal_torque(1.0, 1.0, 0.5, 0.5)   
 
     # =========================================================== 
     if flag_hardware_test:   
@@ -549,8 +549,12 @@ if __name__ == "__main__":
         print("angle :", angle)   
         print("point :", point)   
 
-        # target_point = np.array([0.29, 0.0, 0.0])   
-        # move_to_target_point(target_point, impedance_params=Move_Impedance_Params, velocity=0.05)  
+        target_point = np.array([0.19, 0.0])   
+        move_to_target_point(
+            target_point,  
+            impedance_params=Move_Impedance_Params,  
+            velocity=0.05  
+        )  
         
         # motor_control.read_analog_encoder()  
         # motor_control.phri_get_demonstration(-0.392035, -0.500249, 2.516857, 4.574669, 0.0, 0.0, 0.0, 0.0)  
