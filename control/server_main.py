@@ -127,10 +127,10 @@ def move_to_target_point(
     angle_list, N = path_planning(curr_point[:2], target_point, velocity=velocity)  
     # angle_list = np.loadtxt('angle_list.txt', delimiter=',', skiprows=1)  
 
-    N = angle_list.shape[0]
+    N = angle_list.shape[0] 
 
-    angle_1_list = angle_list[:, 0].copy()  
-    angle_2_list = angle_list[:, 1].copy()  
+    angle_1_list = angle_list[:, 0].copy()   
+    angle_2_list = angle_list[:, 1].copy()   
 
     dist_threshold = 0.05
     done = motor_control.move_to_target_point(
@@ -510,7 +510,7 @@ def load_word_path(
 #     """
 #         Input path :   
 #         Return impedance in joint space :   
-#     """
+#     """  
 #     joint_params = 
 #     return 
 
@@ -550,9 +550,9 @@ if __name__ == "__main__":
         target_point = np.array([0.25, 0.0])   
         move_to_target_point(
             target_point,  
-            # impedance_params=np.array([80.0, 80.0, 5.0, 0.2]) ,  
-            impedance_params=np.array([20.0, 20.0, 2.0, 0.2]) , 
-            velocity=0.05  
+            # impedance_params=np.array([80.0, 80.0, 5.0, 0.2]),   
+            impedance_params=np.array([20.0, 20.0, 2.0, 0.2]),   
+            velocity=0.05    
         )  
         
         angle, point = get_observation()   
