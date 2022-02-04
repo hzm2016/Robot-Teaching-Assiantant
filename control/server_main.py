@@ -127,7 +127,7 @@ def move_to_target_point(
     angle_list, N = path_planning(curr_point[:2], target_point, velocity=velocity)  
     # angle_list = np.loadtxt('angle_list.txt', delimiter=',', skiprows=1)  
 
-    N = angle_list.shape[0] 
+    N = angle_list.shape[0]  
 
     angle_1_list = angle_list[:, 0].copy()   
     angle_2_list = angle_list[:, 1].copy()   

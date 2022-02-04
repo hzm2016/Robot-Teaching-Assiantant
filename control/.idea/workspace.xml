@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c686d4b2-8e57-4ead-a10c-15488c6be441" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/forward_mode/GMR_based_GPR01.py" beforeDir="false" afterPath="$PROJECT_DIR$/forward_mode/GMR_based_GPR01.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/server_main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
