@@ -14,6 +14,7 @@ from .learner import Learner
 from .controller import Controller
 from .utils import load_class
 from .imgprocessor import Postprocessor
+from sklearn.metrics.pairwise import pairwise_distances
 
 
 class Executor(object):
@@ -253,6 +254,26 @@ class Executor(object):
 
         return result
 
+    def fps(self, points,frac):
+        P = np.array(points[0])
+        num_points = int(P.shape[0] * frac)
+        D = pairwise_distances(P, metric='euclidean')
+        N = D.shape[0]
+        #By default, takes the first point in the list to be the
+        #first point in the permutation, but could be random
+        perm = np.zeros(N, dtype=np.int64)
+        lambdas = np.zeros(N)
+        # import random
+        # random.seed(0)
+        # stpt = random.randint(0,N-1)
+        ds = D[0, :]
+        for i in range(1, N):
+            idx = np.argmax(ds)
+            perm[i] = idx
+            lambdas[i] = ds[idx]
+            ds = np.minimum(ds, D[idx, :])
+        return P[perm[:num_points]].tolist()
+
     def merge_keypoints(self, points):
 
         # Find Common Element
@@ -336,7 +357,7 @@ class Executor(object):
 
         while True:
 
-            character = '行'
+            character = '一'
             # input('Please provide a character you want to learn: ')
             written_image = None
 
@@ -385,7 +406,9 @@ class Executor(object):
                             for k in traj:
                                 print(k)
                             traj = [self.merge_keypoints(traj)]
-
+                        # num_points_frac is the fraction of points needs to be sampled
+                        num_points_frac = 0.2
+                        traj = self.fps(traj, num_points_frac)
                         traj_list.append(traj)
 
                     for idx, traj in enumerate(traj_list):
