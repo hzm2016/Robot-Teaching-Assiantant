@@ -2,7 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c686d4b2-8e57-4ead-a10c-15488c6be441" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/stroke_data/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/stroke_data/demonstrated_angle_list.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/stroke_data/demonstrated_torque_list.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/forward_mode/GMR_based_GPR01.py" beforeDir="false" afterPath="$PROJECT_DIR$/forward_mode/GMR_based_GPR01.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/word_preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/word_preprocess.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../core/controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/../core/executor.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,7 +51,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -206,6 +215,7 @@
       <workItem from="1643204649635" duration="60160000" />
       <workItem from="1644068397231" duration="8436000" />
       <workItem from="1644717014584" duration="792000" />
+      <workItem from="1644932593010" duration="8701000" />
     </task>
     <servers />
   </component>

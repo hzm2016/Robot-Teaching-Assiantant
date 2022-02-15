@@ -20,7 +20,9 @@ from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregiona
 from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
 from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 import GPy  
-from utils.word_preprocess import *  
+from utils.word_preprocess import *
+
+from scipy import interpolate
 
 sns.set(font_scale=1.5)  
 np.set_printoptions(precision=5)  
@@ -32,9 +34,19 @@ DIST_THREHOLD = 0.05
 
 FILE_FIG_NAME = './data/predicted_images/'  
 FILE_FONT_NAME = './data/font_data' 
+FILE_TRAIN_NAME = './data/training_data'
+
+ANGLE_1_RANGE = np.array([-1.90, 1.90])
+ANGLE_2_RANGE = np.array([-2.2, 2.5])
+center_shift = np.array([0.15, -WIDTH / 2])
+
+FONT_SIZE = 20
+
+WRITING_Y = [-WIDTH / 2, WIDTH / 2]
+WRITING_X = [0.13, 0.13 + WIDTH]
 
 # initial angle (rad) :::   
-Initial_angle = np.array([-1.31, 1.527])  
+Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])   
 
@@ -138,6 +150,67 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close()
 
 
+def eval_writting(run_on=True, Load_path=False):
+    """
+        eval writting performance :
+    """
+    
+    _server = Server(5005)
+    
+    # ######################################################
+    # ############## wait encoder and motor check ##########
+    # ################### Position calibrate ###############
+    # ######################################################
+    _server.wait_encoder_request()
+    curr_angle, curr_point = get_observation(Angle_initial)
+    _server.send_encoder_check(curr_point)
+    
+    if not Load_path:
+        print("Load stroke path !!!")
+        stroke_angle = np.loadtxt('angle_list_0.txt', delimiter=' ')
+        # N_way_points = stroke_angle.shape[0]
+        # print("N_way_points :", N_way_points)
+    
+    # ######################################################
+    # ############## Wait impedance parameters  ############
+    # ######################################################
+    _server.wait_params_request()
+    
+    # impedance_params = None
+    # while impedance_params is None:
+    # read impedance parameters :::
+    while True:
+        impedance_params = _server.read_params()
+        impedance_params = np.array(impedance_params.copy())
+        
+        if impedance_params is np.NaN:
+            exit()
+        
+        if impedance_params is not None:
+            break
+    
+    time.sleep(1.0)
+    # impedance_params = np.array([35.0, 24.0, 0.0, 0.0])
+    print("Input impedance parameters :::", np.array(impedance_params))
+    print("+" * 50)
+    
+    num_eval = 3
+    for i in range(num_eval):
+        print('Writting episode %d:' % i)
+        if run_on:
+            write_stroke(stroke_points=stroke_angle, impedance_params=np.array([35.0, 30.0, 1.4, 0.2]),
+                         target_point=Initial_point)
+            
+            print("*" * 50)
+            print("Eval one stroke once done !!!")
+        
+        # send movement_done command
+        _server.send_movement_done()
+    
+    motor_control.motor_3_stop()
+    _server.close()
+    
+
 def set_pen_up():  
     """ 
         pull pen up 
@@ -222,7 +295,7 @@ def move_to_target_point(
     target_point, 
     impedance_params=Move_Impedance_Params, 
     velocity=0.05  
-    ):  
+):
     """
         move to target point  
     """ 
@@ -254,11 +327,11 @@ def write_word(word_path, word_params=None, word_name='yi', epi_times=0):
     """
         write a word and plot  
     """
-    for index in range(len(word_path)):   
-        print("*" * 50)   
-        print("*" * 50)   
-        print("Write Stroke %d : "%index)   
-        stroke_points_index = word_path[index]   
+    for index in range(len(word_path)):
+        print("*" * 50)
+        print("*" * 50)
+        print("Write Stroke %d : "%index)
+        stroke_points_index = word_path[index]
 
         if index < (len(word_path) - 1):  
             next_index = index + 1  
@@ -284,13 +357,13 @@ def write_word(word_path, word_params=None, word_name='yi', epi_times=0):
 
 
 def write_stroke(
-                stroke_points=None,   
-                stroke_params=None,   
-                target_point=Initial_point,   
-                word_name='yi',   
-                stroke_name='0',   
-                epi_time=0   
-                ):   
+        stroke_points=None,
+        stroke_params=None,
+        target_point=Initial_point,
+        word_name='yi',
+        stroke_name='0',
+        epi_time=0
+    ):
     way_points = stroke_points  
     Num_way_points = way_points.shape[0]  
 
@@ -302,7 +375,7 @@ def write_stroke(
     # move to target point
     done = set_pen_up()
     # time.sleep(0.5)
-
+    
     done = move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)
     # time.sleep(0.5)
 
@@ -310,22 +383,22 @@ def write_stroke(
     # time.sleep(0.5)
     
     # params_list = np.tile(impedance_params, (Num_way_points, 1))  
-    if stroke_params is None:    
-        exit()  
-    else:  
+    if stroke_params is None:
+        exit()
+    else:
         params_list = stroke_params    
 
     stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_name + '_' + str(epi_time) + '.txt' 
     stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_name + '_' + str(epi_time) + '.txt' 
     done = motor_control.run_one_loop(
-                            way_points[:, 0].copy(), way_points[:, 1].copy(),  
-                            params_list[:, 0].copy(), params_list[:, 1].copy(),  
-                            params_list[:, 2].copy(), params_list[:, 3].copy(),  
-                            Num_way_points,    
-                            Angle_initial[0], Angle_initial[1],    
-                            1,  
-                            stroke_angle_name, stroke_torque_name 
-                        )   
+         way_points[:, 0].copy(), way_points[:, 1].copy(),
+         params_list[:, 0].copy(), params_list[:, 1].copy(),
+         params_list[:, 2].copy(), params_list[:, 3].copy(),
+         Num_way_points,
+         Angle_initial[0], Angle_initial[1],
+         1,
+         stroke_angle_name, stroke_torque_name
+    )
     # print("curr_path_list", curr_path_list.shape)  
     # np.savetxt('curr_path_list.txt', curr_path_list)  
     
@@ -340,123 +413,74 @@ def write_stroke(
     print("Write stroke once done !!!")   
     print("*" * 50)   
 
-    return done 
+    return done
 
 
-def eval_writting(run_on=True, Load_path=False): 
-    """ 
-        eval writting performance : 
-    """
-
-    _server = Server(5005) 
+def eval_stroke(
+    stroke_points=None,
+    stroke_params=None,
+    target_point=Initial_point,
+    word_name='yi',
+    stroke_index='0',
+    epi_time=0
+):
+    Num_way_points = stroke_points.shape[0]
     
-    # ######################################################
-    # ############## wait encoder and motor check ##########
-    # ################### Position calibrate ###############
-    # ######################################################
-    _server.wait_encoder_request()  
-    curr_angle, curr_point = get_observation(Angle_initial)  
-    _server.send_encoder_check(curr_point)  
-
-    if not Load_path: 
-        print("Load stroke path !!!") 
-        stroke_angle = np.loadtxt('angle_list_0.txt', delimiter=' ')    
-        # N_way_points = stroke_angle.shape[0]   
-        # print("N_way_points :", N_way_points)
-
-    # ######################################################
-    # ############## Wait impedance parameters  ############
-    # ###################################################### 
-    _server.wait_params_request()  
-
-    # impedance_params = None  
-    # while impedance_params is None:   
-    # read impedance parameters :::  
-    while True:
-        impedance_params = _server.read_params()  
-        impedance_params = np.array(impedance_params.copy())  
-        
-        if impedance_params is np.NaN: 
-            exit()
-
-        if impedance_params is not None:
-            break
-
-    time.sleep(1.0) 
-    # impedance_params = np.array([35.0, 24.0, 0.0, 0.0]) 
-    print("Input impedance parameters :::", np.array(impedance_params))  
-    print("+"*50)
-
-    num_eval = 3
-    for i in range(num_eval):
-        print('Writting episode %d:'%i)
-        if run_on:
-            write_stroke(stroke_points=stroke_angle, impedance_params=np.array([35.0, 30.0, 1.4, 0.2]), target_point=Initial_point) 
-
-            print("*" * 50)
-            print("Eval one stroke once done !!!")
-        
-        # send movement_done command 
-        _server.send_movement_done() 
+    initial_angle = np.zeros(2)
+    initial_angle[0] = stroke_points[0, 0]
+    initial_angle[1] = stroke_points[0, 1]
+    start_point = forward_ik(initial_angle)
     
-    motor_control.motor_3_stop() 
-    _server.close() 
-     
-
-def eval(stroke_angle, impedance_params=np.array([35.0, 30.0, 0.4, 0.1])):   
-    """ 
-        Write one stroke with given impedance  
-        With previous path data 
-    """ 
-    way_points = stroke_angle
-    N_way_points = way_points.shape[0]
-
-    initial_angle = np.zeros(2)  
-    initial_angle[0] = way_points[0, 0]  
-    initial_angle[1] = way_points[0, 1]  
-    start_point = forward_ik(initial_angle)  
-
     # move to target point
-    set_pen_up()  
-    time.sleep(0.3) 
-
-    move_to_target_point(start_point, Move_Impedance_Params, velocity=0.05)  
+    done = set_pen_up()
+    done = move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)
+    done = set_pen_down()
     
-    time.sleep(0.3)   
-    set_pen_down()  
-
-    motor_control.run_one_loop(impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3], 
-                                    way_points[:, 0].copy(), way_points[:, 1].copy(), N_way_points, 
-                                    Angle_initial[0], Angle_initial[1], 1) 
-
-    time.sleep(0.3) 
-
+    # params_list = np.tile(impedance_params, (Num_way_points, 1))
+    if stroke_params is None:
+        exit()
+    else:
+        params_list = stroke_params
+    
+    stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_index + '_' + str(
+        epi_time) + '.txt'
+    stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_index + '_' + str(
+        epi_time) + '.txt'
+    done = motor_control.run_one_loop(
+        stroke_points[:, 0].copy(), stroke_points[:, 1].copy(),
+        params_list[:, 0].copy(), params_list[:, 1].copy(),
+        params_list[:, 2].copy(), params_list[:, 3].copy(),
+        Num_way_points,
+        Angle_initial[0], Angle_initial[1],
+        1,
+        stroke_angle_name, stroke_torque_name
+    )
+    
     # move to target point
-    set_pen_up() 
-    time.sleep(0.3) 
-    move_to_target_point(Initial_point, Move_Impedance_Params, velocity=0.05) 
-
-    motor_control.motor_3_stop() 
-
-    print("*" * 50) 
-    print("Eval one stroke once done !!!") 
+    done = set_pen_up()
+    
+    done = move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)
+    
+    print("Evaluate Stroke Once Done !!!")
+    print("*" * 50)
+    
+    return done
 
 
 def load_word_path(
     root_path='./data/font_data',  
-    word_name=None,  
-    task_params=None,  
-    joint_params=None  
-    ):  
-
-    # load original training waypoints ::: 
+    word_name=None,
+    task_params=None,
+    joint_params=None
+):
+    # load original training waypoints :::
     word_file = root_path + '/' + word_name + '/'   
     stroke_list_file = glob.glob(word_file + 'angle_list_*txt')   
-    print("Load stroke data %d", len(stroke_list_file))  
+    print("Load stroke data %d", len(stroke_list_file))
 
     word_path = []   
     word_joint_params = []   
-    word_task_params = []   
+    word_task_params = []
     
     for i in range(len(stroke_list_file)):  
         way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')  
@@ -485,121 +509,86 @@ def load_word_path(
             angle_list, stiffness_list, damping_list, 
             save_path=False, save_root='', word_name='yi', stroke_name=0
         )  
-
-        word_task_params.append(joint_params_list)  
-
-    return word_path, word_joint_params, word_task_params  
-
-
-def load_eval_path( 
-    root_path='./data/real_path_data',   
-    word_name=None, 
-    epi_times=5, 
-    num_stroke=1 
-): 
-    # load original eval waypoints ::: 
-    # word_file = root_path + '/' + word_name + '/'   
-    # stroke_list_file = glob.glob(word_file + 'angle_list_*txt')   
-    # print("Load stroke data %d", len(stroke_list_file))   
-    # num_stroke = len(stroke_list_file)
-
-    real_path = []   
-    for i in range(num_stroke):      
-        # load original angle list  
-        real_way_points = np.loadtxt(word_file + 'real_angle_list_' + str(i) + '.txt', delimiter=',', skiprows=1)
-        real_angle_list = np.zeros((real_way_points.shape[0], 2)) 
-        real_angle_list[:, 0] = real_way_points[:, 1]   
-        real_angle_list[:, 1] = real_way_points[:, 4]     
         
-        real_2d_path = forward_ik_path(real_angle_list)   
-        real_path.append(real_2d_path.copy())    
-        np.array(real_path).reshape(np.array(real_path).shape[0] * np.array(real_path).shape[1], 2)  
-        # down_sample = scipy.signal.resample(real_way_points, 100)  
-        # down_sample = real_way_points  
-        
-        # idx = np.arange(0, down_sample.shape[0], down_sample.shape[0]/100).astype('int64')
-        # real_angle_list = np.zeros((idx.shape[0], 2))   
-        # real_angle_list[:, 0] = down_sample[idx, 1]  
-        # real_angle_list[:, 1] = down_sample[idx, 4]   
-        # real_angle_list[:, 0] = scipy.signal.resample(down_sample[:, 1], 100)  
-        # real_angle_list[:, 1] = scipy.signal.resample(down_sample[:, 4], 100) 
+        word_task_params.append(joint_params_list)
 
-    # # load new obs waypoints ::: in writing space
-    # X_obs = np.array([0.05, 0.9, 1.3])[:, None]  # time steps 
-    # x_list_1 = np.array([0.3, 0.37, 0.38])  
-    # y_list_1 = np.array([-0.01, 0.09, 0.15])  
-    # output_dim = 2  
-
-    # x_obs_1, y_obs_1 = \
-    #     scale_translate_process_main(
-    #         x_list_1.copy(), y_list_1.copy(),  
-    #         scale_factor=np.array([100, 100]),  
-    #         trans_value=np.array([0.3, 0.0])   
-    #     )
-    # Y_obs = np.hstack((x_obs_1[:, None], y_obs_1[:, None])).reshape(-1, 2)
-    # # print("x_obs_1", x_obs_1, "Y_obs :", Y_obs)
-    # X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
-    # Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
-
-    return  np.array(real_path)  
+    return word_path, word_joint_params, word_task_params
 
 
-def predict_training_samples(
+def generate_training_path(
     word_name='mu',  
-    stroke_index=3,  
-    re_sample_index=20,  
-    epi_times=5, 
+    stroke_index=3,
+    epi_times=5,  
     num_stroke=4,  
-    # eval_samples, 
-    # training_way_points, 
-    # num_training, 
-    plot=False  
+    plot=False
 ):
-    # ====================== data processing ======================
-    # load evaluation word path from dataset
-    # X_list, Y_list, X, Y, X_obs_list, Y_obs_list, X_obs, Y_obs, Xt, nb_samples, demos_np, nb_data = \
-    #     word_process_main(
-    #         write_name=write_name, 
-    #         stroke_index=stroke_index,  
-    #         file_fig_name=file_fig_name,  
-    #         re_sample_index=re_sample_index,  
-    #         epi_times=epi_times,   
-    #         dt=dt  
-    # )
+    dt = 0.01  
+    font_size = 30
+    input_dim = 1  # time
+    output_dim = 2
+    re_sample_index = 20,
 
-    word_path = cope_real_word_path(
+    # training hyper-parameters
+    in_idx = [0]  
+    out_idx = [1, 2]  
+    nb_states = 6  
+    nb_prior_samples = 10  
+    nb_posterior_samples = 5   
+
+    # ====================== data processing ====================== 
+    word_path = load_real_word_path(
         root_path=FILE_FONT_NAME,  
         word_name=word_name,  
         file_name='real_angle_list_', 
         epi_times=epi_times,  
         num_stroke=num_stroke,   
-        plot=plot 
+        plot=False  
     )
 
     # =====================================================
     ############# process data before prediction ##########
     # =====================================================
+    X_list, Y_list, X, Y, Xt, demos_np, nb_data = eval_data_preprocess(
+        word_path,
+        stroke_index,
+        epi_times=epi_times,
+        re_sample_index=20,
+        dt=0.01, 
+        plot=False 
+    ) 
     
+    # ===================== generate new samples =============
+    # word mu stroke : 0
+    # X_obs = np.array([0.3, 1.0])[:, None]
+    # x_list_1 = np.array([0.27, 0.275])
+    # y_list_1 = np.array([-0.06, 0.07])
     
-    dt = 0.01  
-    font_size = 20  
-    stroke_index = 0  
+    # # word mu stroke : 1
+    # X_obs = np.array([0.15, 1.0])[:, None]
+    # x_list_1 = np.array([0.23, 0.35])
+    # y_list_1 = np.array([-0.01, 0.01])
+    
+    # # word mu stroke : 2
+    # X_obs = np.array([0.05, 1.1])[:, None]
+    # x_list_1 = np.array([0.3, 0.38])
+    # y_list_1 = np.array([-0.03, -0.15])
+    
+    # # word mu stroke : 3
+    X_obs = np.array([0.05, 0.9, 1.3])[:, None]  
+    x_list_1 = np.array([0.3, 0.37, 0.38])  
+    y_list_1 = np.array([-0.01, 0.09, 0.15]) 
 
-    # ===================== generate new samples ===================
-    input_dim = 1  
-    output_dim = 2  
-    in_idx = [0]  
-    out_idx = [1, 2]  
-    nb_states = 6  
-
-    nb_prior_samples = 10  
-    nb_posterior_samples = 5   
+    X_obs_list, Y_obs_list, X_obs, Y_obs = obs_data_preprocess(
+        X_obs, 
+        x_list_1, 
+        y_list_1  
+    )
 
     # ========================================================
     # ========================= GMM ==========================
     # ========================================================
     gmr_model = Gmr(nb_states=nb_states, nb_dim=input_dim + output_dim, in_idx=in_idx, out_idx=out_idx)
-    gmr_model.init_params_kbins(demos_np.T, nb_samples=nb_samples)
+    gmr_model.init_params_kbins(demos_np.T, nb_samples=epi_times) 
     gmr_model.gmm_em(demos_np.T)
 
     # GMR prediction
@@ -608,14 +597,14 @@ def predict_training_samples(
     for i in range(Xt.shape[0]):   
         mu_gmr_tmp, sigma_gmr_tmp, H_tmp = gmr_model.gmr_predict(Xt[i])  
         mu_gmr.append(mu_gmr_tmp)  
-        sigma_gmr.append(sigma_gmr_tmp)
+        sigma_gmr.append(sigma_gmr_tmp)  
 
     mu_gmr = np.array(mu_gmr)
-    sigma_gmr = np.array(sigma_gmr) 
+    sigma_gmr = np.array(sigma_gmr)  
 
     if plot: 
-        plt.figure(figsize=(5, 5))  
-        for p in range(nb_samples):  
+        plt.figure(figsize=(8, 8))  
+        for p in range(epi_times):  
             plt.plot(Y[p * nb_data:(p + 1) * nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
             plt.scatter(Y[p * nb_data, 0], Y[p * nb_data, 1], color=[.7, .7, .7], marker='X', s=50)
         plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
@@ -632,11 +621,12 @@ def predict_training_samples(
         # axes.set_ylim([-10, 10])
         # axes.set_xlim([-15, 15]) 
         # axes.set_ylim([-15, 15]) 
-        plt.xlabel('$x_1$', fontsize=font_size)
-        plt.ylabel('$x_2$', fontsize=font_size)
+        plt.xlabel('$x(m)$', fontsize=font_size)
+        plt.ylabel('$y(m)$', fontsize=font_size)
         plt.locator_params(nbins=3)
         plt.tick_params(labelsize=font_size) 
         plt.tight_layout()
+        plt.title(word_name, fontsize=font_size)
         # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMR_' + word_name + '_stroke_' + str(stroke_index) + '.pdf')
 
         plt.show()
@@ -676,16 +666,16 @@ def predict_training_samples(
     m.optimize('bfgs', max_iters=200, messages=True)
 
     # Print model parameters
-    print(m)
+    print(m)  
 
     # GPR prior (no observations)
     prior_traj = []  
     prior_mean = mf.f(Xtest)[:, 0]  
     prior_kernel = m.kern.K(Xtest)   
     for i in range(nb_prior_samples):  
-        print("prior_kernel :", prior_kernel.shape)  
+        # print("prior_kernel :", prior_kernel.shape)  
         prior_traj_tmp = np.random.multivariate_normal(prior_mean, prior_kernel)
-        print("prior_traj_tmp :", prior_traj_tmp.shape)
+        # print("prior_traj_tmp :", prior_traj_tmp.shape)
         prior_traj.append(np.reshape(prior_traj_tmp, (output_dim, -1)))
     prior_kernel_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
     for i in range(output_dim): 
@@ -721,14 +711,14 @@ def predict_training_samples(
     sigma_gp_rshp = np.zeros((nb_data_test, output_dim, output_dim))
     for i in range(nb_data_test):
         sigma_gp_rshp[i] = np.reshape(sigma_gp_tmp[i, i, :], (output_dim, output_dim))
-    print("sigma_gp_rshp", sigma_gp_rshp.shape)
+    # print("sigma_gp_rshp", sigma_gp_rshp.shape)
 
-    if plot:
-        # Posterior  
-        plt.figure(figsize=(5, 5))
+    if plot:  
+        # Posterior   
+        plt.figure(figsize=(8, 8))  
         plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
         plot_gmm(mu_gp_rshp, sigma_gp_rshp, alpha=0.05, color=[0.83, 0.06, 0.06])
-        for i in range(nb_posterior_samples):
+        for i in range(nb_posterior_samples):  
             plt.plot(mu_posterior[i][0], mu_posterior[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
             plt.scatter(mu_posterior[i][0, 0], mu_posterior[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
 
@@ -743,25 +733,142 @@ def predict_training_samples(
         # axes.set_ylim([-10, 10])  
         # axes.set_xlim([-15, 15])
         # axes.set_ylim([-15, 15])
-        plt.xlabel('$x_1$', fontsize=font_size)  
-        plt.ylabel('$x_2$', fontsize=font_size)  
+        plt.xlabel('$x(m)$', fontsize=font_size)  
+        plt.ylabel('$y(m)$', fontsize=font_size)  
         plt.locator_params(nbins=3)  
         plt.tick_params(labelsize=font_size)  
         plt.tight_layout()   
         # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMRbGP_' + word_name + '_stroke_' + str(
         #     stroke_index) + '_posteriors.pdf')   
         plt.show() 
+    
+    print("generated trajectories :", np.array(mu_posterior).shape)
+    folder_name = FILE_TRAIN_NAME + '/' + word_name
+    if os.path.exists(folder_name):
+        pass 
+    else: 
+        os.makedirs(folder_name) 
+    np.save(folder_name + '/training_stroke_' + str(stroke_index) + '_samples.npy', np.array(mu_posterior))
+    return mu_posterior
 
-    return 
 
+def training_samples_to_waypoints(
+    word_name='mu',
+    stroke_index=0,
+    Num_waypoints=10000,
+    task_params=None,
+    joint_params=None,
+    plot=True
+):
+    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + 'training_samples.npy'
+    training_samples = np.load(folder_name)
+    angle_list = np.zeros((Num_waypoints, 2))
+    
+    nb_posterior_samples = training_samples.shape[0]
+    data_sample = training_samples.shape[2]
+    index = np.linspace(0, data_sample-1, data_sample)
+    index_list = np.linspace(0, data_sample-1, Num_waypoints)
+    print("training_samples :", training_samples.shape, data_sample, index.shape, training_samples[0][0].shape)
+    # x_list = np.linspace(training_samples[0][0][0], training_samples[0][0][-1], Num_waypoints)
+    # x_list = np.linspace(training_samples[0][0][0], training_samples[0][0][-1], Num_waypoints)
+    x_list_ori, y_list_ori = de_scale_translate_process_main(training_samples[0][0], training_samples[0][1])
+    
+    fx = interpolate.interp1d(index, x_list_ori, kind='linear')
+    fy = interpolate.interp1d(index, y_list_ori, kind='linear')
+    x_list = fx(index_list)
+    y_list = fy(index_list)
+    
+    if plot:
+        # Posterior
+        plt.figure(figsize=(8, 8))
+        # for i in range(nb_posterior_samples):
+        #     plt.plot(training_samples[i][0], training_samples[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
+        #     plt.scatter(training_samples[i][0, 0], training_samples[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
+        plt.plot(x_list, y_list)
+        axes = plt.gca()
+        axes.set_xlim(WRITING_X)
+        axes.set_ylim(WRITING_Y)
+        # # axes.set_xlim([-10, 10])
+        # axes.set_ylim([-10, 10])
+        # axes.set_xlim([-15, 15])
+        # axes.set_ylim([-15, 15])
+        plt.xlabel('$x(m)$', fontsize=FONT_SIZE)
+        plt.ylabel('$y(m)$', fontsize=FONT_SIZE)
+        plt.locator_params(nbins=3)
+        plt.tick_params(labelsize=FONT_SIZE)
+        plt.tight_layout()
+        plt.title(word_name, fontsize=FONT_SIZE)
+        # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMRbGP_' + word_name + '_stroke_' + str(
+        #     stroke_index) + '_posteriors.pdf')
+        plt.show()
+    
+    for i in range(Num_waypoints):
+        angle = IK(np.array([x_list[i], y_list[i]]))
+        angle_list[i, :] = angle
+    
+    max_angle_1 = np.max(angle_list[:, 0])
+    max_angle_2 = np.max(angle_list[:, 1])
+    print("Max angle 1 (rad) :", max_angle_1)
+    print("Max angle 2 (rad):", max_angle_2)
+    
+    if max_angle_1 < ANGLE_1_RANGE[0] or max_angle_1 > ANGLE_1_RANGE[1]:
+        print("!!!!!! angle 1 is out of range !!!!!")
+        print("max angle 1 :::", max_angle_1)
+        exit()
+
+    if max_angle_2 < ANGLE_2_RANGE[0] or max_angle_2 > ANGLE_2_RANGE[1]:
+        print("!!!!!! angle 1 is out of range !!!!!")
+        print("max angle 2 :::", max_angle_2)
+        exit()
+
+    load_impedance_list(
+        word_name=word_name,
+        stroke_index=0,
+        desired_angle_list=angle_list,
+        current_angle_list=angle_list,
+        joint_params=joint_params,
+        task_params=task_params
+    )
+        
+    return angle_list
+
+
+def load_impedance_list(
+        word_name='mu',
+        stroke_index=0,
+        desired_angle_list=None,
+        current_angle_list=None,
+        joint_params=None,
+        task_params=None
+):
+    way_points = desired_angle_list
+    N_way_points = way_points.shape[0]
+    print("N_way_points :", N_way_points)
+    
+    # joint parameters
+    if joint_params is not None:
+        joint_params_list = np.tile(joint_params, (way_points.shape[0], 1))
+    else:
+        joint_params_list = np.loadtxt(FILE_TRAIN_NAME + '/' + word_name + '/' + 'params_stroke_list_' + str(stroke_index) + '.txt', delimiter=' ')
+    
+    # task parameters
+    if task_params is not None:
+        task_params_list = np.tile(task_params, (way_points.shape[0], 1))
+    else:
+        task_params_list = np.loadtxt(FILE_TRAIN_NAME + '/' + word_name + '/' + 'params_stroke_list_' + str(stroke_index) + '.txt', delimiter=' ')
+    
+    stiffness_list = task_params_list[:, :2]
+    damping_list = task_params_list[:, 2:]
+    joint_params_list = generate_stroke_stiffness_path(
+        desired_angle_list, stiffness_list, damping_list,
+        save_path=False, save_root=FILE_TRAIN_NAME, word_name=word_name, stroke_index=stroke_index
+    )
+    
+    return joint_params_list
 
 
 def main(args):
-        # =========================================================== 
-    flag_write_word = False    
-    flag_plot_result = False    
-    flag_demo_write = False    
-    flag_hardware_test = True   
+    # ===========================================================
 
     write_name = 'yi_20'   
 
@@ -793,9 +900,9 @@ def main(args):
         print("angle :", angle)   
         print("point :", point)   
 
-        # stiff_joint, damping_joint = Stiff_convert(np.array([0.5, 0.5]), 
-        # np.diag([40, 40]), np.diag([1.0, 1.0]))  
-        # print("stiff_joint :", stiff_joint)   
+        # stiff_joint, damping_joint = Stiff_convert(np.array([0.5, 0.5])
+        # np.diag([40, 40]), np.diag([1.0, 1.0]))
+        # print("stiff_joint :", stiff_joint)
         # print("damping_joint :", damping_joint) 
         # motor_control.Convert_stiffness(40.0, 40.0, 0.5, 0.5)
     # =========================================================== 
@@ -808,11 +915,13 @@ def main(args):
 
         # evaluation writing  
         for i in range(eval_times):   
+            # word 
             write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)   
+            # stroke
 
     # ===========================================================
     if args.eval == True:   
-        eval_times = 5  
+        eval_times = 1
         word_path, word_params, real_path = load_word_path(
             word_name=write_name,   
             joint_params=np.array([20, 20, 1, 0.5])    
@@ -821,13 +930,18 @@ def main(args):
         # evaluation writing  
         for i in range(eval_times):   
             # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)  
-            get_demo_writting()  
+            eval_stroke(
+                stroke_points=None,
+                stroke_params=None,
+                target_point=Initial_point,
+                word_name='yi',
+                stroke_index='0',
+                epi_time=0
+            )
 
     
-    # =========================================================== 
+    # ===========================================================
     if args.plot_word == True:
-        
-        pass
 
         # plot_real_stroke_2d_path(
         #     root_path='./data/font_data/xing/', 
@@ -846,12 +960,13 @@ def main(args):
         #     skiprows=1
         # ) 
         
-        word_path, word_joint_params, word_task_params, real_path = load_word_path(
-            word_name=write_name,   
-            task_params=np.array([150, 150, 1, 0.5]), 
-            joint_params=np.array([20, 20, 1, 0.5])    
+        word_path, word_joint_params, word_task_params= \
+            load_word_path(
+                word_name=write_name,
+                task_params=np.array([150, 150, 1, 0.5]),
+                joint_params=np.array([20, 20, 1, 0.5])
         )  
-
+        
         print("task", np.array(word_joint_params[0]).shape)
         plot_impedance_path(
             word_joint_params=word_joint_params,
@@ -946,13 +1061,26 @@ if __name__ == "__main__":
     #     epi_times=5 
     # ) 
 
-    word_path = cope_real_word_path(
-        root_path='./data/font_data',  
-        word_name='mu',  
-        file_name='real_angle_list_', 
-        epi_times=5,  
-        num_stroke=4,   
-        plot=True
-    )
+    # word_path = cope_real_word_path(
+    #     root_path='./data/font_data',  
+    #     word_name='mu',  
+    #     file_name='real_angle_list_', 
+    #     epi_times=5,  
+    #     num_stroke=4,   
+    #     plot=True
+    # )
     # print(trajectory_list.shape)
+
+    # predict_training_samples(
+    #     word_name='mu',
+    #     stroke_index=0,
+    #     re_sample_index=20,
+    #     epi_times=5,
+    #     num_stroke=4,
+    #     plot=True
+    # )
+
+    training_samples_to_waypoints(
+        word_name='mu'
+    )
 

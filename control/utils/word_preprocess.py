@@ -1,18 +1,11 @@
-import numpy as np
-import math
-import os
-from path_planning.plot_path import *
-from path_planning.path_generate import *
-import time
-import glob
-import scipy
 import matplotlib.pyplot as plt
-from forward_mode.utils.gmr import Gmr, plot_gmm
+import numpy as np
+from forward_mode.utils.gmr import Gmr
+# from motor_control.pybind11.tests.conftest import Output
+from path_planning.path_generate import *
+# from forward_mode.GMR_based_GPR01 import X_list, Y_list
+from path_planning.plot_path import *
 
-# filter
-from scipy import signal
-
-from path_planning.romi.romi import trajectory
 
 sns.set(font_scale=2.5)
 np.set_printoptions(precision=5)
@@ -27,6 +20,9 @@ Ts = 0.001
 # writing space
 WIDTH = 0.360
 HEIGHT = 0.360
+
+SCALE_FACTOR = np.array([100, 100])
+TRANS_VALUE = np.array([0.3, 0.0])
 
 
 def scale_translate_process_main(
@@ -46,12 +42,31 @@ def scale_translate_process_main(
     return X_list, Y_list
 
 
-def cope_real_word_path(
+def de_scale_translate_process_main(
+    X_list, Y_list,
+    scale_factor=SCALE_FACTOR,
+    trans_value=TRANS_VALUE
+):
+    """
+        scale original data
+    """
+    X_list = X_list/scale_factor[0]
+    Y_list = Y_list/scale_factor[1]
+    
+    X_list = X_list + trans_value[0]
+    Y_list = Y_list + trans_value[1]
+    
+    # X_list = X_list * scale_factor[0]
+    # Y_list = Y_list * scale_factor[1]
+    return X_list, Y_list
+
+
+def load_real_word_path(
     root_path=None,   
     word_name='mu',  
     file_name='real_angle_list_',  
     epi_times=1,  
-    num_stroke=3, 
+    num_stroke=3,
     plot=True
 ): 
     delimiter=','  
@@ -65,7 +80,6 @@ def cope_real_word_path(
                 delimiter=delimiter,
                 skiprows=skiprows 
                 )
-
             # angle_list : desired and real-time
             angle_list_1_e = angle_list[:, 0]
             angle_list_2_e = angle_list[:, 3]
@@ -88,30 +102,118 @@ def cope_real_word_path(
     return word_path   
 
 
-def data_preprocess(
-    word_path,
-    stroke_index
+def eval_data_preprocess(
+    word_path, 
+    stroke_index, 
+    epi_times=5, 
+    re_sample_index=20,
+    dt=0.01, 
+    plot=False
 ):
+    """
+        get data for one stroke
+    """
+    output_dim = 2 
+    stroke_path = np.array(word_path[stroke_index]) 
+    # print("stroke path :", stroke_path.shape) 
+    x_list = stroke_path[:, :, 2]
+    y_list = stroke_path[:, :, 3]
 
-    x_list, y_list = 
-
-    # scale data to be estimated
+    # # scale data to be estimated 
     x_list, y_list = \
         scale_translate_process_main(
             x_list, y_list,
-            scale_factor=np.array([100, 100]),
-            trans_value=np.array([0.3, 0.0])  
+            scale_factor=SCALE_FACTOR,
+            trans_value=TRANS_VALUE
     )  
 
+    # down sampling 
+    x_down_list = [] 
+    y_down_list = []  
+    for i in range(len(x_list)):  
+        x_down_list.append(x_list[i][::re_sample_index])    
+        y_down_list.append(y_list[i][::re_sample_index])    
+    print('x_list shape :', np.array(x_down_list).shape, 'y list shape :', np.array(y_down_list).shape)
+
+    # demos = np.zeros_like(x_down_list[0])
+    nb_data = x_down_list[0].shape[0]
+
+    # Create time data
+    demos_t = [np.arange(x_down_list[i].shape[0])[:, None] for i in range(epi_times)]
+    # print("demos_t :", demos_t)
+
+    # Stack time and position data
+    demos_tx = [np.hstack([demos_t[i] * dt, x_down_list[i][:, None], y_down_list[i][:, None]]) for i in
+                range(epi_times)]
+    # print("demos_tx :", demos_tx)
+
+    # Stack demos
+    demos_np = demos_tx[0]
+    for i in range(1, epi_times):
+        demos_np = np.vstack([demos_np, demos_tx[i]])
+
+    X = demos_np[:, 0][:, None]   
+    Y = demos_np[:, 1:]
+
+    # Train data for GPR
+    X_list = [np.hstack((X, X)) for i in range(output_dim)]   
+    Y_list = [Y[:, i][:, None] for i in range(output_dim)]     
+
+    Xt = dt * np.arange(nb_data)[:, None]
+    print("=====================================================") 
+    print("Process Data Done!!!") 
+    print("X_list :", np.array(X_list).shape, "Y_list :", np.array(Y_list).shape, "Demo Data :", np.array(demos_np).shape)
+
+    if plot:
+        fig = plt.figure(figsize=(8, 8))  
+        for p in range(epi_times):
+            plt.plot(Y[p * nb_data:(p + 1) * nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
+            plt.plot(Y[p * nb_data, 0], Y[p * nb_data, 1], color=[.7, .7, .7], marker='o')
+        
+            # plot_gmm(np.array(gmr_model.mu)[:, 1:], np.array(gmr_model.sigma)[:, 1:, 1:], alpha=0.6, color=[0.1, 0.34, 0.73])
+        axes = plt.gca()
+        axes.set_xlim([-14., 14.])
+        axes.set_ylim([-14., 14.])
+        plt.xlabel('$x(m)$', fontsize=30)  
+        plt.ylabel('$y(m)$', fontsize=30)  
+        plt.locator_params(nbins=3)  
+        plt.tick_params(labelsize=20)  
+        plt.tight_layout()   
+        # plt.savefig(file_name + '/figures/GMM_B.png')  
+        plt.show()  
+    return X_list, Y_list, X, Y, Xt, demos_np, nb_data
+
+
+def obs_data_preprocess(
+    X_obs,
+    x_list_1,
+    y_list_1
+):
+    output_dim = 2
+    x_obs_1, y_obs_1 = \
+    scale_translate_process_main(
+        x_list_1.copy(), y_list_1.copy(),  
+        scale_factor=SCALE_FACTOR,
+        trans_value=TRANS_VALUE
+    )
+    
+    Y_obs = np.hstack((x_obs_1[:, None], y_obs_1[:, None])).reshape(-1, 2)
+    # print("x_obs_1", x_obs_1, "Y_obs :", Y_obs)
+    X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
+    Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
+
+    return X_obs_list, Y_obs_list, X_obs, Y_obs
+
 def GMR(
-        all_data,
-        index_list,
-        word_name='mu',
-        label_1='$F_x$',
-        label_2='$F_y$',
-        label_y='Velocity(m/s)',  # Force(N)
-        file_name='velocity'
-):  # epi_times x
+    all_data,
+    index_list,
+    word_name='mu',
+    label_1='$F_x$',
+    label_2='$F_y$',
+    label_y='Velocity(m/s)',  # Force(N)
+    file_name='velocity'
+):  
+    # epi_times x
     dt = 0.001
     input_dim = 1
     output_dim = 2
@@ -151,8 +253,8 @@ def GMR(
     sigma_gmr = []
     for i in range(Xt.shape[0]):
         mu_gmr_tmp, sigma_gmr_tmp, H_tmp = gmr_model.gmr_predict(Xt[i])
-        mu_gmr.append(mu_gmr_tmp)
-        sigma_gmr.append(sigma_gmr_tmp)
+        mu_gmr.append(mu_gmr_tmp)  
+        sigma_gmr.append(sigma_gmr_tmp)  
 
     mu_gmr = np.array(mu_gmr)
     sigma_gmr = np.array(sigma_gmr)

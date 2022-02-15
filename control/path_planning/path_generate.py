@@ -71,20 +71,22 @@ def transform_task_space(x_list, y_list, offset=np.array([0.0, 0.0])):
 
 
 def generate_stroke_stiffness_path(
-        angle_list, stiffness_list, damping_list,
-        save_path=False, save_root='', word_name='yi', stroke_name=0
+    angle_list, stiffness_list, damping_list,
+    save_path=False,
+    save_root='',
+    word_name='yi', stroke_index=0
 ):  
     """
-    :param angle_list:
-    :param stiffness_list:
-    :param damping_list:
-    :return:
+        :param angle_list:
+        :param stiffness_list:
+        :param damping_list:
+        :return:
     """
     stiff_joint_list = []
     damping_joint_list = []
-    for i in range(angle_list.shape[0]):  
-        stiff_task = np.diag(stiffness_list[i, :]).copy()    
-        damping_task = np.diag(damping_list[i, :]).copy()    
+    for i in range(angle_list.shape[0]):
+        stiff_task = np.diag(stiffness_list[i, :]).copy()
+        damping_task = np.diag(damping_list[i, :]).copy()
         
         stiff_joint, damping_joint = Stiff_convert(angle_list[i, :], stiff_task, damping_task)  
         
@@ -94,11 +96,11 @@ def generate_stroke_stiffness_path(
 
     params_list = np.hstack((stiff_joint_list, damping_joint_list))   
     print("params_list :", params_list.shape)   
-    # if save_path:   
-    #     np.savetxt(save_root + '/' + word_name + '/' + 'params_list_' + str(stroke_name) + '.txt',
-    #                params_list, fmt='%.05f')   
+    if save_path:
+        np.savetxt(save_root + '/' + word_name + '/' + 'params_stroke_list_' + str(stroke_index) + '.txt',
+                   params_list, fmt='%.05f')
 
-    return params_list   
+    return params_list
 
 
 def generate_stroke_path(
