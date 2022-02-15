@@ -55,8 +55,8 @@ if __name__ == "__main__":
 	folder_name = './data/predicted_images/' + write_name
 	if os.path.exists(folder_name):
 		pass
-	else:
-		os.makedirs(folder_name)
+	else:  
+		os.makedirs(folder_name)  
 	
 	x_down_list = []
 	y_down_list = []
@@ -76,9 +76,9 @@ if __name__ == "__main__":
 	print("demos_tx :", demos_tx)
 
 	# Stack demos
-	demos_np = demos_tx[0]
-	for i in range(1, epi_times):
-		demos_np = np.vstack([demos_np, demos_tx[i]])
+	demos_np = demos_tx[0] 
+	for i in range(1, epi_times):  
+		demos_np = np.vstack([demos_np, demos_tx[i]])  
 
 	X = demos_np[:, 0][:, None]
 	Y = demos_np[:, 1:]

@@ -21,7 +21,7 @@ np.set_printoptions(precision=5)
 
 
 if __name__ == "__main__":
-	file_fig_name = './data/predicted_images/'
+	file_fig_name = './data/predicted_images/'  
 	write_name = 'ren'
 	stroke_num = 2
 	stroke_index = 0

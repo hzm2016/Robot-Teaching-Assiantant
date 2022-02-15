@@ -18,12 +18,12 @@ from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 
 
 def cope_real_word_path(
-        root_path=None,
-        file_name='mu',
-        stroke_index=1,
-        epi_times=1,
-        delimiter=' ',
-        skiprows=1,
+    root_path=None,  
+    file_name='mu',  
+    stroke_index=1,  
+    epi_times=1,  
+    delimiter=' ',  
+    skiprows=1,  
 ):
     Length = [0.30, 0.150, 0.25, 0.125]
     L_1 = Length[0]
@@ -65,9 +65,9 @@ def cope_real_word_path(
 
 
 def scale_translate_process_main(
-        X_list, Y_list,
-        scale_factor=np.array([1.0, 1.0]),
-        trans_value=np.array([0.0, 0.0])
+    X_list, Y_list,  
+    scale_factor=np.array([1.0, 1.0]),   
+    trans_value=np.array([0.0, 0.0])   
 ):
     """
         process original data
@@ -82,9 +82,9 @@ def scale_translate_process_main(
 
 
 def word_process_main(
-    write_name='ren_10',
-    stroke_index=1,
-    file_fig_name='./data/predicted_images/',
+    write_name='ren_10',  
+    stroke_index=1,  
+    file_fig_name='./data/predicted_images/',  
     re_sample_index=20,
     epi_times=5,
     dt=0.01
@@ -94,7 +94,7 @@ def word_process_main(
     in_idx = [0]
     out_idx = [1, 2]
 
-    nb_data_sup = 0
+    nb_data_sup = 0 
 
     # =====================================================
     ############# process data before prediction ##########
@@ -113,8 +113,8 @@ def word_process_main(
         scale_translate_process_main(
             x_list, y_list,
             scale_factor=np.array([100, 100]),
-            trans_value=np.array([0.3, 0.0])
-        )
+            trans_value=np.array([0.3, 0.0])  
+        )  
     
     print("x_list :", x_list.shape, len(x_list))
     
@@ -127,8 +127,8 @@ def word_process_main(
     x_down_list = []
     y_down_list = []
     for i in range(len(x_list)):
-        x_down_list.append(x_list[i][::re_sample_index])
-        y_down_list.append(y_list[i][::re_sample_index])
+        x_down_list.append(x_list[i][::re_sample_index])   
+        y_down_list.append(y_list[i][::re_sample_index])   
     
     print('x_list shape :', np.array(x_down_list).shape, 'y list shape :', np.array(y_down_list).shape)
     
@@ -149,8 +149,8 @@ def word_process_main(
     for i in range(1, epi_times):
         demos_np = np.vstack([demos_np, demos_tx[i]])
 
-    X = demos_np[:, 0][:, None]
-    Y = demos_np[:, 1:]
+    X = demos_np[:, 0][:, None]  
+    Y = demos_np[:, 1:]  
     
     # Train data for GPR
     X_list = [np.hstack((X, X)) for i in range(output_dim)]
@@ -160,7 +160,7 @@ def word_process_main(
     print("X shape :", X.shape, "Y shape :", Y.shape, "Xt :", Xt.shape, "demos_np :", demos_np.shape)
 
     # word : yi
-    # X_obs = np.array([0.25, 0.60, 1.3, 1.75])[:, None]
+    # X_obs = np.array([0.25, 0.60, 1.3, 1.75])[:, None]  
     # x_list_1 = np.array([0.32, 0.315, 0.315, 0.35])
     # y_list_1 = np.array([-0.11, -0.03, 0.05, 0.14])
     
@@ -191,15 +191,15 @@ def word_process_main(
     # y_list_1 = np.array([-0.03, -0.15])
     
     # # word mu stroke : 3
-    X_obs = np.array([0.05, 0.9, 1.3])[:, None]
-    x_list_1 = np.array([0.3, 0.37, 0.38])
-    y_list_1 = np.array([-0.01, 0.09, 0.15])
+    X_obs = np.array([0.05, 0.9, 1.3])[:, None]  
+    x_list_1 = np.array([0.3, 0.37, 0.38])  
+    y_list_1 = np.array([-0.01, 0.09, 0.15])  
     
     x_obs_1, y_obs_1 = \
         scale_translate_process_main(
-            x_list_1.copy(), y_list_1.copy(),
-            scale_factor=np.array([100, 100]),
-            trans_value=np.array([0.3, 0.0])
+            x_list_1.copy(), y_list_1.copy(),  
+            scale_factor=np.array([100, 100]),  
+            trans_value=np.array([0.3, 0.0])  
         )
     Y_obs = np.hstack((x_obs_1[:, None], y_obs_1[:, None])).reshape(-1, 2)
     # print("x_obs_1", x_obs_1, "Y_obs :", Y_obs)
@@ -265,24 +265,24 @@ def ori_word_process():
 
 if __name__ == '__main__':
     # ====================== data processing ======================
-    write_name = 'mu'
-    # write_name = 'B'
-    stroke_index = 3
-    file_fig_name = './data/predicted_images/'
-    re_sample_index = 20
-    epi_times = 5
-    dt = 0.01
+    write_name = 'mu' 
+    # write_name = 'B' 
+    stroke_index = 3 
+    file_fig_name = './data/predicted_images/'  
+    re_sample_index = 20  
+    epi_times = 5  
+    dt = 0.01 
     
     # word path from our dataset
     X_list, Y_list, X, Y, X_obs_list, Y_obs_list, X_obs, Y_obs, Xt, nb_samples, demos_np, nb_data = \
         word_process_main(
-            write_name=write_name,
-            stroke_index=stroke_index,
-            file_fig_name=file_fig_name,
-            re_sample_index=re_sample_index,
-            epi_times=epi_times,
+            write_name=write_name, 
+            stroke_index=stroke_index, 
+            file_fig_name=file_fig_name, 
+            re_sample_index=re_sample_index, 
+            epi_times=epi_times, 
             dt=dt
-        )
+    )
     
     # load data from letter B
     # X_list, Y_list, X, Y, X_obs_list, Y_obs_list, X_obs, Y_obs, Xt, nb_samples, demos_np, nb_data = \
@@ -296,7 +296,7 @@ if __name__ == '__main__':
     nb_states = 6
 
     nb_prior_samples = 10
-    nb_posterior_samples = 5
+    nb_posterior_samples = 5 
 
     # ------------------------ plot figure ------------------------
     font_size = 25

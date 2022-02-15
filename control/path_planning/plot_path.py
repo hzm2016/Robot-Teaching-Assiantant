@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy as np
 # from path_planning.path_generate import *
 from matplotlib.animation import FuncAnimation
-from control.path_planning.utils import Jacobian
+from path_planning.utils import Jacobian
 from scipy import signal
 
 """ ================================= Plot result ===================================== """
@@ -281,11 +281,11 @@ def plot_real_error_path(
 
 
 def plot_real_stroke_2d_path(
-        root_path='./motor_control/bin/data/',
-        file_name='',
-        stroke_num=1,
-        delimiter=',',
-        skiprows=1
+    root_path='./motor_control/bin/data/',
+    file_name='',
+    stroke_num=1,
+    delimiter=',',
+    skiprows=1
 ):
     """
         plot angle trajectory and cartesian path
@@ -341,12 +341,12 @@ def plot_real_stroke_2d_path(
 
 
 def plot_real_word_2d_path(
-        root_path=None,
-        file_name='mu', 
-        stroke_num=1, 
-        epi_time=1, 
-        delimiter=' ', 
-        skiprows=0,
+    root_path=None,
+    file_name='mu', 
+    stroke_num=1, 
+    epi_time=1, 
+    delimiter=' ', 
+    skiprows=0,
 ):
     """
         plot angle trajectory and cartesian path
@@ -455,29 +455,29 @@ def plot_real_osc_2d_path(
     osc_list
 ):
     """
-            plot angle trajectory and cartesian path
-        """
+        Plot writing trajectory in cartesian space
+    """
     FONT_SIZE = 28
-    linewidth = 4
+    linewidth = 4 
     
     fig = plt.figure(figsize=(10, 10))
     osc_list = np.array(osc_list)
     
-    plt.subplot(1, 1, 1)
+    plt.subplot(1, 1, 1) 
     for i in range(osc_list.shape[0]):
-        # x_e = osc_list[i, :, 0]
-        # y_e = osc_list[i, :, 1]
         x_e = osc_list[i][:, 0]
         y_e = osc_list[i][:, 1]
+        x_t = osc_list[i][:, 2] 
+        y_t = osc_list[i][:, 3] 
+        print('x_t', x_t, 'y_t', y_t)
         plt.plot(x_e, y_e, linewidth=linewidth, label='desired')
-        # plt.plot(x_t, y_t, linewidth=linewidth, label='real')
+        plt.plot(x_t, y_t, linewidth=linewidth, label='real')
     
-    plt.xlabel('x(m)', fontsize=FONT_SIZE)
-    plt.ylabel('y(m)', fontsize=FONT_SIZE)
+    plt.xlabel('$x(m)$', fontsize=FONT_SIZE)
+    plt.ylabel('$y(m)$', fontsize=FONT_SIZE)
     plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0.13, 0.13 + WIDTH])
-    # plt.ylim([0, 128])
-    # plt.xlim([0, 128])
+    plt.xlim([0.13, 0.13 + WIDTH]) 
+    plt.legend()
     
     plt.show()
 
