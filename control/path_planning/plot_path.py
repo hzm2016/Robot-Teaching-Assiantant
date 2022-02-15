@@ -453,32 +453,34 @@ def plot_real_2d_demo_path(
 
 
 def plot_real_osc_2d_path(
-    osc_list
+    osc_list, 
+    linewidth=1,  
 ):
     """
         Plot writing trajectory in cartesian space
     """
     FONT_SIZE = 28
-    linewidth = 4 
     
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(8, 8))
     osc_list = np.array(osc_list)
     
     plt.subplot(1, 1, 1) 
     for i in range(osc_list.shape[0]):
-        x_e = osc_list[i][:, 0]
-        y_e = osc_list[i][:, 1]
-        x_t = osc_list[i][:, 2] 
-        y_t = osc_list[i][:, 3] 
-        print('x_t', x_t, 'y_t', y_t)
-        plt.plot(x_e, y_e, linewidth=linewidth, label='desired')
-        plt.plot(x_t, y_t, linewidth=linewidth, label='real')
+        for j in range(osc_list.shape[1]):
+            x_e = osc_list[i, j][:, 0]
+            y_e = osc_list[i, j][:, 1]
+            x_t = osc_list[i, j][:, 2] 
+            y_t = osc_list[i, j][:, 3] 
+            plt.plot(x_e, y_e, linewidth=linewidth+2, color='black', label='desired')
+            plt.plot(x_t, y_t, linewidth=linewidth, label='real')
     
     plt.xlabel('$x(m)$', fontsize=FONT_SIZE)
     plt.ylabel('$y(m)$', fontsize=FONT_SIZE)
+    plt.tick_params(labelsize=FONT_SIZE)
     plt.ylim([-WIDTH / 2, WIDTH / 2])
     plt.xlim([0.13, 0.13 + WIDTH]) 
-    plt.legend()
+    plt.tight_layout()
+    # plt.legend()
     
     plt.show()
 

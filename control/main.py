@@ -1,4 +1,5 @@
 from pickle import FALSE
+from matplotlib.pyplot import plot
 from numpy.core.arrayprint import format_float_scientific 
 from protocol.task_interface import *  
 import numpy as np  
@@ -30,6 +31,7 @@ action_dim = 3
 DIST_THREHOLD = 0.05  
 
 FILE_FIG_NAME = './data/predicted_images/'  
+FILE_FONT_NAME = './data/font_data' 
 
 # initial angle (rad) :::   
 Initial_angle = np.array([-1.31, 1.527])  
@@ -542,199 +544,215 @@ def load_eval_path(
     return  np.array(real_path)  
 
 
-# def predict_training_samples(
-#     word_name='mu',  
-#     stroke_index=3,  
-#     re_sample_index=20,   
-#     epi_times = 5, 
-#     # eval_samples, 
-#     # training_way_points, 
-#     # num_training, 
-#     plot=False 
-# ):
-#     # ====================== data processing ======================
-#     # word path from our dataset
-#     X_list, Y_list, X, Y, X_obs_list, Y_obs_list, X_obs, Y_obs, Xt, nb_samples, demos_np, nb_data = \
-#         word_process_main(
-#             write_name=write_name, 
-#             stroke_index=stroke_index,  
-#             file_fig_name=file_fig_name,  
-#             re_sample_index=re_sample_index,  
-#             epi_times=epi_times,   
-#             dt=dt  
-#     )
+def predict_training_samples(
+    word_name='mu',  
+    stroke_index=3,  
+    re_sample_index=20,  
+    epi_times=5, 
+    num_stroke=4,  
+    # eval_samples, 
+    # training_way_points, 
+    # num_training, 
+    plot=False  
+):
+    # ====================== data processing ======================
+    # load evaluation word path from dataset
+    # X_list, Y_list, X, Y, X_obs_list, Y_obs_list, X_obs, Y_obs, Xt, nb_samples, demos_np, nb_data = \
+    #     word_process_main(
+    #         write_name=write_name, 
+    #         stroke_index=stroke_index,  
+    #         file_fig_name=file_fig_name,  
+    #         re_sample_index=re_sample_index,  
+    #         epi_times=epi_times,   
+    #         dt=dt  
+    # )
+
+    word_path = cope_real_word_path(
+        root_path=FILE_FONT_NAME,  
+        word_name=word_name,  
+        file_name='real_angle_list_', 
+        epi_times=epi_times,  
+        num_stroke=num_stroke,   
+        plot=plot 
+    )
+
+    # =====================================================
+    ############# process data before prediction ##########
+    # =====================================================
     
-#     dt = 0.01 
-#     font_size = 20 
+    
+    dt = 0.01  
+    font_size = 20  
+    stroke_index = 0  
 
-#     # ===================== generate new samples ===================
-#     input_dim = 1  
-#     output_dim = 2  
-#     in_idx = [0]  
-#     out_idx = [1, 2]  
-#     nb_states = 6  
+    # ===================== generate new samples ===================
+    input_dim = 1  
+    output_dim = 2  
+    in_idx = [0]  
+    out_idx = [1, 2]  
+    nb_states = 6  
 
-#     nb_prior_samples = 10  
-#     nb_posterior_samples = 5   
+    nb_prior_samples = 10  
+    nb_posterior_samples = 5   
 
-#     # ========================================================
-#     # ========================= GMM ==========================
-#     # ========================================================
-#     gmr_model = Gmr(nb_states=nb_states, nb_dim=input_dim + output_dim, in_idx=in_idx, out_idx=out_idx)
-#     gmr_model.init_params_kbins(demos_np.T, nb_samples=nb_samples)
-#     gmr_model.gmm_em(demos_np.T)
+    # ========================================================
+    # ========================= GMM ==========================
+    # ========================================================
+    gmr_model = Gmr(nb_states=nb_states, nb_dim=input_dim + output_dim, in_idx=in_idx, out_idx=out_idx)
+    gmr_model.init_params_kbins(demos_np.T, nb_samples=nb_samples)
+    gmr_model.gmm_em(demos_np.T)
 
-#     # GMR prediction
-#     mu_gmr = []  
-#     sigma_gmr = []  
-#     for i in range(Xt.shape[0]):   
-#         mu_gmr_tmp, sigma_gmr_tmp, H_tmp = gmr_model.gmr_predict(Xt[i])  
-#         mu_gmr.append(mu_gmr_tmp)  
-#         sigma_gmr.append(sigma_gmr_tmp)
+    # GMR prediction
+    mu_gmr = []  
+    sigma_gmr = []  
+    for i in range(Xt.shape[0]):   
+        mu_gmr_tmp, sigma_gmr_tmp, H_tmp = gmr_model.gmr_predict(Xt[i])  
+        mu_gmr.append(mu_gmr_tmp)  
+        sigma_gmr.append(sigma_gmr_tmp)
 
-#     mu_gmr = np.array(mu_gmr)
-#     sigma_gmr = np.array(sigma_gmr) 
+    mu_gmr = np.array(mu_gmr)
+    sigma_gmr = np.array(sigma_gmr) 
 
-#     if plot: 
-#         plt.figure(figsize=(5, 5))  
-#         for p in range(nb_samples):  
-#             plt.plot(Y[p * nb_data:(p + 1) * nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
-#             plt.scatter(Y[p * nb_data, 0], Y[p * nb_data, 1], color=[.7, .7, .7], marker='X', s=50)
-#         plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
-#         plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=50)
-#         plot_gmm(mu_gmr, sigma_gmr, alpha=0.05, color=[0.20, 0.54, 0.93])  
-#         plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)  
+    if plot: 
+        plt.figure(figsize=(5, 5))  
+        for p in range(nb_samples):  
+            plt.plot(Y[p * nb_data:(p + 1) * nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
+            plt.scatter(Y[p * nb_data, 0], Y[p * nb_data, 1], color=[.7, .7, .7], marker='X', s=50)
+        plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
+        plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=50)
+        plot_gmm(mu_gmr, sigma_gmr, alpha=0.05, color=[0.20, 0.54, 0.93])  
+        plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)  
 
-#         axes = plt.gca()
-#         # axes.set_xlim([0.1, 0.45])
-#         # axes.set_ylim([-0.25, 0.25])
-#         # axes.set_xlim([-10, 10])
-#         axes.set_xlim([-20, 20])
-#         axes.set_ylim([-20, 20])
-#         # axes.set_ylim([-10, 10])
-#         # axes.set_xlim([-15, 15]) 
-#         # axes.set_ylim([-15, 15]) 
-#         plt.xlabel('$x_1$', fontsize=font_size)
-#         plt.ylabel('$x_2$', fontsize=font_size)
-#         plt.locator_params(nbins=3)
-#         plt.tick_params(labelsize=font_size) 
-#         plt.tight_layout()
-#         # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMR_' + word_name + '_stroke_' + str(stroke_index) + '.pdf')
+        axes = plt.gca()
+        # axes.set_xlim([0.1, 0.45])
+        # axes.set_ylim([-0.25, 0.25])
+        # axes.set_xlim([-10, 10])
+        axes.set_xlim([-20, 20])
+        axes.set_ylim([-20, 20])
+        # axes.set_ylim([-10, 10])
+        # axes.set_xlim([-15, 15]) 
+        # axes.set_ylim([-15, 15]) 
+        plt.xlabel('$x_1$', fontsize=font_size)
+        plt.ylabel('$x_2$', fontsize=font_size)
+        plt.locator_params(nbins=3)
+        plt.tick_params(labelsize=font_size) 
+        plt.tight_layout()
+        # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMR_' + word_name + '_stroke_' + str(stroke_index) + '.pdf')
 
-#         plt.show()
+        plt.show()
 
-#     # ========================================================
-#     # ========================= GPR ==========================
-#     # ========================================================
-#     # Define GPR likelihood and kernels ::: original : 0.01
-#     nb_data_test = Xt.shape[0]
-#     Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
+    # ========================================================
+    # ========================= GPR ==========================
+    # ========================================================
+    # Define GPR likelihood and kernels ::: original : 0.01
+    nb_data_test = Xt.shape[0]
+    Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
 
-#     likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=1) for j in range(output_dim)] 
-#     kernel_list = [GPy.kern.Matern52(1, variance=5., lengthscale=0.5) for i in range(gmr_model.nb_states)] 
-#     # kernel_list = [GPy.kern.RBF(1, variance=0.001, lengthscale=0.5) for i in range(gmr_model.nb_states)]
-#     # kernel_list = [GPy.kern.RBF(1, variance=5, lengthscale=2) for i in range(gmr_model.nb_states)] 
+    likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=1) for j in range(output_dim)] 
+    kernel_list = [GPy.kern.Matern52(1, variance=5., lengthscale=0.5) for i in range(gmr_model.nb_states)] 
+    # kernel_list = [GPy.kern.RBF(1, variance=0.001, lengthscale=0.5) for i in range(gmr_model.nb_states)]
+    # kernel_list = [GPy.kern.RBF(1, variance=5, lengthscale=2) for i in range(gmr_model.nb_states)] 
 
-#     # Fix variance of kernels 
-#     for kernel in kernel_list: 
-#         kernel.variance.fix(1.0) 
-#         kernel.lengthscale.constrain_bounded(1.5, 10.)  
+    # Fix variance of kernels 
+    for kernel in kernel_list: 
+        kernel.variance.fix(1.0) 
+        kernel.lengthscale.constrain_bounded(1.5, 10.)  
 
-#     # Bound noise parameters
-#     for likelihood in likelihoods_list:
-#         likelihood.variance.constrain_bounded(0.001, 0.05)
+    # Bound noise parameters
+    for likelihood in likelihoods_list:
+        likelihood.variance.constrain_bounded(0.001, 0.05)
 
-#     # GPR model  
-#     K = Gmr_based_kernel(gmr_model=gmr_model, kernel_list=kernel_list)
-#     mf = GmrMeanMapping(2 * input_dim + 1, 1, gmr_model)
-#     m = GPCoregionalizedWithMeanRegression( 
-#         X_list, Y_list,
-#         kernel=K,
-#         likelihoods_list=likelihoods_list,
-#         mean_function=mf
-#     )  
+    # GPR model  
+    K = Gmr_based_kernel(gmr_model=gmr_model, kernel_list=kernel_list)
+    mf = GmrMeanMapping(2 * input_dim + 1, 1, gmr_model)
+    m = GPCoregionalizedWithMeanRegression( 
+        X_list, Y_list,
+        kernel=K,
+        likelihoods_list=likelihoods_list,
+        mean_function=mf
+    )  
 
-#     # Parameters optimization
-#     m.optimize('bfgs', max_iters=200, messages=True)
+    # Parameters optimization
+    m.optimize('bfgs', max_iters=200, messages=True)
 
-#     # Print model parameters
-#     print(m)
+    # Print model parameters
+    print(m)
 
-#     # GPR prior (no observations)
-#     prior_traj = []  
-#     prior_mean = mf.f(Xtest)[:, 0]  
-#     prior_kernel = m.kern.K(Xtest)   
-#     for i in range(nb_prior_samples):  
-#         print("prior_kernel :", prior_kernel.shape)  
-#         prior_traj_tmp = np.random.multivariate_normal(prior_mean, prior_kernel)
-#         print("prior_traj_tmp :", prior_traj_tmp.shape)
-#         prior_traj.append(np.reshape(prior_traj_tmp, (output_dim, -1)))
-#     prior_kernel_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
-#     for i in range(output_dim): 
-#         for j in range(output_dim):  
-#             prior_kernel_tmp[:, :, i * output_dim + j] = prior_kernel[i * nb_data_test:(i + 1) * nb_data_test, j * nb_data_test:(j + 1) * nb_data_test]
-#     prior_kernel_rshp = np.zeros((nb_data_test, output_dim, output_dim))  
-#     for i in range(nb_data_test):  
-#         prior_kernel_rshp[i] = np.reshape(prior_kernel_tmp[i, i, :], (output_dim, output_dim))
+    # GPR prior (no observations)
+    prior_traj = []  
+    prior_mean = mf.f(Xtest)[:, 0]  
+    prior_kernel = m.kern.K(Xtest)   
+    for i in range(nb_prior_samples):  
+        print("prior_kernel :", prior_kernel.shape)  
+        prior_traj_tmp = np.random.multivariate_normal(prior_mean, prior_kernel)
+        print("prior_traj_tmp :", prior_traj_tmp.shape)
+        prior_traj.append(np.reshape(prior_traj_tmp, (output_dim, -1)))
+    prior_kernel_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
+    for i in range(output_dim): 
+        for j in range(output_dim):  
+            prior_kernel_tmp[:, :, i * output_dim + j] = prior_kernel[i * nb_data_test:(i + 1) * nb_data_test, j * nb_data_test:(j + 1) * nb_data_test]
+    prior_kernel_rshp = np.zeros((nb_data_test, output_dim, output_dim))  
+    for i in range(nb_data_test):  
+        prior_kernel_rshp[i] = np.reshape(prior_kernel_tmp[i, i, :], (output_dim, output_dim))
 
-#     # GPR posterior -> new points observed (the training points are discarded as they are "included" in the GMM)
-#     m_obs = \
-#         GPCoregionalizedWithMeanRegression(
-#             X_obs_list, Y_obs_list, kernel=K,
-#             likelihoods_list=likelihoods_list,
-#             mean_function=mf
-#         )  
-#     mu_posterior_tmp = \
-#         m_obs.posterior_samples_f(
-#             Xtest, full_cov=True, size=nb_posterior_samples
-#         )  
+    # GPR posterior -> new points observed (the training points are discarded as they are "included" in the GMM)
+    m_obs = \
+        GPCoregionalizedWithMeanRegression(
+            X_obs_list, Y_obs_list, kernel=K,
+            likelihoods_list=likelihoods_list,
+            mean_function=mf
+        )  
+    mu_posterior_tmp = \
+        m_obs.posterior_samples_f(
+            Xtest, full_cov=True, size=nb_posterior_samples
+        )  
  
-#     mu_posterior = []
-#     for i in range(nb_posterior_samples):  
-#         mu_posterior.append(np.reshape(mu_posterior_tmp[:, 0, i], (output_dim, -1)))
+    mu_posterior = []
+    for i in range(nb_posterior_samples):  
+        mu_posterior.append(np.reshape(mu_posterior_tmp[:, 0, i], (output_dim, -1)))
 
-#     # GPR prediction
-#     mu_gp, sigma_gp = m_obs.predict(Xtest, full_cov=True, Y_metadata={'output_index': output_index})
-#     mu_gp_rshp = np.reshape(mu_gp, (output_dim, -1)).T
-#     sigma_gp_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
-#     for i in range(output_dim):
-#         for j in range(output_dim):
-#             sigma_gp_tmp[:, :, i * output_dim + j] = sigma_gp[i * nb_data_test:(i + 1) * nb_data_test, j * nb_data_test:(j + 1) * nb_data_test]
-#     sigma_gp_rshp = np.zeros((nb_data_test, output_dim, output_dim))
-#     for i in range(nb_data_test):
-#         sigma_gp_rshp[i] = np.reshape(sigma_gp_tmp[i, i, :], (output_dim, output_dim))
-#     print("sigma_gp_rshp", sigma_gp_rshp.shape)
+    # GPR prediction
+    mu_gp, sigma_gp = m_obs.predict(Xtest, full_cov=True, Y_metadata={'output_index': output_index})
+    mu_gp_rshp = np.reshape(mu_gp, (output_dim, -1)).T
+    sigma_gp_tmp = np.zeros((nb_data_test, nb_data_test, output_dim * output_dim))
+    for i in range(output_dim):
+        for j in range(output_dim):
+            sigma_gp_tmp[:, :, i * output_dim + j] = sigma_gp[i * nb_data_test:(i + 1) * nb_data_test, j * nb_data_test:(j + 1) * nb_data_test]
+    sigma_gp_rshp = np.zeros((nb_data_test, output_dim, output_dim))
+    for i in range(nb_data_test):
+        sigma_gp_rshp[i] = np.reshape(sigma_gp_tmp[i, i, :], (output_dim, output_dim))
+    print("sigma_gp_rshp", sigma_gp_rshp.shape)
 
-#     if plot:
-#         # Posterior  
-#         plt.figure(figsize=(5, 5))
-#         plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
-#         plot_gmm(mu_gp_rshp, sigma_gp_rshp, alpha=0.05, color=[0.83, 0.06, 0.06])
-#         for i in range(nb_posterior_samples):
-#             plt.plot(mu_posterior[i][0], mu_posterior[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
-#             plt.scatter(mu_posterior[i][0, 0], mu_posterior[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
+    if plot:
+        # Posterior  
+        plt.figure(figsize=(5, 5))
+        plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
+        plot_gmm(mu_gp_rshp, sigma_gp_rshp, alpha=0.05, color=[0.83, 0.06, 0.06])
+        for i in range(nb_posterior_samples):
+            plt.plot(mu_posterior[i][0], mu_posterior[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
+            plt.scatter(mu_posterior[i][0, 0], mu_posterior[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
 
-#         plt.plot(mu_gp_rshp[:, 0], mu_gp_rshp[:, 1], color=[0.83, 0.06, 0.06], linewidth=3.)
-#         plt.scatter(mu_gp_rshp[0, 0], mu_gp_rshp[0, 1], color=[0.83, 0.06, 0.06], marker='X', s=80)
-#         plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
+        plt.plot(mu_gp_rshp[:, 0], mu_gp_rshp[:, 1], color=[0.83, 0.06, 0.06], linewidth=3.)
+        plt.scatter(mu_gp_rshp[0, 0], mu_gp_rshp[0, 1], color=[0.83, 0.06, 0.06], marker='X', s=80)
+        plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
 
-#         axes = plt.gca()
-#         axes.set_xlim([-20, 20])  
-#         # axes.set_xlim([-10, 10])  
-#         axes.set_ylim([-20, 20])  
-#         # axes.set_ylim([-10, 10])  
-#         # axes.set_xlim([-15, 15])
-#         # axes.set_ylim([-15, 15])
-#         plt.xlabel('$x_1$', fontsize=font_size)  
-#         plt.ylabel('$x_2$', fontsize=font_size)  
-#         plt.locator_params(nbins=3)  
-#         plt.tick_params(labelsize=font_size)  
-#         plt.tight_layout()   
-#         # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMRbGP_' + word_name + '_stroke_' + str(
-#         #     stroke_index) + '_posteriors.pdf')   
-#         plt.show() 
+        axes = plt.gca()
+        axes.set_xlim([-20, 20])  
+        # axes.set_xlim([-10, 10])  
+        axes.set_ylim([-20, 20])  
+        # axes.set_ylim([-10, 10])  
+        # axes.set_xlim([-15, 15])
+        # axes.set_ylim([-15, 15])
+        plt.xlabel('$x_1$', fontsize=font_size)  
+        plt.ylabel('$x_2$', fontsize=font_size)  
+        plt.locator_params(nbins=3)  
+        plt.tick_params(labelsize=font_size)  
+        plt.tight_layout()   
+        # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMRbGP_' + word_name + '_stroke_' + str(
+        #     stroke_index) + '_posteriors.pdf')   
+        plt.show() 
 
-#     return 
+    return 
 
 
 
@@ -924,18 +942,17 @@ if __name__ == "__main__":
 
     # load_eval_path( 
     #     root_path='./data/real_path_data',   
-    #     word_name=None, 
-    #     epi_times=5
-    # )
+    #     word_name=None,  
+    #     epi_times=5 
+    # ) 
 
-    trajectory_list = cope_real_word_path(
+    word_path = cope_real_word_path(
         root_path='./data/font_data',  
         word_name='mu',  
         file_name='real_angle_list_', 
-        stroke_index=0,  
         epi_times=5,  
-        delimiter=',',  
-        skiprows=1,  
+        num_stroke=4,   
+        plot=True
     )
-    print(trajectory_list.shape)
+    # print(trajectory_list.shape)
 

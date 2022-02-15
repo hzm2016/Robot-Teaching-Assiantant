@@ -17,6 +17,17 @@ from path_planning.romi.romi import trajectory
 sns.set(font_scale=2.5)
 np.set_printoptions(precision=5)
 
+Length = [0.30, 0.150, 0.25, 0.125] 
+L_1 = Length[0]
+L_2 = Length[2]
+
+action_dim = 2
+Ts = 0.001
+
+# writing space
+WIDTH = 0.360
+HEIGHT = 0.360
+
 
 def scale_translate_process_main(
     X_list, Y_list,  
@@ -39,55 +50,58 @@ def cope_real_word_path(
     root_path=None,   
     word_name='mu',  
     file_name='real_angle_list_',  
-    stroke_index=1,  
     epi_times=1,  
-    delimiter=',',  
-    skiprows=1,  
+    num_stroke=3, 
+    plot=True
 ): 
-    Length = [0.30, 0.150, 0.25, 0.125] 
-    L_1 = Length[0]
-    L_2 = Length[2]
+    delimiter=','  
+    skiprows=1
+    word_path = [] 
+    for stroke_index in range(num_stroke):  
+        trajectory_list = [] 
+        for epi_index in range(epi_times):
+            angle_list = np.loadtxt(
+                root_path + '/' + word_name + '/' + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
+                delimiter=delimiter,
+                skiprows=skiprows 
+                )
+
+            # angle_list : desired and real-time
+            angle_list_1_e = angle_list[:, 0]
+            angle_list_2_e = angle_list[:, 3]
+            angle_list_1_t = angle_list[:, 1]
+            angle_list_2_t = angle_list[:, 4]
+
+            x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+            y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+
+            x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
+            y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
+            # print('x_t', x_t, 'y_t', y_t)
+            trajectory = np.stack((x_e, y_e, x_t, y_t), axis=1)
+            trajectory_list.append(trajectory) 
+        word_path.append(trajectory_list) 
     
-    action_dim = 2
-    Ts = 0.001
-    
-    # writing space
-    WIDTH = 0.360
-    HEIGHT = 0.360
-    
-    linewidth = 3.0
-    x_list = [] 
-    y_list = []  
-    trajectory_list = []
-    for epi_index in range(epi_times):
-        angle_list = np.loadtxt(
-            root_path + '/' + word_name + '/' + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
-            delimiter=delimiter,
-            skiprows=skiprows 
-            )
-
-        # angle_list : desired and real-time
-        angle_list_1_e = angle_list[:, 0]
-        angle_list_2_e = angle_list[:, 3]
-        angle_list_1_t = angle_list[:, 1]
-        angle_list_2_t = angle_list[:, 4]
-
-        x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
-        y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
-
-        x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
-        y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
-        print('x_t', x_t, 'y_t', y_t)
-        trajectory = np.stack((x_e, y_e, x_t, y_t), axis=1)
-        trajectory_list.append(trajectory)
-        # x_list.append(x_t)   
-        # y_list.append(y_t)   
-    
-    plot_real_osc_2d_path(np.array(trajectory_list))   
-
-    return np.array(trajectory_list)
+    if plot:
+        plot_real_osc_2d_path(word_path)    
+    print("Have load trajectories of {} index by {} evaluation !!! ".format(num_stroke, epi_times))   
+    return word_path   
 
 
+def data_preprocess(
+    word_path,
+    stroke_index
+):
+
+    x_list, y_list = 
+
+    # scale data to be estimated
+    x_list, y_list = \
+        scale_translate_process_main(
+            x_list, y_list,
+            scale_factor=np.array([100, 100]),
+            trans_value=np.array([0.3, 0.0])  
+    )  
 
 def GMR(
         all_data,
