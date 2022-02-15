@@ -20,6 +20,7 @@ linewidth = 4
 Length = [0.30, 0.15, 0.25, 0.125]  
 L_1 = Length[0]  
 L_2 = Length[2]  
+offset_value = [0]
 
 # writing space
 WIDTH = 0.370  

@@ -933,7 +933,7 @@ if __name__ == "__main__":
         word_name='mu',  
         file_name='real_angle_list_', 
         stroke_index=0,  
-        epi_times=1,  
+        epi_times=5,  
         delimiter=',',  
         skiprows=1,  
     )
