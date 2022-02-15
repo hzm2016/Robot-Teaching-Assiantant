@@ -1,4 +1,4 @@
-from numpy.core.arrayprint import format_float_scientific
+from numpy.core.arrayprint import format_float_scientific 
 from protocol.task_interface import *  
 import numpy as np  
 import math   
@@ -10,8 +10,8 @@ import time
 import glob  
 import scipy  
 
-sns.set(font_scale=1.5)
-np.set_printoptions(precision=5)
+sns.set(font_scale=1.5)  
+np.set_printoptions(precision=5)  
 
 L_1 = 0.3  
 L_2 = 0.25  
