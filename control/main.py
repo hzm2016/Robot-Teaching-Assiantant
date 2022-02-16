@@ -760,7 +760,7 @@ def training_samples_to_waypoints(
     joint_params=None,
     plot=True
 ):
-    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + 'training_samples.npy'
+    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/training_stroke_' + str(stroke_index) + '_samples.npy'
     training_samples = np.load(folder_name)
     angle_list = np.zeros((Num_waypoints, 2))
     
