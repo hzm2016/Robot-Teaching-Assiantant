@@ -120,7 +120,7 @@ double read_initial_angle_3()
     ////////////////////////////////////////////
     // Read motor original angle 3
     ////////////////////////////////////////////
-    CANDevice can3((char *) "can3");   
+    CANDevice can3((char *) "can2");   
     can3.begin();   
 
     Gcan motor_3(can3);   
@@ -177,7 +177,7 @@ double read_angle_3(double theta_3_initial)
     ////////////////////////////////////////////
     // Read motor angle 3 
     ////////////////////////////////////////////
-    CANDevice can3((char *) "can3");   
+    CANDevice can3((char *) "can2");   
     can3.begin();   
 
     Gcan motor_3(can3);   
@@ -417,7 +417,7 @@ int motor_3_stop()
     ////////////////////////////////////////////
     // Read motor angle 3 
     ////////////////////////////////////////////
-    CANDevice can0((char *) "can3");   
+    CANDevice can0((char *) "can2");   
     can0.begin();   
 
     Gcan motor_3(can0);   
@@ -484,7 +484,7 @@ MatrixXd Jacobian(double theta_1_t, double theta_2_t)
 
 Vector2d Forward_ik(double theta_1_t, double theta_2_t)
 {
-    /// forward kinematics
+    /// forward kinematics 
     Vector2d pos_t(0.0, 0.0);  
     
     pos_t(0) = L_1 * cos(theta_1_t) + L_2 * cos(theta_1_t + theta_2_t);   

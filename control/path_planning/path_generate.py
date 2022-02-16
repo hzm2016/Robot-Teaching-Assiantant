@@ -74,7 +74,8 @@ def generate_stroke_stiffness_path(
     angle_list, stiffness_list, damping_list,
     save_path=False,
     save_root='',
-    word_name='yi', stroke_index=0
+    word_name='yi', 
+    stroke_index=0
 ):  
     """
         :param angle_list:

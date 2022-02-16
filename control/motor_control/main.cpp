@@ -99,7 +99,7 @@ int set_position(double theta_3_initial, int32_t angle)
     ////////////////////////////////////////////
     // Read motor angle 3 
     ////////////////////////////////////////////
-    CANDevice can0((char *) "can3");   
+    CANDevice can0((char *) "can2");   
     can0.begin();   
 
     Gcan motor_3(can0);   
@@ -223,11 +223,11 @@ double &torque_1, double &torque_2
     torque_t = - stiff_joint_t * delta_angle_t - damping_joint_t * d_delta_angle_t;  
     printf("torque_t %f - %f\n:", torque_t(0), torque_t(1)); 
 
-    // torque_1 = clip(-1 * params[0] * (theta_t_list[0] - theta_e_list[0]) - params[2] * (d_theta_t_list[0] - d_theta_e_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
-    // torque_2 = clip(-1 * params[1] * (theta_t_list[1] - theta_e_list[1]) - params[3] * (d_theta_t_list[1] - d_theta_e_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;     
+    torque_1 = clip(-1 * params[0] * (theta_t_list[0] - theta_e_list[0]) - params[2] * (d_theta_t_list[0] - d_theta_e_list[0]), torque_lower_bound, torque_upper_bound) * ctl_ratio_1; 
+    torque_2 = clip(-1 * params[1] * (theta_t_list[1] - theta_e_list[1]) - params[3] * (d_theta_t_list[1] - d_theta_e_list[1]), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;     
 
-    torque_1 = clip(torque_t(0), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
-    torque_2 = clip(torque_t(1), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
+    // torque_1 = clip(torque_t(0), torque_lower_bound, torque_upper_bound) * ctl_ratio_1;   
+    // torque_2 = clip(torque_t(1), torque_lower_bound, torque_upper_bound) * ctl_ratio_2;   
 }   
 
 
@@ -498,20 +498,20 @@ double dist_threshold
         /////////////////////////////////////////////////////
         /////// calculate torque control command //////////// 
         ///////////////////////////////////////////////////// 
-        // calculate_joint_torque(
-        // params,  
-        // theta_e_list, d_theta_e_list,  
-        // theta_t_list, d_theta_t_list,  
-        // torque_1, torque_2  
-        // );  
-
-        /// Task space control
-        calculate_task_torque( 
+        calculate_joint_torque(
         params,  
         theta_e_list, d_theta_e_list,  
         theta_t_list, d_theta_t_list,  
         torque_1, torque_2  
         );  
+
+        /// Task space control
+        // calculate_task_torque( 
+        // params,  
+        // theta_e_list, d_theta_e_list,  
+        // theta_t_list, d_theta_t_list,  
+        // torque_1, torque_2  
+        // );  
 
         double torque_1_o = torque_1/ctl_ratio_1;   
         double torque_2_o = torque_2/ctl_ratio_2;   
@@ -637,11 +637,11 @@ string angle_path_name, string torque_path_name
     ///////////////////////////////////////////////////////
     // avoid large motion at starting points 
     ///////////////////////////////////////////////////////
-    for(int index=0; index<10; index=index+1)    
-    {   
-        pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);   
-        pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
-    }   
+    // for(int index=0; index<10; index=index+1)    
+    // {   
+    //     pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);   
+    //     pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
+    // }   
 
     ///////////////////////////////////////////////////////
     // tracking all way points 
@@ -684,13 +684,13 @@ string angle_path_name, string torque_path_name
             torque_1, torque_2   
             );   
 
-            /// Task space control
-            calculate_task_torque( 
-            params,  
-            theta_e_list, d_theta_e_list,  
-            theta_t_list, d_theta_t_list,  
-            torque_1, torque_2  
-            );   
+            // /// Task space control
+            // calculate_task_torque( 
+            // params,  
+            // theta_e_list, d_theta_e_list,  
+            // theta_t_list, d_theta_t_list,  
+            // torque_1, torque_2  
+            // );   
 
             torque_1_o = torque_1/ctl_ratio_1;     
             torque_2_o = torque_2/ctl_ratio_2;    

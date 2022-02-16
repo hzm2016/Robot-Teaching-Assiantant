@@ -187,9 +187,8 @@ def plot_real_2d_path(
         plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
         plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
 
-
-    plt.xlabel(r'$x(m)$', fontsize=FONT_SIZE)   
-    plt.ylabel(r'$y(m)$', fontsize=FONT_SIZE)   
+    plt.xlabel('$x(m)$', fontsize=FONT_SIZE)   
+    plt.ylabel('$y(m)$', fontsize=FONT_SIZE)   
     plt.ylim([-WIDTH/2, WIDTH/2])   
     plt.xlim([0.13, 0.13 + WIDTH])   
     # plt.legend()  
