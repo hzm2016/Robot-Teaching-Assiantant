@@ -5,8 +5,8 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-# from motor_control import motor_control
-from path_planning.plot_path import *  
+from motor_control import motor_control 
+from path_planning.plot_path import *   
 from path_planning.path_generate import *  
 import time   
 import glob   
@@ -16,11 +16,11 @@ import argparse
 # path prediction
 from scipy.io import loadmat
 from scipy.signal import savgol_filter
-from forward_mode.utils.gmr import Gmr, plot_gmm
-from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
-from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
-from forward_mode.utils.gmr_kernels import Gmr_based_kernel
-import GPy  
+# from forward_mode.utils.gmr import Gmr, plot_gmm
+# from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
+# from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
+# from forward_mode.utils.gmr_kernels import Gmr_based_kernel
+# import GPy  
 from utils.word_preprocess import *  
 
 from scipy import interpolate
@@ -934,14 +934,14 @@ def main(args):
             task_params=np.array([35, 35, 5, 0.5]), 
             joint_params=np.array([35, 35, 5, 0.5]), 
             )
-        angle_list = word_path[args.stroke_index]
-        Num_waypoints = angle_list.shape[0]
+        angle_list = word_path[args.stroke_index] 
+        Num_waypoints = angle_list.shape[0] 
         print("word_one_stroke_num_way_points :", Num_waypoints)
         
         # stroke_training_samples = generate_training_path(
         #     word_name=args.word_name,
         #     stroke_index=args.stroke_index,
-        #     epi_times=5,
+        #     epi_times=5, 
         #     num_stroke=4,
         #     plot=True
         # )
