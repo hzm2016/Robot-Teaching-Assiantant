@@ -639,6 +639,7 @@ def generate_training_path(
 def training_samples_to_waypoints(
     word_name='mu',
     eval_word_name='',
+    training_name='',
     stroke_index=0,
     Num_waypoints=10000,
     sample_index=0,
@@ -648,7 +649,7 @@ def training_samples_to_waypoints(
     plot=True
 ):
     print("============== {} ============".format('Load Training Samples !!!'))
-    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/training_stroke_' + eval_word_name + '_' + str(stroke_index) + '_samples.npy'
+    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + training_name + '/training_stroke_' + eval_word_name + '_' + str(stroke_index) + '_samples.npy'
     training_samples = np.load(folder_name)
     angle_list = np.zeros((Num_waypoints, 2))
     
@@ -863,10 +864,11 @@ def main(args):
             training_samples_to_waypoints(
                 word_name=args.word_name,
                 eval_word_name=args.eval_word_name,
+                training_name=args.training_name,
                 stroke_index=args.stroke_index,
-                Num_waypoints=Num_waypoints,  
-                sample_index=i,  
-                task_params=task_params,  
+                Num_waypoints=Num_waypoints,
+                sample_index=i,
+                task_params=task_params,
                 joint_params=joint_params,  
                 desire_angle_list=angle_list,  
                 plot=False
