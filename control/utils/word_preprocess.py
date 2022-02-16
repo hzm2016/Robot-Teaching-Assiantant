@@ -72,9 +72,9 @@ def load_real_word_path(
 ): 
     delimiter=','  
     skiprows=1
-    word_path = [] 
-    for stroke_index in range(num_stroke):  
-        trajectory_list = [] 
+    word_path = []
+    for stroke_index in range(num_stroke):
+        trajectory_list = []
         for epi_index in range(epi_times):
             angle_list = np.loadtxt(
                 root_path + '/' + word_name + '/' + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
@@ -98,7 +98,8 @@ def load_real_word_path(
         word_path.append(trajectory_list) 
     
     if plot:
-        plot_real_osc_2d_path(word_path)    
+        plot_real_osc_2d_path(word_path)
+    
     print("Have load trajectories of {} index by {} evaluation !!! ".format(num_stroke, epi_times))   
     return word_path
 

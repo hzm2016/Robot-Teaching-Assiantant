@@ -395,7 +395,7 @@ def generate_training_path(
         file_name='real_angle_list_',
         epi_times=epi_times,
         num_stroke=num_stroke,
-        plot=False
+        plot=True
     )
 
     train_word_path, _, _ = load_word_path(
@@ -508,7 +508,7 @@ def generate_training_path(
     # Fix variance of kernels
     for kernel in kernel_list:
         kernel.variance.fix(1.0)
-        kernel.lengthscale.constrain_bounded(1.5, 10.)
+        kernel.lengthscale.constrain_bounded(0.01, 10.)
 
     # Bound noise parameters
     for likelihood in likelihoods_list:
@@ -579,17 +579,18 @@ def generate_training_path(
         # Posterior
         plt.figure(figsize=(8, 8))
         plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3.)
-        plot_gmm(mu_gp_rshp, sigma_gp_rshp, alpha=0.05, color=[0.83, 0.06, 0.06])
+        plot_gmm(mu_gmr, sigma_gmr, alpha=0.09, color=[0.20, 0.54, 0.93])
+        # plot_gmm(mu_gp_rshp, sigma_gp_rshp, alpha=0.05, color=[0.83, 0.06, 0.06])
         for i in range(nb_posterior_samples):
             plt.plot(mu_posterior[i][0], mu_posterior[i][1], color=[0.64, 0., 0.65], linewidth=1.5)
             plt.scatter(mu_posterior[i][0, 0], mu_posterior[i][1, 0], color=[0.64, 0., 0.65], marker='X', s=80)
+        # plt.plot(mu_gp_rshp[:, 0], mu_gp_rshp[:, 1], color=[0.83, 0.06, 0.06], linewidth=3.)
+        # plt.scatter(mu_gp_rshp[0, 0], mu_gp_rshp[0, 1], color=[0.83, 0.06, 0.06], marker='X', s=80)
 
-        plt.plot(mu_gp_rshp[:, 0], mu_gp_rshp[:, 1], color=[0.83, 0.06, 0.06], linewidth=3.)
-        plt.scatter(mu_gp_rshp[0, 0], mu_gp_rshp[0, 1], color=[0.83, 0.06, 0.06], marker='X', s=80)
         plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
 
         axes = plt.gca()
-        axes.set_xlim([-20, 20])
+        axes.set_xlim([-10, 10])
         # axes.set_xlim([-10, 10])
         axes.set_ylim([-20, 20])
         # axes.set_ylim([-10, 10])
@@ -611,7 +612,8 @@ def generate_training_path(
         pass
     else:
         os.makedirs(folder_name)
-    np.save(folder_name + '/training_stroke_' + str(stroke_index) + '_samples.npy', np.array(mu_posterior))
+
+    np.save(folder_name + '/training_stroke_' + eval_word_name + '_' + str(stroke_index) + '_samples.npy', np.array(mu_posterior))
     return mu_posterior
 
 
