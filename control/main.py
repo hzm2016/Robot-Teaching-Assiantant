@@ -955,30 +955,30 @@ def main(args):
         #     joint_params=np.array([35, 35, 5, 0.5])
         # )
         
-        stroke_points, joint_params_list = \
-            training_samples_to_waypoints(
-                word_name=args.word_name,
-                stroke_index=args.stroke_index,
-                Num_waypoints=Num_waypoints,
-                sample_index=2,
-                task_params=np.array([35, 35, 5, 0.5]),
-                joint_params=np.array([35, 35, 5, 0.5]),
-                plot=True
-        )
+        # stroke_points, joint_params_list = \
+        #     training_samples_to_waypoints(
+        #         word_name=args.word_name,
+        #         stroke_index=args.stroke_index,
+        #         Num_waypoints=Num_waypoints,
+        #         sample_index=2,
+        #         task_params=np.array([35, 35, 5, 0.5]),
+        #         joint_params=np.array([35, 35, 5, 0.5]),
+        #         plot=True
+        # )
         
         # # evaluation writing
-        # for i in range(args.eval_times): 
-        #     # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
-        #     eval_stroke(
-        #         stroke_points=word_path[args.stroke_index],
-        #         stroke_params=word_joint_params[args.stroke_index], 
-        #         target_point=Initial_point, 
-        #         word_name=args.word_name, 
-        #         stroke_index=args.stroke_index, 
-        #         epi_time=i
-        #     )
+        for i in range(args.eval_times): 
+            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
+            eval_stroke(
+                stroke_points=word_path[args.stroke_index],
+                stroke_params=word_joint_params[args.stroke_index], 
+                target_point=Initial_point, 
+                word_name=args.word_name, 
+                stroke_index=args.stroke_index, 
+                epi_time=i
+            ) 
 
-        # motor_stop()
+        motor_stop() 
 
     
     # ===========================================================
@@ -995,9 +995,9 @@ def main(args):
         plot_real_2d_path(
             root_path=FILE_EVAL_NAME +'/' + args.word_name + '/',
             file_name='real_angle_list_',
-            stroke_num=1,
-            epi_time=0,
-            delimiter=',',
+            stroke_num=1, 
+            epi_times=args.eval_times, 
+            delimiter=',', 
             skiprows=1
         )
         

@@ -156,7 +156,7 @@ def plot_real_2d_path(
     root_path='./motor_control/bin/data/',
     file_name='',
     stroke_num=1,  
-    epi_time=0, 
+    epi_times=0, 
     delimiter=',',  
     skiprows=1
 ):
@@ -170,22 +170,23 @@ def plot_real_2d_path(
     
     plt.subplot(1, 1, 1) 
     for i in range(stroke_num):  
-        angle_list = np.loadtxt(root_path + file_name + str(i) + '_' + str(epi_time) + '.txt', delimiter=delimiter, skiprows=skiprows)
+        for epi_time in range(epi_times): 
+            angle_list = np.loadtxt(root_path + file_name + str(i) + '_' + str(epi_time) + '.txt', delimiter=delimiter, skiprows=skiprows)
 
-        angle_list_1_e = angle_list[:, 0]   
-        angle_list_2_e = angle_list[:, 3]   
+            angle_list_1_e = angle_list[:, 0]   
+            angle_list_2_e = angle_list[:, 3]   
 
-        angle_list_1_t = angle_list[:, 1]  
-        angle_list_2_t = angle_list[:, 4]  
+            angle_list_1_t = angle_list[:, 1]  
+            angle_list_2_t = angle_list[:, 4]  
 
-        x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
-        y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+            x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+            y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
 
-        x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
-        y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
-    
-        plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
-        plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
+            x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
+            y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
+        
+            plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
+            plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
 
     plt.xlabel('$x(m)$', fontsize=FONT_SIZE)   
     plt.ylabel('$y(m)$', fontsize=FONT_SIZE)   
