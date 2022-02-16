@@ -5,7 +5,7 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-from motor_control import motor_control 
+# from motor_control import motor_control
 from path_planning.plot_path import *  
 from path_planning.path_generate import *  
 import time   
@@ -14,18 +14,19 @@ import scipy
 import argparse  
 
 # path prediction
-from scipy.io import loadmat 
-# from forward_mode.utils.gmr import Gmr, plot_gmm
-# from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
-# from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
-# from forward_mode.utils.gmr_kernels import Gmr_based_kernel
+from scipy.io import loadmat
+from scipy.signal import savgol_filter
+from forward_mode.utils.gmr import Gmr, plot_gmm
+from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
+from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
+from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 import GPy  
 from utils.word_preprocess import *  
 
-from scipy import interpolate 
+from scipy import interpolate
 
 sns.set(font_scale=1.5)   
-np.set_printoptions(precision=5)   
+np.set_printoptions(precision=5)
 
 L_1 = 0.3   
 L_2 = 0.25   
@@ -539,8 +540,8 @@ def generate_training_path(
     dt = 0.01  
     font_size = 30
     input_dim = 1  # time
-    output_dim = 2
-    re_sample_index = 20, 
+    output_dim = 2  # x, y
+    re_sample_index = 20,
 
     # training hyper-parameters
     in_idx = [0]  
@@ -725,8 +726,8 @@ def generate_training_path(
         # axes.set_ylim([-15, 15])
         plt.xlabel('$x(m)$', fontsize=font_size)  
         plt.ylabel('$y(m)$', fontsize=font_size)  
-        plt.locator_params(nbins=3)  
-        plt.tick_params(labelsize=font_size)  
+        plt.locator_params(nbins=3)
+        plt.tick_params(labelsize=font_size)
         plt.tight_layout()   
         # plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMRbGP_' + word_name + '_stroke_' + str(
         #     stroke_index) + '_posteriors.pdf')   
@@ -746,10 +747,12 @@ def training_samples_to_waypoints(
     word_name='mu',
     stroke_index=0,
     Num_waypoints=10000,
+    sample_index=0,
     task_params=None,
     joint_params=None,
     plot=True
 ):
+    print("============== {} ============".format('Load Training Samples !!!'))
     folder_name = FILE_TRAIN_NAME + '/' + word_name + '/training_stroke_' + str(stroke_index) + '_samples.npy'
     training_samples = np.load(folder_name)
     angle_list = np.zeros((Num_waypoints, 2))
@@ -758,15 +761,19 @@ def training_samples_to_waypoints(
     data_sample = training_samples.shape[2]
     index = np.linspace(0, data_sample-1, data_sample)
     index_list = np.linspace(0, data_sample-1, Num_waypoints)
-    print("training_samples :", training_samples.shape, data_sample, index.shape, training_samples[0][0].shape)
+    print("training_samples :", training_samples.shape, data_sample, index.shape, training_samples[sample_index][0].shape)
+    
     # x_list = np.linspace(training_samples[0][0][0], training_samples[0][0][-1], Num_waypoints)
     # x_list = np.linspace(training_samples[0][0][0], training_samples[0][0][-1], Num_waypoints)
-    x_list_ori, y_list_ori = de_scale_translate_process_main(training_samples[0][0], training_samples[0][1])
+    x_list_ori, y_list_ori = de_scale_translate_process_main(training_samples[sample_index][0], training_samples[sample_index][1])
     
     fx = interpolate.interp1d(index, x_list_ori, kind='linear')
     fy = interpolate.interp1d(index, y_list_ori, kind='linear')
     x_list = fx(index_list)
     y_list = fy(index_list)
+    
+    # path_data[:, 0] = savgol_filter(traj[:, 0], filter_size, 3, mode='nearest')
+    # path_data[:, 1] = savgol_filter(traj[:, 1], filter_size, 3, mode='nearest')
     
     if plot:  
         # Posterior
@@ -809,17 +816,18 @@ def training_samples_to_waypoints(
     if max_angle_2 < ANGLE_2_RANGE[0] or max_angle_2 > ANGLE_2_RANGE[1]:
         print("!!!!!! angle 1 is out of range !!!!!")
         print("max angle 2 :::", max_angle_2)
-        exit() 
+        exit()
 
+    print("angle_list_shape :", angle_list.shape)
+    
     joint_params_list = load_impedance_list(
         word_name=word_name,  
         stroke_index=stroke_index,  
         desired_angle_list=angle_list,  
         current_angle_list=angle_list,   
         joint_params=joint_params,   
-        task_params=task_params 
+        task_params=task_params
     )
-        
     return angle_list, joint_params_list 
 
 
@@ -831,9 +839,9 @@ def load_impedance_list(
         joint_params=None,
         task_params=None
 ):
+    print("============== {} ============".format('Load Impedance !!!'))
     way_points = desired_angle_list
     N_way_points = way_points.shape[0]
-    print("N_way_points :", N_way_points)  
     
     # joint parameters
     if joint_params is not None:
@@ -917,6 +925,7 @@ def main(args):
             write_word(word_path, word_params=word_params, word_name=args.word_name, epi_times=i)   
             # stroke 
     
+    
     # ===========================================================
     if args.eval == True:   
         # eval_times = 1
@@ -925,25 +934,36 @@ def main(args):
             task_params=np.array([35, 35, 5, 0.5]), 
             joint_params=np.array([35, 35, 5, 0.5]), 
             )
-        Num_waypoints = word_path[args.stroke_index]
+        angle_list = word_path[args.stroke_index]
+        Num_waypoints = angle_list.shape[0]
         print("word_one_stroke_num_way_points :", Num_waypoints)
         
-        # load_impedance_list(
-        #     word_name='mu',
-        #     stroke_index=0,
-        #     desired_angle_list=None,
-        #     current_angle_list=None,
-        #     joint_params=None,
-        #     task_params=None
+        # stroke_training_samples = generate_training_path(
+        #     word_name=args.word_name,
+        #     stroke_index=args.stroke_index,
+        #     epi_times=5,
+        #     num_stroke=4,
+        #     plot=True
         # )
         
-        stroke_points = training_samples_to_waypoints(
-            word_name=args.word_name,
-            stroke_index=0,
-            Num_waypoints=10000,
-            task_params=None,
-            joint_params=None,
-            plot=True
+        # joint_params_list = load_impedance_list(
+        #     word_name=args.word_name,
+        #     stroke_index=args.stroke_index,
+        #     desired_angle_list=angle_list,
+        #     current_angle_list=angle_list,
+        #     task_params=np.array([35, 35, 5, 0.5]),
+        #     joint_params=np.array([35, 35, 5, 0.5])
+        # )
+        
+        stroke_points, joint_params_list = \
+            training_samples_to_waypoints(
+                word_name=args.word_name,
+                stroke_index=args.stroke_index,
+                Num_waypoints=Num_waypoints,
+                sample_index=2,
+                task_params=np.array([35, 35, 5, 0.5]),
+                joint_params=np.array([35, 35, 5, 0.5]),
+                plot=True
         )
         
         # # evaluation writing
@@ -958,7 +978,7 @@ def main(args):
         #         epi_time=i
         #     )
 
-        motor_stop() 
+        # motor_stop()
 
     
     # ===========================================================
@@ -1038,7 +1058,8 @@ if __name__ == "__main__":
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results') 
     parser.add_argument('--plot_word', type=bool, default=False, help='whether plot results')  
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
-    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name') 
+    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
+    parser.add_argument('--sample_index', type=int, default=0, help='give write word name')
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
 
     parser.add_argument('--eval_times', type=int, default=1, help='give write word name')

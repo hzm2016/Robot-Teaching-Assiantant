@@ -107,9 +107,9 @@ def load_new_obs_path(
 ):
     """ """
     # word mu stroke : 0
-    # X_obs = np.array([0.3, 1.0])[:, None]
-    # x_list_1 = np.array([0.27, 0.275])
-    # y_list_1 = np.array([-0.06, 0.07])
+    X_obs = np.array([0.3, 1.0])[:, None]
+    x_list_1 = np.array([0.27, 0.275])
+    y_list_1 = np.array([-0.06, 0.07])
     
     # # word mu stroke : 1
     # X_obs = np.array([0.15, 1.0])[:, None]
@@ -122,9 +122,9 @@ def load_new_obs_path(
     # y_list_1 = np.array([-0.03, -0.15])
     
     # # word mu stroke : 3
-    X_obs = np.array([0.05, 0.9, 1.3])[:, None]
-    x_list_1 = np.array([0.3, 0.37, 0.38])
-    y_list_1 = np.array([-0.01, 0.09, 0.15])
+    # X_obs = np.array([0.05, 0.9, 1.3])[:, None]
+    # x_list_1 = np.array([0.3, 0.37, 0.38])
+    # y_list_1 = np.array([-0.01, 0.09, 0.15])
     
     X_obs_list, Y_obs_list, X_obs, Y_obs = obs_data_preprocess(
         X_obs,
