@@ -5,7 +5,7 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-from motor_control import motor_control
+from motor_control import motor_control 
 from path_planning.plot_path import *  
 from path_planning.path_generate import *  
 import time   
@@ -20,12 +20,12 @@ from scipy.io import loadmat
 # from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
 # from forward_mode.utils.gmr_kernels import Gmr_based_kernel
 import GPy  
-from utils.word_preprocess import * 
+from utils.word_preprocess import *  
 
-from scipy import interpolate
+from scipy import interpolate 
 
-sns.set(font_scale=1.5)  
-np.set_printoptions(precision=5)  
+sns.set(font_scale=1.5)   
+np.set_printoptions(precision=5)   
 
 L_1 = 0.3   
 L_2 = 0.25   
