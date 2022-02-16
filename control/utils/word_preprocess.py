@@ -236,6 +236,26 @@ def obs_data_preprocess(
 
     return X_obs_list, Y_obs_list, X_obs, Y_obs
 
+
+def update_impedance(
+        desired_angle_list,
+        d_desired_angle_list,
+        current_angle_list,
+        d_current_angle_list,
+        alpha=10,
+        beta=0.1,
+        last_impedance=None
+):
+    """
+        update impedance
+    """
+    delta_list = current_angle_list - desired_angle_list
+    epislon_list = alpha * (current_angle_list - desired_angle_list) + (d_current_angle_list - d_desired_angle_list)
+    new_impedance = np.zeros_like(desired_angle_list)
+    new_impedance = last_impedance - beta * epislon_list * delta_list
+    return new_impedance
+
+
 def GMR(
     all_data,
     index_list,
