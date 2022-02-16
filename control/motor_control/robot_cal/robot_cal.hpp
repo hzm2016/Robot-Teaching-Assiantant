@@ -96,3 +96,6 @@ read_analog_encoder();
 Vector2d Forward_ik(double theta_1_t, double theta_2_t); 
 
 MatrixXd Jacobian(double theta_1_t, double theta_2_t); 
+
+double
+filter(double d_angel_old, double d_angle_new); 

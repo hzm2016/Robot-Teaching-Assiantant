@@ -551,10 +551,10 @@ string angle_path_name, string torque_path_name
     ////////////////////////////////////////////////////////
     // Initial hardware ::: can device
     ////////////////////////////////////////////////////////
-    CANDevice can0((char *) "can0");   
-    can0.begin();   
-    CANDevice can1((char *) "can1");   
-    can1.begin();   
+    CANDevice can0((char *) "can0");
+    can0.begin();
+    CANDevice can1((char *) "can1");
+    can1.begin();
 
     Gcan motor_1(can1);   
     Gcan motor_2(can0);   
@@ -584,6 +584,8 @@ string angle_path_name, string torque_path_name
     double d_theta_t_list[2] = {0.0, 0.0};   
     double d_theta_1_t = 0.0;   
     double d_theta_2_t = 0.0;   
+    double d_theta_1_old = 0.0;
+    double d_theta_2_old = 0.0;
 
     double theta_e_list[2] = {0.0, 0.0};    
     double theta_1_e = 0.0;    
@@ -697,6 +699,13 @@ string angle_path_name, string torque_path_name
 
             pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);     
             pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);    
+
+
+            d_theta_1_t = filter(d_theta_1_old, d_theta_1_t);   
+            d_theta_2_t = filter(d_theta_2_old, d_theta_1_t);   
+
+            d_theta_1_old = d_theta_1_t;    
+            d_theta_2_old = d_theta_2_t;    
 
             ////////////////////////////////////////////////////////
             // Save Data

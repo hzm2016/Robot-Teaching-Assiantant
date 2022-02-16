@@ -722,8 +722,8 @@ def plot_velocity_path(
         osc_velocity_list.append(Jacobian(angle_list[i]).dot(velocity_list[i]))
     
     plt.subplot(1, 2, 1)
-    plt.plot(velocity_list[1:, 0], linewidth=linewidth, label='velocity 1')    
-    plt.plot(velocity_list[1:, 1], linewidth=linewidth, label='velocity 2')
+    plt.plot(signal.filtfilt(b, a, velocity_list[1:, 0]), linewidth=linewidth, label='velocity 1')
+    plt.plot(signal.filtfilt(b, a, velocity_list[1:, 1]), linewidth=linewidth, label='velocity 2')
     plt.xlabel('time($t$)')   
     plt.ylabel('rad/s')  
     plt.legend()  
@@ -736,7 +736,7 @@ def plot_velocity_path(
     plt.ylabel('m/s')
     plt.legend() 
 
-    plt.show() 
+    plt.show()
     
     return osc_velocity_list, index_list
     

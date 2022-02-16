@@ -494,10 +494,11 @@ Vector2d Forward_ik(double theta_1_t, double theta_2_t)
 }
 
 
-// double mean_filter(double theta_t) 
-// {
-    
-// }
+double
+filter(double d_angel_old, double d_angle_new) {
+    double weight_filter = 0.95;
+    return weight_filter * d_angel_old + (1 - weight_filter) * d_angle_new;
+}
 
 int read_encoder_angles(double q_1_initial, double q_2_initial) 
 {

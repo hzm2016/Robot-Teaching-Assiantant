@@ -5,7 +5,7 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-from motor_control import motor_control  
+# from motor_control import motor_control
 from path_planning.plot_path import *  
 from path_planning.path_generate import *  
 import time   
@@ -917,7 +917,6 @@ def main(args):
             # word 
             write_word(word_path, word_params=word_params, word_name=args.word_name, epi_times=i)   
             # stroke
-
     
     # ===========================================================
     if args.eval == True:   
@@ -951,14 +950,14 @@ def main(args):
         #     skiprows=1
         # ) 
 
-        plot_real_2d_path(
-            root_path=FILE_EVAL_NAME +'/' + args.word_name + '/',
-            file_name='real_angle_list_',
-            stroke_num=1,
-            epi_time=0,
-            delimiter=',',
-            skiprows=1
-        ) 
+        # plot_real_2d_path(
+        #     root_path=FILE_EVAL_NAME +'/' + args.word_name + '/',
+        #     file_name='real_angle_list_',
+        #     stroke_num=1,
+        #     epi_time=0,
+        #     delimiter=',',
+        #     skiprows=1
+        # )
         
         # word_path, word_joint_params, word_task_params= \
         #     load_word_path(
@@ -983,14 +982,14 @@ def main(args):
         #     skiprows=1  
         # )  
 
-        # plot_velocity_path(
-        #     root_path='./data/font_data/' + write_name + '/',
-        #     file_name='real_angle_list_',
-        #     stroke_num=1, 
-        #     epi_time=1, 
-        #     delimiter=',',  
-        #     skiprows=1
-        # )
+        plot_velocity_path(
+            root_path=FILE_EVAL_NAME + '/' + args.word_name + '/',
+            file_name='real_angle_list_',
+            stroke_num=1,
+            epi_time=0,
+            delimiter=',',
+            skiprows=1
+        )
 
         # plot_real_error_path(
         #     root_path='./data/font_data/' + write_name + '/',  
@@ -1049,17 +1048,18 @@ if __name__ == "__main__":
     parser.add_argument('--assist', type=bool, default=False, help='assist mode') 
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results') 
     parser.add_argument('--plot_word', type=bool, default=False, help='whether plot results')  
-    parser.add_argument('--word_name', type=str, default='yi', help='give write word name')  
+    parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
+    parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
 
     args = parser.parse_args()
 
-    main(args) 
+    main(args)
 
     # load_eval_path( 
     #     root_path='./data/real_path_data',   
-    #     word_name=None,  
-    #     epi_times=5 
-    # ) 
+    #     word_name=None,
+    #     epi_times=5
+    # )
 
     # word_path = cope_real_word_path(
     #     root_path='./data/font_data',  
