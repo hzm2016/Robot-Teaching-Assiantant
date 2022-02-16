@@ -1,6 +1,6 @@
 import argparse
 import os
-# from motor_control import motor_control
+from motor_control import motor_control
 import time
 
 from scipy import interpolate
@@ -835,18 +835,18 @@ def main(args):
         )
     
     if args.eval:
-        joint_params = np.array([5, 5, 1, 0.5])
-        task_params = np.array([5, 5, 1, 0.5])
+        joint_params = np.array([10, 10, 2, 0.5])
+        task_params = np.array([10, 10, 2, 0.5])
         
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
-            word_name=args.word_name,
-            task_params=task_params,
-            joint_params=joint_params,
+            word_name=args.word_name,  
+            task_params=task_params,  
+            joint_params=joint_params,  
         )
 
-        angle_list = word_path[args.stroke_index]
-        Num_waypoints = angle_list.shape[0]
+        angle_list = word_path[args.stroke_index]  
+        Num_waypoints = angle_list.shape[0]  
         print("word_one_stroke_num_way_points :", Num_waypoints)
         
         # joint_params_list = load_impedance_list(
