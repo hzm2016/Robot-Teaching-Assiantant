@@ -1,6 +1,6 @@
 import argparse
 import os
-# from motor_control import motor_control
+from motor_control import motor_control
 import time
 
 from scipy import interpolate
@@ -900,7 +900,7 @@ def main(args):
         # )
 
         plot_real_2d_path(
-            root_path=FILE_EVAL_NAME + '/' + args.word_name + '/',
+            root_path=FILE_EVAL_NAME + '/' + args.training_name + '/' + args.word_name + '/',
             file_name='real_angle_list_',
             stroke_num=1,
             epi_times=args.eval_times,
