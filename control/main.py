@@ -425,14 +425,7 @@ def generate_training_path(
         eval_stroke_path[i, :, :] = eval_stroke_path[i, :, :] - offset_value
         # print(eval_stroke_path[i, 0, :] - np.array([stroke_list[0, 0], stroke_list[0, 1], stroke_list[0, 0], stroke_list[0, 1]]))
         # eval_stroke_path = eval_stroke_path[i, :, :] - (eval_stroke_path[i, 0, :] - np.array([stroke_list[0, 0], stroke_list[0, 1], stroke_list[0, 0], stroke_list[0, 1]]))
-        # print("stroke list :", stroke_list[0, :])
-   
-    # X_obs_list, Y_obs_list = scale_translate_process_main(
-    #     down_stroke_list[:, 0].copy(), down_stroke_list[:, 1].copy(),
-    #     scale_factor=SCALE_FACTOR,
-    #     trans_value=TRANS_VALUE
-    # )
-    
+
     # =====================================================
     ############# process data before prediction ##########
     # =====================================================
@@ -458,6 +451,12 @@ def generate_training_path(
             down_stroke_list[:, 1].copy(),
             idx_list.copy()
         )
+
+    # X_obs_list, Y_obs_list = scale_translate_process_main(
+    #     down_stroke_list[:, 0].copy(), down_stroke_list[:, 1].copy(),
+    #     scale_factor=SCALE_FACTOR,
+    #     trans_value=TRANS_VALUE
+    # )
     
     if train_gmr:
         # ========================================================
@@ -517,8 +516,8 @@ def generate_training_path(
         Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
     
         likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=1) for j in range(output_dim)]
-        # kernel_list = [GPy.kern.Matern52(1, variance=5., lengthscale=0.5) for i in range(gmr_model.nb_states)]
-        kernel_list = [GPy.kern.RBF(1, variance=10, lengthscale=0.5) for i in range(gmr_model.nb_states)]
+        kernel_list = [GPy.kern.Matern52(1, variance=10., lengthscale=5) for i in range(gmr_model.nb_states)]
+        # kernel_list = [GPy.kern.RBF(1, variance=1, lengthscale=0.5) for i in range(gmr_model.nb_states)]
         # kernel_list = [GPy.kern.RBF(1, variance=5, lengthscale=2) for i in range(gmr_model.nb_states)]
     
         # Fix variance of kernels
