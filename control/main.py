@@ -55,7 +55,7 @@ Initial_point = np.array([0.32299, -0.23264])
 Angle_initial = np.array([-0.311965, -0.139875, 1.981514])
 
 # impedance params :::
-Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])
+Move_Impedance_Params = np.array([30.0, 30.0, 4.0, 0.2])
 
 
 def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
