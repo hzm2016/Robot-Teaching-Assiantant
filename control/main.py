@@ -5,7 +5,7 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-# from motor_control import motor_control
+from motor_control import motor_control
 from path_planning.plot_path import *  
 from path_planning.path_generate import *  
 import time   
@@ -19,7 +19,7 @@ from scipy.io import loadmat
 # from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
 # from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
 # from forward_mode.utils.gmr_kernels import Gmr_based_kernel
-# import GPy  
+import GPy  
 from utils.word_preprocess import * 
 
 from scipy import interpolate
@@ -429,7 +429,7 @@ def eval_stroke(
     stroke_params=None,
     target_point=Initial_point,
     word_name='yi',
-    stroke_index='0',
+    stroke_index=0, 
     epi_time=0
 ):
     Num_way_points = stroke_points.shape[0]
@@ -456,9 +456,9 @@ def eval_stroke(
     else:
         os.makedirs(folder_name)
         
-    stroke_angle_name = folder_name + '/' + 'real_angle_list_' + stroke_index + '_' + str(
+    stroke_angle_name = folder_name + '/' + 'real_angle_list_' + str(stroke_index) + '_' + str(
         epi_time) + '.txt'
-    stroke_torque_name = folder_name + '/' + 'real_torque_list_' + stroke_index + '_' + str(
+    stroke_torque_name = folder_name + '/' + 'real_torque_list_' + str(stroke_index) + '_' + str(
         epi_time) + '.txt'
     done = motor_control.run_one_loop(
         stroke_points[:, 0].copy(), stroke_points[:, 1].copy(),
@@ -809,18 +809,18 @@ def training_samples_to_waypoints(
     if max_angle_2 < ANGLE_2_RANGE[0] or max_angle_2 > ANGLE_2_RANGE[1]:
         print("!!!!!! angle 1 is out of range !!!!!")
         print("max angle 2 :::", max_angle_2)
-        exit()
+        exit() 
 
-    load_impedance_list(
-        word_name=word_name,
-        stroke_index=0,
-        desired_angle_list=angle_list,
-        current_angle_list=angle_list,
-        joint_params=joint_params,
-        task_params=task_params
+    joint_params_list = load_impedance_list(
+        word_name=word_name,  
+        stroke_index=stroke_index,  
+        desired_angle_list=angle_list,  
+        current_angle_list=angle_list,   
+        joint_params=joint_params,   
+        task_params=task_params 
     )
         
-    return angle_list
+    return angle_list, joint_params_list 
 
 
 def load_impedance_list(
@@ -880,7 +880,7 @@ def main(args):
         # set_pen_up()
         # # set_pen_down()  
 
-        # motor_stop()
+        motor_stop()
 
         # target_point = np.array([0.40, -0.15])   
         # move_to_target_point(  
@@ -919,11 +919,11 @@ def main(args):
     
     # ===========================================================
     if args.eval == True:   
-        eval_times = 1
+        # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
-            word_name=args.word_name,
-            task_params=np.array([35, 35, 5, 0.5]),
-            joint_params=np.array([35, 35, 5, 0.5]),
+            word_name=args.word_name, 
+            task_params=np.array([35, 35, 5, 0.5]), 
+            joint_params=np.array([35, 35, 5, 0.5]), 
             )
         Num_waypoints = word_path[args.stroke_index]
         print("word_one_stroke_num_way_points :", Num_waypoints)
@@ -936,27 +936,29 @@ def main(args):
         #     joint_params=None,
         #     task_params=None
         # )
-        #
-        # stroke_points = training_samples_to_waypoints(
-        #     word_name=args.word_name,
-        #     stroke_index=0,
-        #     Num_waypoints=10000,
-        #     task_params=None,
-        #     joint_params=None,
-        #     plot=True
-        # )
-        #
-        # evaluation writing
-        for i in range(eval_times):
-            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
-            eval_stroke(
-                stroke_points=word_path[args.stroke_index],
-                stroke_params=word_joint_params[args.stroke_index],
-                target_point=Initial_point,
-                word_name=args.word_name,
-                stroke_index=args.stroke_index,
-                epi_time=i
-            )
+        
+        stroke_points = training_samples_to_waypoints(
+            word_name=args.word_name,
+            stroke_index=0,
+            Num_waypoints=10000,
+            task_params=None,
+            joint_params=None,
+            plot=True
+        )
+        
+        # # evaluation writing
+        # for i in range(args.eval_times): 
+        #     # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
+        #     eval_stroke(
+        #         stroke_points=word_path[args.stroke_index],
+        #         stroke_params=word_joint_params[args.stroke_index], 
+        #         target_point=Initial_point, 
+        #         word_name=args.word_name, 
+        #         stroke_index=args.stroke_index, 
+        #         epi_time=i
+        #     )
+
+        motor_stop() 
 
     
     # ===========================================================
@@ -1036,8 +1038,10 @@ if __name__ == "__main__":
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results') 
     parser.add_argument('--plot_word', type=bool, default=False, help='whether plot results')  
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
-    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
+    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name') 
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
+
+    parser.add_argument('--eval_times', type=int, default=1, help='give write word name')
 
     args = parser.parse_args()
 
