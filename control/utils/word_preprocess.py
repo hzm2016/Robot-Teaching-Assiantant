@@ -65,6 +65,7 @@ def de_scale_translate_process_main(
 def load_real_word_path(
     root_path=None,
     word_name='mu',
+    training_name='',
     file_name='real_angle_list_',
     epi_times=1,  
     num_stroke=3,
@@ -77,7 +78,7 @@ def load_real_word_path(
         trajectory_list = []
         for epi_index in range(epi_times):
             angle_list = np.loadtxt(
-                root_path + '/' + word_name + '/' + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
+                root_path + '/' + training_name + '/' + word_name + '/' + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
                 delimiter=delimiter,
                 skiprows=skiprows
                 )

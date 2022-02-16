@@ -1,6 +1,6 @@
 import argparse
 import os
-from motor_control import motor_control
+# from motor_control import motor_control
 import time
 
 from scipy import interpolate
@@ -363,6 +363,7 @@ def load_word_path(
 def generate_training_path(
     word_name='mu',
     eval_word_name='',
+    training_name='',
     stroke_index=3,
     epi_times=5,
     training_times=5,
@@ -375,6 +376,13 @@ def generate_training_path(
     from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
     from forward_mode.utils.gmr_kernels import Gmr_based_kernel
     import GPy
+
+    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + training_name
+    print('folder_name :', folder_name)
+    if os.path.exists(folder_name):
+        pass
+    else:
+        os.makedirs(folder_name)
     
     dt = 0.01
     font_size = 30
@@ -395,6 +403,7 @@ def generate_training_path(
     word_path = load_real_word_path(
         root_path=FILE_EVAL_NAME,
         word_name=eval_word_name,
+        training_name=training_name,
         file_name='real_angle_list_',
         epi_times=epi_times,
         num_stroke=num_stroke,
@@ -504,7 +513,7 @@ def generate_training_path(
             plt.tick_params(labelsize=font_size)
             plt.tight_layout()
             plt.title(word_name, fontsize=font_size)
-            plt.savefig(FILE_TRAIN_NAME + '/' + word_name + '/' + 'GMR_' + eval_word_name + '_stroke_' + str(stroke_index) + '.pdf')
+            plt.savefig(folder_name + '/' + 'GMR_' + eval_word_name + '_stroke_' + str(stroke_index) + '.pdf')
     
             plt.show()
 
@@ -617,18 +626,12 @@ def generate_training_path(
             plt.locator_params(nbins=3)
             plt.tick_params(labelsize=font_size)
             plt.tight_layout()
-            plt.savefig(FILE_TRAIN_NAME + '/' + word_name + '/' + 'GMRbGP_' + eval_word_name + '_stroke_' + str(
+            plt.savefig(folder_name + '/' + 'GMRbGP_' + eval_word_name + '_stroke_' + str(
                 stroke_index) + '_posteriors.pdf')
     
             plt.show()
-    
+        
         print("generated trajectories :", np.array(mu_posterior).shape)
-        folder_name = FILE_TRAIN_NAME + '/' + word_name
-        if os.path.exists(folder_name):
-            pass
-        else:
-            os.makedirs(folder_name)
-     
         np.save(folder_name + '/training_stroke_' + eval_word_name + '_' + str(stroke_index) + '_samples.npy', np.array(mu_posterior))
         return mu_posterior
 
@@ -822,9 +825,10 @@ def main(args):
         stroke_training_samples = generate_training_path(
             word_name=args.word_name,
             eval_word_name=args.eval_word_name,
+            training_name=args.training_name,
+            training_times=args.training_times,
             stroke_index=args.stroke_index,
             epi_times=args.eval_times,
-            training_times=args.training_times,
             num_stroke=1,
             plot=True
         )
