@@ -648,11 +648,11 @@ string angle_path_name, string torque_path_name
     ///////////////////////////////////////////////////////
     // avoid large motion at starting points 
     ///////////////////////////////////////////////////////
-    // for(int index=0; index<10; index=index+1)    
-    // {   
-    //     pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);   
-    //     pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
-    // }   
+    for(int index=0; index<10; index=index+1)    
+    {   
+        pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);   
+        pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);   
+    }   
 
     ///////////////////////////////////////////////////////
     // tracking all way points 

@@ -914,34 +914,34 @@ def main(args):
     # ===========================================================
     if args.hard_test:
 
-        theta_1 = motor_control.read_initial_angle_1()
-        print("theta_1 :", theta_1)
-        theta_2 = motor_control.read_initial_angle_2()
-        print("theta_2 :", theta_2)
-        theta_3 = motor_control.read_initial_angle_3()
-        print("theta_3 :", theta_3)
+        # theta_1 = motor_control.read_initial_angle_1()
+        # print("theta_1 :", theta_1)
+        # theta_2 = motor_control.read_initial_angle_2()
+        # print("theta_2 :", theta_2)
+        # theta_3 = motor_control.read_initial_angle_3()
+        # print("theta_3 :", theta_3)
 
         angle, point = get_observation()
-        print("angle :", angle)
+        # print("angle :", angle)
         print("point :", point)
 
         # set_pen_up()
         # # set_pen_down()
 
-        motor_stop()
+        # motor_stop()
 
-        # target_point = np.array([0.40, -0.15])
-        # move_to_target_point(
-        #     target_point,
-        #     # impedance_params=np.array([420.0, 420.0, 15.5, 15.5]),
-        #     impedance_params=np.array([30.0, 30.0, 4.0, 0.2]),
-        #     velocity=0.1
-        # )
+        target_point = np.array([0.35, -0.15])
+        move_to_target_point(
+            target_point,
+            # impedance_params=np.array([420.0, 420.0, 15.5, 15.5]),
+            impedance_params=np.array([40.0, 40.0, 5.0, 0.2]),
+            velocity=0.1  
+        )  
         
-        # time.sleep(0.2)
-        # angle, point = get_observation()
+        time.sleep(0.2)  
+        angle, point = get_observation()  
         # print("angle :", angle)
-        # print("point :", point)
+        print("point :", point)
 
         # stiff_joint, damping_joint = Stiff_convert(np.array([0.5, 0.5])
         # np.diag([40, 40]), np.diag([1.0, 1.0]))
@@ -955,7 +955,7 @@ def main(args):
         word_path, word_joint_params, word_task_params = load_word_path(
             word_name=args.word_name,
             task_params=np.array([35, 35, 5, 0.5]),
-            joint_params=np.array([35, 35, 5, 0.5]),
+            joint_params=np.array([40, 40, 5, 0.5]),
             )
         
         word_params = word_joint_params
@@ -968,11 +968,13 @@ def main(args):
     
     # ===========================================================
     if args.eval == True:
+        joint_params = np.array([20, 20, 4, 0.5]) 
+        task_params = np.array([20, 20, 4, 0.5])
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
             word_name=args.word_name,
-            task_params=np.array([15, 15, 1, 0.5]),
-            joint_params=np.array([15, 15, 1, 0.5]),
+            task_params=task_params,
+            joint_params=joint_params,
             )
 
         angle_list = word_path[args.stroke_index]
@@ -998,16 +1000,14 @@ def main(args):
         
         # evaluation writing
         for i in range(args.eval_times): 
-            joint_stiff = 5
-            joint_damping = 1
             stroke_points, joint_params_list = \
             training_samples_to_waypoints(
                 word_name=args.word_name,   
                 stroke_index=args.stroke_index,   
                 Num_waypoints=Num_waypoints,  
                 sample_index=i,  
-                task_params=np.array([joint_stiff, joint_stiff, joint_damping, 0.5]),  
-                joint_params=np.array([joint_stiff, joint_stiff, joint_damping, 0.5]),  
+                task_params=task_params,  
+                joint_params=joint_params,  
                 desire_angle_list=angle_list,  
                 plot=False 
             )
@@ -1026,7 +1026,7 @@ def main(args):
                 stroke_points=stroke_points,
                 stroke_params=joint_params_list,
                 target_point=Initial_point,
-                word_name=args.word_name + '_5', 
+                word_name=args.word_name + '_20', 
                 stroke_index=args.stroke_index,  
                 epi_time=i  
             )
