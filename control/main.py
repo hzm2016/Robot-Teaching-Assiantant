@@ -449,10 +449,16 @@ def eval_stroke(
         exit()
     else:
         params_list = stroke_params
-    
-    stroke_angle_name = './data/font_data/' + word_name + '/' + 'real_angle_list_' + stroke_index + '_' + str(
+
+    folder_name = FILE_EVAL_NAME + '/' + word_name
+    if os.path.exists(folder_name):
+        pass
+    else:
+        os.makedirs(folder_name)
+        
+    stroke_angle_name = folder_name + '/' + 'real_angle_list_' + stroke_index + '_' + str(
         epi_time) + '.txt'
-    stroke_torque_name = './data/font_data/' + word_name + '/' + 'real_torque_list_' + stroke_index + '_' + str(
+    stroke_torque_name = folder_name + '/' + 'real_torque_list_' + stroke_index + '_' + str(
         epi_time) + '.txt'
     done = motor_control.run_one_loop(
         stroke_points[:, 0].copy(), stroke_points[:, 1].copy(),
@@ -481,13 +487,13 @@ def load_word_path(
     task_params=None,
     joint_params=None
 ):
-    # load original training waypoints :::
+    # load original training way points :::
     word_file = root_path + '/' + word_name + '/'   
     stroke_list_file = glob.glob(word_file + 'angle_list_*txt')   
     print("Load stroke data %d", len(stroke_list_file))
 
     word_path = []   
-    word_joint_params = []   
+    word_joint_params = []
     word_task_params = []   
     
     for i in range(len(stroke_list_file)):  
