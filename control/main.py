@@ -821,9 +821,9 @@ def training_samples_to_waypoints(
     print("angle_list_shape :", angle_list.shape)
     
     joint_params_list = load_impedance_list(
-        word_name=word_name,  
-        stroke_index=stroke_index,  
-        desired_angle_list=angle_list,  
+        word_name=word_name,
+        stroke_index=stroke_index,
+        desired_angle_list=angle_list,
         current_angle_list=angle_list,   
         joint_params=joint_params,   
         task_params=task_params
