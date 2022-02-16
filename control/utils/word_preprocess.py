@@ -63,9 +63,9 @@ def de_scale_translate_process_main(
 
 
 def load_real_word_path(
-    root_path=None,   
-    word_name='mu',  
-    file_name='real_angle_list_',  
+    root_path=None,
+    word_name='mu',
+    file_name='real_angle_list_',
     epi_times=1,  
     num_stroke=3,
     plot=True
@@ -79,20 +79,20 @@ def load_real_word_path(
             angle_list = np.loadtxt(
                 root_path + '/' + word_name + '/' + file_name + str(stroke_index) + '_' + str(epi_index) + '.txt',
                 delimiter=delimiter,
-                skiprows=skiprows 
+                skiprows=skiprows
                 )
             # angle_list : desired and real-time
             angle_list_1_e = angle_list[:, 0]
             angle_list_2_e = angle_list[:, 3]
             angle_list_1_t = angle_list[:, 1]
             angle_list_2_t = angle_list[:, 4]
-
+            
             x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
             y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
-
+            
             x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
             y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
-            # print('x_t', x_t, 'y_t', y_t)
+            
             trajectory = np.stack((x_e, y_e, x_t, y_t), axis=1)
             trajectory_list.append(trajectory) 
         word_path.append(trajectory_list) 
@@ -179,9 +179,10 @@ def load_new_obs_path(
     
 
 def eval_data_preprocess(
-    word_path, 
-    stroke_index, 
-    epi_times=5, 
+    # word_path,
+    # stroke_index,
+    stroke_path,
+    epi_times=5,
     re_sample_index=20,
     dt=0.01, 
     plot=False
@@ -189,10 +190,10 @@ def eval_data_preprocess(
     """
         get data for one stroke
     """
-    output_dim = 2 
-    stroke_path = np.array(word_path[stroke_index])
+    output_dim = 2
+    # stroke_path = np.array(word_path[stroke_index])
     
-    # print("stroke path :", stroke_path.shape) 
+    # print("stroke path :", stroke_path.shape)
     x_list = stroke_path[:, :, 2]
     y_list = stroke_path[:, :, 3]
 
