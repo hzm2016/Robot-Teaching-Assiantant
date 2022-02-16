@@ -259,6 +259,7 @@ def eval_stroke(
     stroke_params=None,
     target_point=Initial_point,
     word_name='yi',
+    training_name='second_time',
     stroke_index=0,
     epi_time=0
 ):
@@ -279,8 +280,8 @@ def eval_stroke(
         exit()
     else:
         params_list = stroke_params
-
-    folder_name = FILE_EVAL_NAME + '/' + word_name
+    
+    folder_name = FILE_EVAL_NAME + '/' + training_name + '/' + word_name
     if os.path.exists(folder_name):
         pass
     else:
@@ -858,13 +859,13 @@ def main(args):
             training_samples_to_waypoints(
                 word_name=args.word_name,
                 eval_word_name=args.eval_word_name,
-                stroke_index=args.stroke_index,   
+                stroke_index=args.stroke_index,
                 Num_waypoints=Num_waypoints,  
                 sample_index=i,  
                 task_params=task_params,  
                 joint_params=joint_params,  
                 desire_angle_list=angle_list,  
-                plot=False 
+                plot=False
             )
 
             # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
@@ -882,7 +883,8 @@ def main(args):
                 stroke_params=joint_params_list,
                 target_point=Initial_point,
                 word_name=args.save_word_name,
-                stroke_index=args.stroke_index,  
+                training_name=args.training_name,
+                stroke_index=args.stroke_index,
                 epi_time=i
             )
         
@@ -957,7 +959,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--test', type=bool, default=False, help='hardware design')
     parser.add_argument('--assist', type=bool, default=False, help='assist mode')
@@ -970,6 +971,8 @@ if __name__ == "__main__":
     parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
     parser.add_argument('--sample_index', type=int, default=0, help='give write word name')
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
+
+    parser.add_argument('--training_name', type=str, default='second_time', help='give write word name')
 
     parser.add_argument('--eval_times', type=int, default=5, help='give write word name')
     parser.add_argument('--training_times', type=int, default=5, help='give write word name')
