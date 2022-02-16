@@ -612,13 +612,14 @@ def generate_training_path(
         pass
     else:
         os.makedirs(folder_name)
-
+ 
     np.save(folder_name + '/training_stroke_' + eval_word_name + '_' + str(stroke_index) + '_samples.npy', np.array(mu_posterior))
     return mu_posterior
 
 
 def training_samples_to_waypoints(
     word_name='mu',
+    eval_word_name='',
     stroke_index=0,
     Num_waypoints=10000,
     sample_index=0,
@@ -628,7 +629,7 @@ def training_samples_to_waypoints(
     plot=True
 ):
     print("============== {} ============".format('Load Training Samples !!!'))
-    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/training_stroke_' + str(stroke_index) + '_samples.npy'
+    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/training_stroke_' + eval_word_name + '_' + str(stroke_index) + '_samples.npy'
     training_samples = np.load(folder_name)
     angle_list = np.zeros((Num_waypoints, 2))
     
@@ -813,8 +814,9 @@ def main(args):
         )
     
     if args.eval:
-        joint_params = np.array([20, 20, 4, 0.5]) 
-        task_params = np.array([20, 20, 4, 0.5])
+        joint_params = np.array([5, 5, 1, 0.5])
+        task_params = np.array([5, 5, 1, 0.5])
+        
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
             word_name=args.word_name,
@@ -836,10 +838,11 @@ def main(args):
         # )
         
         # evaluation writing
-        for i in range(args.eval_times): 
+        for i in range(args.eval_times):
             stroke_points, joint_params_list = \
             training_samples_to_waypoints(
-                word_name=args.word_name,   
+                word_name=args.word_name,
+                eval_word_name=args.eval_word_name,
                 stroke_index=args.stroke_index,   
                 Num_waypoints=Num_waypoints,  
                 sample_index=i,  
@@ -863,9 +866,9 @@ def main(args):
                 stroke_points=stroke_points,
                 stroke_params=joint_params_list,
                 target_point=Initial_point,
-                word_name=args.word_name + '_20', 
+                word_name=args.save_word_name,
                 stroke_index=args.stroke_index,  
-                epi_time=i  
+                epi_time=i
             )
         
         motor_stop()
@@ -948,6 +951,7 @@ if __name__ == "__main__":
     parser.add_argument('--sample', type=bool, default=False, help='whether plot results')
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
     parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name')
+    parser.add_argument('--save_word_name', type=str, default='yi_5_5', help='give write word name')
     parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
     parser.add_argument('--sample_index', type=int, default=0, help='give write word name')
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
@@ -956,7 +960,7 @@ if __name__ == "__main__":
     parser.add_argument('--training_times', type=int, default=5, help='give write word name')
 
     args = parser.parse_args()
-
+    
     main(args)
 
     # load_eval_path(
