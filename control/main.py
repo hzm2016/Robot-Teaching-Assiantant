@@ -151,7 +151,7 @@ def train(angle_initial=Angle_initial, run_on=True, Load_path=False):
     _server.close()
 
 
-def eval_writting(run_on=True, Load_path=False):
+def eval_writing(run_on=True, Load_path=False):
     """
         eval writting performance :
     """
@@ -214,7 +214,7 @@ def eval_writting(run_on=True, Load_path=False):
 
 def set_pen_up():  
     """ 
-        pull pen up 
+        pull pen up
     """ 
     # motor_control.motor_3_stop()
     up_angle = np.int32(9000) 
@@ -476,7 +476,7 @@ def eval_stroke(
 
 
 def load_word_path(
-    root_path='./data/font_data',  
+    root_path='./data/font_data',
     word_name=None,
     task_params=None,
     joint_params=None
@@ -566,31 +566,7 @@ def generate_training_path(
     ) 
     
     # ===================== generate new samples =============
-    # word mu stroke : 0
-    # X_obs = np.array([0.3, 1.0])[:, None]
-    # x_list_1 = np.array([0.27, 0.275])
-    # y_list_1 = np.array([-0.06, 0.07])
-    
-    # # word mu stroke : 1
-    # X_obs = np.array([0.15, 1.0])[:, None]
-    # x_list_1 = np.array([0.23, 0.35])
-    # y_list_1 = np.array([-0.01, 0.01])
-    
-    # # word mu stroke : 2
-    # X_obs = np.array([0.05, 1.1])[:, None]
-    # x_list_1 = np.array([0.3, 0.38])
-    # y_list_1 = np.array([-0.03, -0.15])
-    
-    # # word mu stroke : 3
-    X_obs = np.array([0.05, 0.9, 1.3])[:, None]  
-    x_list_1 = np.array([0.3, 0.37, 0.38])  
-    y_list_1 = np.array([-0.01, 0.09, 0.15]) 
-
-    X_obs_list, Y_obs_list, X_obs, Y_obs = obs_data_preprocess(
-        X_obs, 
-        x_list_1, 
-        y_list_1  
-    )
+    X_obs_list, Y_obs_list, X_obs, Y_obs = load_new_obs_path(word_name='mu')
 
     # ========================================================
     # ========================= GMM ==========================
