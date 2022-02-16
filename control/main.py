@@ -1,6 +1,6 @@
 import argparse
 import os
-from motor_control import motor_control 
+# from motor_control import motor_control
 import time
 
 from scipy import interpolate
@@ -526,7 +526,7 @@ def generate_training_path(
         Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
     
         likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=1) for j in range(output_dim)]
-        kernel_list = [GPy.kern.Matern52(1, variance=10., lengthscale=5) for i in range(gmr_model.nb_states)]
+        kernel_list = [GPy.kern.Matern52(1, variance=1., lengthscale=0.5) for i in range(gmr_model.nb_states)]
         # kernel_list = [GPy.kern.RBF(1, variance=1, lengthscale=0.5) for i in range(gmr_model.nb_states)]
         # kernel_list = [GPy.kern.RBF(1, variance=5, lengthscale=2) for i in range(gmr_model.nb_states)]
     
