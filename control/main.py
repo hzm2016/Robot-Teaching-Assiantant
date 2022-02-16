@@ -1,6 +1,6 @@
 import argparse
 import os
-from motor_control import motor_control
+# from motor_control import motor_control
 import time
 
 from scipy import interpolate
@@ -822,7 +822,7 @@ def main(args):
             word_name=args.word_name,
             task_params=task_params,
             joint_params=joint_params,
-            )
+        )
 
         angle_list = word_path[args.stroke_index]
         Num_waypoints = angle_list.shape[0]
