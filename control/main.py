@@ -5,9 +5,9 @@ from protocol.task_interface import *
 import numpy as np
 import math
 import os
-# from motor_control import motor_control
-from path_planning.plot_path import *
-from path_planning.path_generate import *
+from motor_control import motor_control
+from path_planning.plot_path import * 
+from path_planning.path_generate import * 
 import time
 import glob
 import scipy
@@ -52,7 +52,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])
 
-Angle_initial = np.array([-0.333945, -0.102573, 1.981514])
+Angle_initial = np.array([-0.311965, -0.139875, 1.981514])
 
 # impedance params :::
 Move_Impedance_Params = np.array([20.0, 20.0, 4.0, 0.2])
@@ -871,21 +871,21 @@ def training_samples_to_waypoints(
 
 
 def load_impedance_list(
-        word_name='mu',
-        stroke_index=0,
-        desired_angle_list=None,
-        current_angle_list=None,
-        joint_params=None,
-        task_params=None
+    word_name='mu', 
+    stroke_index=0, 
+    desired_angle_list=None, 
+    current_angle_list=None, 
+    joint_params=None,  
+    task_params=None  
 ):
     print("============== {} ============".format('Load Impedance !!!'))
-    way_points = desired_angle_list
-    N_way_points = way_points.shape[0]
+    way_points = desired_angle_list  
+    N_way_points = way_points.shape[0]  
     
     # joint parameters
     if joint_params is not None:
         joint_params_list = np.tile(joint_params, (way_points.shape[0], 1))
-    else:
+    else:  
         joint_params_list = np.loadtxt(FILE_TRAIN_NAME + '/' + word_name + '/' + 'params_stroke_list_' + str(stroke_index) + '.txt', delimiter=' ')
     
     # task parameters
@@ -894,12 +894,12 @@ def load_impedance_list(
     else:
         task_params_list = np.loadtxt(FILE_TRAIN_NAME + '/' + word_name + '/' + 'params_stroke_list_' + str(stroke_index) + '.txt', delimiter=' ')
     
-    stiffness_list = task_params_list[:, :2]
-    damping_list = task_params_list[:, 2:]
-    joint_params_list = generate_stroke_stiffness_path(
-        desired_angle_list, stiffness_list, damping_list,
-        save_path=False, save_root=FILE_TRAIN_NAME, word_name=word_name, stroke_index=stroke_index
-    )
+    # stiffness_list = task_params_list[:, :2] 
+    # damping_list = task_params_list[:, 2:] 
+    # joint_params_list = generate_stroke_stiffness_path(
+    #     desired_angle_list, stiffness_list, damping_list,
+    #     save_path=False, save_root=FILE_TRAIN_NAME, word_name=word_name, stroke_index=stroke_index
+    # )
     
     return joint_params_list
 
@@ -913,12 +913,12 @@ def main(args):
     # ===========================================================
     if args.hard_test:
 
-        # theta_1 = motor_control.read_initial_angle_1()
-        # print("theta_1 :", theta_1)
-        # theta_2 = motor_control.read_initial_angle_2()
-        # print("theta_2 :", theta_2)
-        # theta_3 = motor_control.read_initial_angle_3()
-        # print("theta_3 :", theta_3)
+        theta_1 = motor_control.read_initial_angle_1()
+        print("theta_1 :", theta_1)
+        theta_2 = motor_control.read_initial_angle_2()
+        print("theta_2 :", theta_2)
+        theta_3 = motor_control.read_initial_angle_3()
+        print("theta_3 :", theta_3)
 
         angle, point = get_observation()
         print("angle :", angle)
@@ -995,31 +995,40 @@ def main(args):
         #     joint_params=np.array([35, 35, 5, 0.5])
         # )
         
-        stroke_points, joint_params_list = \
-            training_samples_to_waypoints(
-                word_name=args.word_name,
-                stroke_index=args.stroke_index,
-                Num_waypoints=Num_waypoints,
-                sample_index=2,
-                task_params=np.array([35, 35, 5, 0.5]),
-                joint_params=np.array([35, 35, 5, 0.5]),
-                desire_angle_list=angle_list,
-                plot=True
-        )
-        
         # evaluation writing
-        # for i in range(args.eval_times):
-        #     # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
-        #     eval_stroke(
-        #         stroke_points=word_path[args.stroke_index],
-        #         stroke_params=word_joint_params[args.stroke_index],
-        #         target_point=Initial_point,
-        #         word_name=args.word_name + '_15',
-        #         stroke_index=args.stroke_index,
-        #         epi_time=i
-        #     )
-        #
-        # motor_stop()
+        for i in range(args.eval_times): 
+            stroke_points, joint_params_list = \
+            training_samples_to_waypoints(
+                word_name=args.word_name,   
+                stroke_index=args.stroke_index,   
+                Num_waypoints=Num_waypoints,  
+                sample_index=i,  
+                task_params=np.array([35, 35, 5, 0.5]),  
+                joint_params=np.array([35, 35, 5, 0.5]),  
+                desire_angle_list=angle_list,  
+                plot=False 
+            )
+
+            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
+            # eval_stroke(
+            #     stroke_points=word_path[args.stroke_index],
+            #     stroke_params=word_joint_params[args.stroke_index],
+            #     target_point=Initial_point,
+            #     word_name=args.word_name + '_35', 
+            #     stroke_index=args.stroke_index,  
+            #     epi_time=i  
+            # )
+
+            eval_stroke(
+                stroke_points=stroke_points,
+                stroke_params=joint_params_list,
+                target_point=Initial_point,
+                word_name=args.word_name + '_35', 
+                stroke_index=args.stroke_index,  
+                epi_time=i  
+            )
+        
+        motor_stop()
 
     
     # ===========================================================
@@ -1033,14 +1042,14 @@ def main(args):
         #     skiprows=1
         # )
 
-        # plot_real_2d_path(
-        #     root_path=FILE_EVAL_NAME +'/' + args.word_name + '/',
-        #     file_name='real_angle_list_',
-        #     stroke_num=1,
-        #     epi_times=args.eval_times,
-        #     delimiter=',',
-        #     skiprows=1
-        # )
+        plot_real_2d_path(
+            root_path=FILE_EVAL_NAME +'/' + args.word_name + '/',
+            file_name='real_angle_list_',
+            stroke_num=1,
+            epi_times=args.eval_times,
+            delimiter=',',
+            skiprows=1
+        )
         
         # word_path, word_joint_params, word_task_params= \
         #     load_word_path(
@@ -1056,15 +1065,15 @@ def main(args):
         #     line_width=3.0
         # )
 
-        plot_torque_path(
-            root_path=FILE_EVAL_NAME + '/' + args.word_name + '/',
-            file_name='real_torque_list_',
-            stroke_num=1,
-            epi_time=args.eval_times,
-            delimiter=',',
-            skiprows=1,
-            render=True
-        )
+        # plot_torque_path(
+        #     root_path=FILE_EVAL_NAME + '/' + args.word_name + '/',
+        #     file_name='real_torque_list_',
+        #     stroke_num=1,
+        #     epi_time=args.eval_times,
+        #     delimiter=',',
+        #     skiprows=1,
+        #     render=True
+        # )
 
         # plot_velocity_path(
         #     root_path=FILE_EVAL_NAME + '/' + args.word_name + '/',

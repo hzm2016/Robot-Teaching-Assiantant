@@ -154,9 +154,9 @@ def plot_real_trajectory(
 
 def plot_real_2d_path(
     root_path='./motor_control/bin/data/',
-    file_name='',
+    file_name='',  
     stroke_num=1,  
-    epi_times=0, 
+    epi_times=0,  
     delimiter=',',  
     skiprows=1
 ):
@@ -185,8 +185,8 @@ def plot_real_2d_path(
             x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
             y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
         
-            plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
-            plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
+            plt.plot(x_e, y_e, linewidth=linewidth, label='desired', color='black')   
+            plt.plot(x_t, y_t, linewidth=linewidth, label='real')   
 
     plt.xlabel('$x(m)$', fontsize=FONT_SIZE)   
     plt.ylabel('$y(m)$', fontsize=FONT_SIZE)   
