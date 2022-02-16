@@ -5,7 +5,7 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-# from motor_control import motor_control
+from motor_control import motor_control
 from path_planning.plot_path import *   
 from path_planning.path_generate import *  
 import time   
@@ -966,20 +966,21 @@ def main(args):
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
             word_name=args.word_name, 
-            task_params=np.array([35, 35, 5, 0.5]), 
-            joint_params=np.array([35, 35, 5, 0.5]), 
+            task_params=np.array([15, 15, 1, 0.5]), 
+            joint_params=np.array([15, 15, 1, 0.5]), 
             )
+
         angle_list = word_path[args.stroke_index] 
         Num_waypoints = angle_list.shape[0] 
         print("word_one_stroke_num_way_points :", Num_waypoints)
         
-        stroke_training_samples = generate_training_path(
-            word_name=args.word_name,
-            stroke_index=args.stroke_index,
-            epi_times=5,
-            num_stroke=1,
-            plot=True
-        )
+        # stroke_training_samples = generate_training_path(
+        #     word_name=args.word_name,
+        #     stroke_index=args.stroke_index,
+        #     epi_times=5,
+        #     num_stroke=1,
+        #     plot=True
+        # )
         
         # joint_params_list = load_impedance_list(
         #     word_name=args.word_name,
@@ -1001,19 +1002,19 @@ def main(args):
         #         plot=True
         # )
         
-        # # evaluation writing
-        # for i in range(args.eval_times):
-        #     # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
-        #     eval_stroke(
-        #         stroke_points=word_path[args.stroke_index],
-        #         stroke_params=word_joint_params[args.stroke_index],
-        #         target_point=Initial_point,
-        #         word_name=args.word_name,
-        #         stroke_index=args.stroke_index,
-        #         epi_time=i
-        #     )
-        #
-        # motor_stop()
+        # evaluation writing
+        for i in range(args.eval_times):
+            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
+            eval_stroke(
+                stroke_points=word_path[args.stroke_index],
+                stroke_params=word_joint_params[args.stroke_index],
+                target_point=Initial_point,
+                word_name=args.word_name + '_15',
+                stroke_index=args.stroke_index,
+                epi_time=i
+            )
+        
+        motor_stop()
 
     
     # ===========================================================
