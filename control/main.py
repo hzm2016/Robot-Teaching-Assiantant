@@ -1,6 +1,6 @@
 import argparse
 import os
-# from motor_control import motor_control
+from motor_control import motor_control
 import time
 
 from scipy import interpolate
