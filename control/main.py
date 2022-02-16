@@ -1,29 +1,12 @@
-from pickle import FALSE
-from matplotlib.pyplot import plot
-from numpy.core.arrayprint import format_float_scientific
-from protocol.task_interface import *
-import numpy as np
-import math
+import argparse
 import os
 # from motor_control import motor_control
-from path_planning.plot_path import *
-from path_planning.path_generate import *
 import time
-import glob
-import scipy
-import argparse
-
-# path prediction
-from scipy.io import loadmat
-from scipy.signal import savgol_filter
-from forward_mode.utils.gmr import Gmr, plot_gmm
-from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
-from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
-from forward_mode.utils.gmr_kernels import Gmr_based_kernel
-import GPy
-from utils.word_preprocess import *
 
 from scipy import interpolate
+
+# path prediction
+from utils.word_preprocess import *
 
 sns.set(font_scale=1.5)
 np.set_printoptions(precision=5)
@@ -378,28 +361,37 @@ def load_word_path(
 
 def generate_training_path(
     word_name='mu',
+    eval_word_name='',
     stroke_index=3,
     epi_times=5,
+    training_times=5,
     num_stroke=4,
     plot=False
 ):
+    from forward_mode.utils.gmr import Gmr
+    from forward_mode.utils.gmr import plot_gmm
+    from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
+    from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
+    from forward_mode.utils.gmr_kernels import Gmr_based_kernel
+    import GPy
+    
     dt = 0.01
     font_size = 30
     input_dim = 1  # time
     output_dim = 2  # x, y
-    re_sample_index = int(40),
+    re_sample_index = int(40)
 
     # training hyper-parameters
     in_idx = [0]
     out_idx = [1, 2]
-    nb_states = 6
+    nb_states = 5
     nb_prior_samples = 10
-    nb_posterior_samples = 5
+    nb_posterior_samples = training_times
 
     # ====================== data processing ======================
     word_path = load_real_word_path(
         root_path=FILE_EVAL_NAME,
-        word_name=word_name + '_15',
+        word_name=eval_word_name,
         file_name='real_angle_list_',
         epi_times=epi_times,
         num_stroke=num_stroke,
@@ -407,7 +399,7 @@ def generate_training_path(
     )
 
     train_word_path, _, _ = load_word_path(
-        word_name=args.word_name,
+        word_name=word_name,
         task_params=np.array([35, 35, 5, 0.5]),
         joint_params=np.array([35, 35, 5, 0.5]),
     )
@@ -420,7 +412,6 @@ def generate_training_path(
     down_stroke_list, idx_list = fps(stroke_list, 0.002)
     idx_list = np.sort(idx_list)
     down_stroke_list = down_stroke_list[idx_list]
-    # print('x_list :', down_stroke_list)
     down_stroke_list = np.array(down_stroke_list)
    
     # X_obs_list, Y_obs_list = scale_translate_process_main(
@@ -437,8 +428,8 @@ def generate_training_path(
             word_path,
             stroke_index,
             epi_times=epi_times,
-            re_sample_index=40,
-            dt=0.01,
+            re_sample_index=re_sample_index,
+            dt=dt,
             plot=False
     )
     T = Xt[-1][0]
@@ -479,7 +470,7 @@ def generate_training_path(
             plt.scatter(Y[p * nb_data, 0], Y[p * nb_data, 1], color=[.7, .7, .7], marker='X', s=50)
         plt.plot(mu_gmr[:, 0], mu_gmr[:, 1], color=[0.20, 0.54, 0.93], linewidth=3)
         plt.scatter(mu_gmr[0, 0], mu_gmr[0, 1], color=[0.20, 0.54, 0.93], marker='X', s=50)
-        plot_gmm(mu_gmr, sigma_gmr, alpha=0.05, color=[0.20, 0.54, 0.93])
+        plot_gmm(mu_gmr, sigma_gmr, alpha=0.09, color=[0.20, 0.54, 0.93])
         plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
         # plt.scatter(X_obs_list, Y_obs_list, color=[0, 0, 0], zorder=60, s=100)
 
@@ -498,7 +489,7 @@ def generate_training_path(
         plt.tick_params(labelsize=font_size)
         plt.tight_layout()
         plt.title(word_name, fontsize=font_size)
-        plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMR_' + word_name + '_stroke_' + str(stroke_index) + '.pdf')
+        plt.savefig(FILE_TRAIN_NAME + '/' + word_name + '/' + 'GMR_' + eval_word_name + '_stroke_' + str(stroke_index) + '.pdf')
 
         plt.show()
 
@@ -609,7 +600,7 @@ def generate_training_path(
         plt.locator_params(nbins=3)
         plt.tick_params(labelsize=font_size)
         plt.tight_layout()
-        plt.savefig(FILE_FIG_NAME + '/' + word_name + '/' + 'GMRbGP_' + word_name + '_stroke_' + str(
+        plt.savefig(FILE_TRAIN_NAME + '/' + word_name + '/' + 'GMRbGP_' + eval_word_name + '_stroke_' + str(
             stroke_index) + '_posteriors.pdf')
 
         plt.show()
@@ -756,7 +747,7 @@ def main(args):
     # motor stop
     # motor_control.motor_two_link_stop()
 
-    if args.hard_test:
+    if args.test:
 
         # theta_1 = motor_control.read_initial_angle_1()
         # print("theta_1 :", theta_1)
@@ -807,17 +798,17 @@ def main(args):
             # word
             write_word(word_path, word_params=word_params, word_name=args.word_name, epi_times=i)
             # stroke
-            
-    if args.training_samples:
-        stroke_training_samples = \
-            generate_training_path(
-                word_name=args.word_name,
-                stroke_index=args.stroke_index,
-                epi_times=5,
-                num_stroke=1,
-                plot=True
+
+    if args.sample:
+        stroke_training_samples = generate_training_path(
+            word_name=args.word_name,
+            eval_word_name=args.eval_word_name,
+            stroke_index=args.stroke_index,
+            epi_times=args.eval_times,
+            training_times=args.training_times,
+            num_stroke=1,
+            plot=True
         )
-    
     
     if args.eval:
         joint_params = np.array([20, 20, 4, 0.5]) 
@@ -877,8 +868,7 @@ def main(args):
         
         motor_stop()
 
-    
-    if args.plot_word:
+    if args.plot:
         # plot_real_stroke_2d_path(
         #     root_path='./data/font_data/xing/',
         #     file_name='angle_list_5',
@@ -953,14 +943,14 @@ if __name__ == "__main__":
     parser.add_argument('--assist', type=bool, default=False, help='assist mode')
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results')
     parser.add_argument('--plot', type=bool, default=False, help='whether plot results')
-    parser.add_argument('--training_samples', type=bool, default=False, help='whether plot results')
+    parser.add_argument('--sample', type=bool, default=False, help='whether plot results')
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
     parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name')
     parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
     parser.add_argument('--sample_index', type=int, default=0, help='give write word name')
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
 
-    parser.add_argument('--eval_times', type=int, default=1, help='give write word name')
+    parser.add_argument('--eval_times', type=int, default=5, help='give write word name')
     parser.add_argument('--training_times', type=int, default=5, help='give write word name')
 
     args = parser.parse_args()
