@@ -382,7 +382,8 @@ def write_stroke(
     # time.sleep(0.5)
 
     done = set_pen_down()
-    # time.sleep(0.5)
+
+    time.sleep(0.5)
     
     # params_list = np.tile(impedance_params, (Num_way_points, 1))
     if stroke_params is None:
@@ -997,14 +998,16 @@ def main(args):
         
         # evaluation writing
         for i in range(args.eval_times): 
+            joint_stiff = 5
+            joint_damping = 1
             stroke_points, joint_params_list = \
             training_samples_to_waypoints(
                 word_name=args.word_name,   
                 stroke_index=args.stroke_index,   
                 Num_waypoints=Num_waypoints,  
                 sample_index=i,  
-                task_params=np.array([35, 35, 5, 0.5]),  
-                joint_params=np.array([35, 35, 5, 0.5]),  
+                task_params=np.array([joint_stiff, joint_stiff, joint_damping, 0.5]),  
+                joint_params=np.array([joint_stiff, joint_stiff, joint_damping, 0.5]),  
                 desire_angle_list=angle_list,  
                 plot=False 
             )
@@ -1023,7 +1026,7 @@ def main(args):
                 stroke_points=stroke_points,
                 stroke_params=joint_params_list,
                 target_point=Initial_point,
-                word_name=args.word_name + '_35', 
+                word_name=args.word_name + '_5', 
                 stroke_index=args.stroke_index,  
                 epi_time=i  
             )
