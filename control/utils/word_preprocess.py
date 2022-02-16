@@ -5,6 +5,7 @@ from forward_mode.utils.gmr import Gmr
 from path_planning.path_generate import *
 # from forward_mode.GMR_based_GPR01 import X_list, Y_list
 from path_planning.plot_path import *
+from sklearn.metrics.pairwise import pairwise_distances
 
 
 sns.set(font_scale=2.5)
@@ -99,33 +100,75 @@ def load_real_word_path(
     if plot:
         plot_real_osc_2d_path(word_path)    
     print("Have load trajectories of {} index by {} evaluation !!! ".format(num_stroke, epi_times))   
-    return word_path   
+    return word_path
 
 
+def Forward_list(
+    stroke_path=None
+):
+    angle_list_1_t = stroke_path[:, 0]
+    angle_list_2_t = stroke_path[:, 1]
+    trajectory_list = np.zeros_like(stroke_path)
+    x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t)
+    y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t)
+    trajectory_list[:, 0] = x_t
+    trajectory_list[:, 1] = y_t
+    return trajectory_list
+    
+
+def fps(points, frac):
+    P = np.array(points)
+    num_points = int(P.shape[0] * frac)
+    D = pairwise_distances(P, metric='euclidean')
+    N = D.shape[0]
+    #By default, takes the first point in the list to be the
+    #first point in the permutation, but could be random
+    perm = np.zeros(N, dtype=np.int64)
+    lambdas = np.zeros(N)
+    # import random
+    # random.seed(0)
+    # stpt = random.randint(0,N-1)
+    ds = D[0, :]
+    idx_list =[]
+    for i in range(1, N):
+        idx = np.argmax(ds)
+        idx_list.append(idx)
+        perm[i] = idx
+        lambdas[i] = ds[idx]
+        ds = np.minimum(ds, D[idx, :])
+    return P, perm[:num_points]
+
+ 
 def load_new_obs_path(
-    word_name='mu'
+    Num_way_point,
+    T,
+    x_list_1,
+    y_list_1,
+    idx_list
 ):
     """ """
+    X_obs = (idx_list/Num_way_point * T)[:, None]
+    print("X_obs :", X_obs)
     # word mu stroke : 0
-    X_obs = np.array([0.3, 1.0])[:, None]
-    x_list_1 = np.array([0.27, 0.275])
-    y_list_1 = np.array([-0.06, 0.07])
-    
+    # X_obs = np.array([0.3, 1.0])[:, None]
+    # x_list_1 = np.array([0.285, 0.275])
+    # y_list_1 = np.array([-0.06, 0.07])
+
     # # word mu stroke : 1
     # X_obs = np.array([0.15, 1.0])[:, None]
     # x_list_1 = np.array([0.23, 0.35])
     # y_list_1 = np.array([-0.01, 0.01])
-    
+
     # # word mu stroke : 2
     # X_obs = np.array([0.05, 1.1])[:, None]
     # x_list_1 = np.array([0.3, 0.38])
     # y_list_1 = np.array([-0.03, -0.15])
-    
+
     # # word mu stroke : 3
     # X_obs = np.array([0.05, 0.9, 1.3])[:, None]
     # x_list_1 = np.array([0.3, 0.37, 0.38])
     # y_list_1 = np.array([-0.01, 0.09, 0.15])
-    
+
     X_obs_list, Y_obs_list, X_obs, Y_obs = obs_data_preprocess(
         X_obs,
         x_list_1,
@@ -146,7 +189,8 @@ def eval_data_preprocess(
         get data for one stroke
     """
     output_dim = 2 
-    stroke_path = np.array(word_path[stroke_index]) 
+    stroke_path = np.array(word_path[stroke_index])
+    
     # print("stroke path :", stroke_path.shape) 
     x_list = stroke_path[:, :, 2]
     y_list = stroke_path[:, :, 3]
