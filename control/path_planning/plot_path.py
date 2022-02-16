@@ -822,6 +822,41 @@ def plot_sea_angle_torque_path(
     plt.show()
 
 
+def plot_move_target_path(
+    angle_list=np.loadtxt('./data/move_target_angle_list.txt', delimiter=',', skiprows=1),
+    torque_list=np.loadtxt('./data/move_target_torque_list.txt', delimiter=',', skiprows=1)
+):
+    fig = plt.figure(figsize=(20, 8))
+    plt.subplot(1, 2, 1)
+    plt.subplots_adjust(wspace=2, hspace=0)
+    
+    plt.plot(angle_list[:, 0], linewidth=linewidth, label=r'$q_{1t}$')
+    plt.plot(angle_list[:, 1], linewidth=linewidth, label=r'$q_{1e}$')
+    plt.plot(angle_list[:, 3], linewidth=linewidth, label=r'$q_{2t}$')
+    plt.plot(angle_list[:, 4], linewidth=linewidth, label=r'$q_{2e}$')
+    # plt.xlim([0, 128])
+    # plt.ylim([0, 128])
+    plt.xlabel('time($t$)')
+    plt.ylabel('angle(rad)')
+    # plt.axis('equal')
+    plt.legend()
+    
+    plt.subplot(1, 2, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    
+    plt.plot(torque_list[:, 0], linewidth=linewidth, label=r'$\tau_{1o}$')
+    plt.plot(torque_list[:, 2], linewidth=linewidth, label=r'$\tau_{2o}$')
+    
+    # plt.xlim([0., 0.6])
+    # plt.ylim([0., 0.6])
+    plt.xlabel('time($t$)')
+    plt.ylabel('torque(Nm)')
+    plt.legend()
+    
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
     
     

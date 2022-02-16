@@ -5,7 +5,7 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-from motor_control import motor_control 
+# from motor_control import motor_control
 from path_planning.plot_path import *  
 from path_planning.path_generate import *  
 import time   
@@ -264,7 +264,7 @@ def get_demo_writting():
 
     set_pen_down()  
     motor_control.get_demonstration(Angle_initial[0], Angle_initial[1], 
-    2.0, 2.0, 0.0, 0.0, buff_size)  
+    2.0, 2.0, 0.0, 0.0, buff_size)
 
 
 def get_observation(angle_initial=Angle_initial): 
@@ -901,14 +901,13 @@ def main(args):
         # print("damping_joint :", damping_joint) 
         # motor_control.Convert_stiffness(40.0, 40.0, 0.5, 0.5)
     
-    
     # =========================================================== 
     if args.assist == True:   
         eval_times = 1  
         word_path, word_joint_params, word_task_params = load_word_path(
             word_name=args.word_name,   
-            task_params=np.array([35, 35, 5, 0.5]),  
-            joint_params=np.array([35, 35, 5, 0.5]),   
+            task_params=np.array([35, 35, 5, 0.5]),
+            joint_params=np.array([35, 35, 5, 0.5]),
             )  
         
         word_params = word_joint_params
@@ -921,21 +920,42 @@ def main(args):
     # ===========================================================
     if args.eval == True:   
         eval_times = 1
-        word_path, word_params, real_path = load_word_path(
-            word_name=write_name,   
-            joint_params=np.array([20, 20, 1, 0.5])    
-            )  
-
-        # evaluation writing  
-        for i in range(eval_times):   
-            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)  
+        word_path, word_joint_params, word_task_params = load_word_path(
+            word_name=args.word_name,
+            task_params=np.array([35, 35, 5, 0.5]),
+            joint_params=np.array([35, 35, 5, 0.5]),
+            )
+        Num_waypoints = word_path[args.stroke_index]
+        print("word_one_stroke_num_way_points :", Num_waypoints)
+        
+        # load_impedance_list(
+        #     word_name='mu',
+        #     stroke_index=0,
+        #     desired_angle_list=None,
+        #     current_angle_list=None,
+        #     joint_params=None,
+        #     task_params=None
+        # )
+        #
+        # stroke_points = training_samples_to_waypoints(
+        #     word_name=args.word_name,
+        #     stroke_index=0,
+        #     Num_waypoints=10000,
+        #     task_params=None,
+        #     joint_params=None,
+        #     plot=True
+        # )
+        #
+        # evaluation writing
+        for i in range(eval_times):
+            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
             eval_stroke(
-                stroke_points=None,
-                stroke_params=None,
+                stroke_points=word_path[args.stroke_index],
+                stroke_params=word_joint_params[args.stroke_index],
                 target_point=Initial_point,
-                word_name='yi',
-                stroke_index='0',
-                epi_time=0
+                word_name=args.word_name,
+                stroke_index=args.stroke_index,
+                epi_time=i
             )
 
     
@@ -1007,39 +1027,6 @@ def main(args):
         # skiprows=1 
         # )
 
-        # angle_list = np.loadtxt('./data/move_target_angle_list.txt', delimiter=',', skiprows=1)  
-        # torque_list = np.loadtxt('./data/move_target_torque_list.txt', delimiter=',', skiprows=1)  
-
-        # fig = plt.figure(figsize=(20, 8))  
-        # plt.subplot(1, 2, 1)  
-        # plt.subplots_adjust(wspace=2, hspace=0)  
-        
-        # plt.plot(angle_list[:, 0], linewidth=linewidth, label=r'$q_{1t}$')  
-        # plt.plot(angle_list[:, 1], linewidth=linewidth, label=r'$q_{1e}$')  
-        # plt.plot(angle_list[:, 3], linewidth=linewidth, label=r'$q_{2t}$')  
-        # plt.plot(angle_list[:, 4], linewidth=linewidth, label=r'$q_{2e}$')  
-        # # plt.xlim([0, 128])  
-        # # plt.ylim([0, 128])  
-        # plt.xlabel('time($t$)')    
-        # plt.ylabel('angle(rad)')    
-        # # plt.axis('equal') 
-        # plt.legend()   
-        
-        # plt.subplot(1, 2, 2)
-        # plt.subplots_adjust(wspace=0.2, hspace=0.2)
-        
-        # plt.plot(torque_list[:, 0], linewidth=linewidth, label=r'$\tau_{1o}$')  
-        # plt.plot(torque_list[:, 2], linewidth=linewidth, label=r'$\tau_{2o}$')  
-        
-        # # plt.xlim([0., 0.6])
-        # # plt.ylim([0., 0.6])
-        # plt.xlabel('time($t$)')  
-        # plt.ylabel('torque(Nm)')    
-        # plt.legend()  
-
-        # plt.tight_layout()  
-        # plt.show()  
-
 
 if __name__ == "__main__":  
 
@@ -1049,6 +1036,7 @@ if __name__ == "__main__":
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results') 
     parser.add_argument('--plot_word', type=bool, default=False, help='whether plot results')  
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
+    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
 
     args = parser.parse_args()
