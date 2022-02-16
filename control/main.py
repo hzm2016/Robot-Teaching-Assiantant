@@ -756,7 +756,6 @@ def main(args):
     # motor stop
     # motor_control.motor_two_link_stop()
 
-    # ===========================================================
     if args.hard_test:
 
         # theta_1 = motor_control.read_initial_angle_1()
@@ -794,8 +793,7 @@ def main(args):
         # print("damping_joint :", damping_joint)
         # motor_control.Convert_stiffness(40.0, 40.0, 0.5, 0.5)
     
-    # ===========================================================
-    if args.assist == True:
+    if args.assist:
         eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
             word_name=args.word_name,
@@ -809,10 +807,19 @@ def main(args):
             # word
             write_word(word_path, word_params=word_params, word_name=args.word_name, epi_times=i)
             # stroke
+            
+    if args.training_samples:
+        stroke_training_samples = \
+            generate_training_path(
+                word_name=args.word_name,
+                stroke_index=args.stroke_index,
+                epi_times=5,
+                num_stroke=1,
+                plot=True
+        )
     
     
-    # ===========================================================
-    if args.eval == True:
+    if args.eval:
         joint_params = np.array([20, 20, 4, 0.5]) 
         task_params = np.array([20, 20, 4, 0.5])
         # eval_times = 1
@@ -825,14 +832,6 @@ def main(args):
         angle_list = word_path[args.stroke_index]
         Num_waypoints = angle_list.shape[0]
         print("word_one_stroke_num_way_points :", Num_waypoints)
-        
-        # stroke_training_samples = generate_training_path(
-        #     word_name=args.word_name,
-        #     stroke_index=args.stroke_index,
-        #     epi_times=5,
-        #     num_stroke=1,
-        #     plot=True
-        # )
         
         # joint_params_list = load_impedance_list(
         #     word_name=args.word_name,
@@ -879,9 +878,7 @@ def main(args):
         motor_stop()
 
     
-    # ===========================================================
-    if args.plot_word == True:
-
+    if args.plot_word:
         # plot_real_stroke_2d_path(
         #     root_path='./data/font_data/xing/',
         #     file_name='angle_list_5',
@@ -952,16 +949,19 @@ def main(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--hard_test', type=bool, default=False, help='hardware design')
+    parser.add_argument('--test', type=bool, default=False, help='hardware design')
     parser.add_argument('--assist', type=bool, default=False, help='assist mode')
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results')
-    parser.add_argument('--plot_word', type=bool, default=False, help='whether plot results')
+    parser.add_argument('--plot', type=bool, default=False, help='whether plot results')
+    parser.add_argument('--training_samples', type=bool, default=False, help='whether plot results')
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
+    parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name')
     parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
     parser.add_argument('--sample_index', type=int, default=0, help='give write word name')
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
 
     parser.add_argument('--eval_times', type=int, default=1, help='give write word name')
+    parser.add_argument('--training_times', type=int, default=5, help='give write word name')
 
     args = parser.parse_args()
 
