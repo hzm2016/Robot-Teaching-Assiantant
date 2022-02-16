@@ -5,7 +5,7 @@ from protocol.task_interface import *
 import numpy as np  
 import math   
 import os  
-# from motor_control import motor_control
+from motor_control import motor_control 
 from path_planning.plot_path import *  
 from path_planning.path_generate import *  
 import time   
@@ -907,8 +907,8 @@ def main(args):
         eval_times = 1  
         word_path, word_joint_params, word_task_params = load_word_path(
             word_name=args.word_name,   
-            task_params=np.array([30, 30, 3, 0.5]),  
-            joint_params=np.array([30, 30, 3, 0.5]),   
+            task_params=np.array([35, 35, 5, 0.5]),  
+            joint_params=np.array([35, 35, 5, 0.5]),   
             )  
         
         word_params = word_joint_params
@@ -916,7 +916,7 @@ def main(args):
         for i in range(eval_times):   
             # word 
             write_word(word_path, word_params=word_params, word_name=args.word_name, epi_times=i)   
-            # stroke
+            # stroke 
     
     # ===========================================================
     if args.eval == True:   
@@ -950,14 +950,14 @@ def main(args):
         #     skiprows=1
         # ) 
 
-        # plot_real_2d_path(
-        #     root_path=FILE_EVAL_NAME +'/' + args.word_name + '/',
-        #     file_name='real_angle_list_',
-        #     stroke_num=1,
-        #     epi_time=0,
-        #     delimiter=',',
-        #     skiprows=1
-        # )
+        plot_real_2d_path(
+            root_path=FILE_EVAL_NAME +'/' + args.word_name + '/',
+            file_name='real_angle_list_',
+            stroke_num=1,
+            epi_time=0,
+            delimiter=',',
+            skiprows=1
+        )
         
         # word_path, word_joint_params, word_task_params= \
         #     load_word_path(
@@ -982,14 +982,14 @@ def main(args):
         #     skiprows=1  
         # )  
 
-        plot_velocity_path(
-            root_path=FILE_EVAL_NAME + '/' + args.word_name + '/',
-            file_name='real_angle_list_',
-            stroke_num=1,
-            epi_time=0,
-            delimiter=',',
-            skiprows=1
-        )
+        # plot_velocity_path(
+        #     root_path=FILE_EVAL_NAME + '/' + args.word_name + '/',
+        #     file_name='real_angle_list_',
+        #     stroke_num=1,
+        #     epi_time=0,
+        #     delimiter=',',
+        #     skiprows=1
+        # )
 
         # plot_real_error_path(
         #     root_path='./data/font_data/' + write_name + '/',  

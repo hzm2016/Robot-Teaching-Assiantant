@@ -162,6 +162,7 @@ void Cal_torque(double theta_1_t, double theta_2_t, double F_1_t, double F_2_t)
     // return m; 
 }
 
+
 void Convert_stiffness(
 double stiffness_1_t, double stiffness_2_t, 
 double theta_1_t, double theta_2_t
@@ -437,6 +438,8 @@ double dist_threshold
     double d_theta_e_list[2] = {0.0, 0.0}; 
     double d_theta_1_e = 0.0;   
     double d_theta_2_e = 0.0;  
+    double d_theta_1_old = 0.0;   
+    double d_theta_2_old = 0.0;   
 
     double torque_1 = 0.0;   
     double torque_2 = 0.0;   
@@ -518,6 +521,12 @@ double dist_threshold
 
         pos_1 = motor_1.set_torque(motor_id_1, torque_1, &d_theta_1_t, &torque_1_t);    
         pos_2 = motor_2.set_torque(motor_id_2, torque_2, &d_theta_2_t, &torque_2_t);    
+
+        d_theta_1_t = filter(d_theta_1_old, d_theta_1_t);   
+        d_theta_2_t = filter(d_theta_2_old, d_theta_1_t);   
+
+        d_theta_1_old = d_theta_1_t;    
+        d_theta_2_old = d_theta_2_t;   
 
         OutFileAngle << q_1_list[index] << "," << theta_1_t << "," << d_theta_1_t << "," << q_2_list[index] << "," << theta_2_t << "," << d_theta_2_t << "\n";  
         OutFileTorque << torque_1_o << "," << torque_1 << "," << torque_2_o << "," << torque_2 << "\n";    
