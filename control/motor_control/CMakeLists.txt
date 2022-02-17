@@ -16,6 +16,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DFDEBUG -DNDEBUG")
 find_package(Threads REQUIRED) 
 # find_package(GyemsCan REQUIRED) 
 # find_package(spdlog REQUIRED) 
+include_directories("/usr/include/eigen3")
 find_package(Eigen3 3.3 REQUIRED NO_MODULE) # Matrix library 
 
 # Redirect binaries to bin folder:
