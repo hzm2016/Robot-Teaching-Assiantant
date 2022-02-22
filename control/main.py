@@ -963,6 +963,17 @@ def main(args):
         # skiprows=1
         # )
 
+    if args.generate_path: 
+        
+        traj = np.loadtxt('data/font_data/ju/句_1_font1.txt')
+        print("traj :", traj) 
+        generate_stroke_path(
+            traj, inter_type=1, inverse=True,  
+            center_shift=np.array([-WIDTH/2, 0.15]),  
+            velocity=0.04, Ts=0.001, filter_size=17,  
+            plot_show=True, save_path=True, word_name='ju', stroke_name=1 
+        )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -971,6 +982,7 @@ if __name__ == "__main__":
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results')
     parser.add_argument('--plot', type=bool, default=False, help='whether plot results')
     parser.add_argument('--sample', type=bool, default=False, help='whether plot results')
+    parser.add_argument('--generate_path', type=bool, default=False, help='whether plot results')
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
     parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name')
     parser.add_argument('--save_word_name', type=str, default='yi_5_5', help='give write word name')

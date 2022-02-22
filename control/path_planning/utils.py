@@ -1,3 +1,4 @@
+from re import sub
 import numpy as np
 import math
 import PIL.Image as Image
@@ -205,7 +206,10 @@ def real_stroke_path(task_points_list=None):
     cv2.waitKey(0)
 
 
-def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_name='Stroke Path'):
+def plot_stroke_path(period, traj, 
+image_points, task_points, 
+angle_list, fig_name='Stroke Path'
+):
     """
         check the planned path
     """
@@ -216,7 +220,8 @@ def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_na
 
     plt.title(fig_name)
 
-    plt.subplot(1, 3, 1)
+    sub_fig = 4
+    plt.subplot(1, sub_fig, 1)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
 
     plt.plot(traj[:, 1], traj[:, 0], marker='o', linewidth=linewidth)
@@ -229,7 +234,21 @@ def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_na
     # plt.axis('equal')
     plt.tight_layout()
 
-    plt.subplot(1, 3, 2)
+    plt.subplot(1, sub_fig, 2)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+
+    plt.plot(traj[:, 0], linewidth=linewidth)
+    plt.plot(traj[:, 1], linewidth=linewidth)
+    # plt.plot(image_points[:, 0], image_points[:, 1], linewidth=linewidth - 2)
+
+    plt.xlim([0, 128])
+    plt.ylim([0, 128])
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    # plt.axis('equal')
+    plt.tight_layout()
+
+    plt.subplot(1, sub_fig, 3)
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
 
     plt.plot(task_points[:, 0], task_points[:, 1], linewidth=linewidth + 2, color='r')
@@ -238,11 +257,11 @@ def plot_stroke_path(period, traj, image_points, task_points, angle_list, fig_na
     # plt.scatter(x_inner[0], y_inner[0], s=100, c='b', marker='o')
     # print("distance :::", np.sqrt((x_1_list[0] - x_inner[0])**2 + (x_2_list[0] - y_inner[0])**2))
     plt.ylim([-WIDTH / 2, WIDTH / 2])
-    plt.xlim([0., 0.13 + WIDTH])
+    plt.xlim([0.13, 0.13 + WIDTH])
     plt.xlabel('$x_1$(m)')
     plt.ylabel('$x_2$(m)')
 
-    plt.subplot(1, 3, 3)
+    plt.subplot(1, sub_fig, 4)
     plt.plot(t_list, angle_list[:, 0], linewidth=linewidth, label='$q_1$')
     # plt.plot(t_list[1:], angle_vel_1_list_e, linewidth=linewidth, label='$d_{q1}$')
     plt.plot(t_list, angle_list[:, 1], linewidth=linewidth, label='$q_2$')

@@ -146,7 +146,7 @@ def load_new_obs_path(
     T,
     x_list_1,
     y_list_1,
-    idx_list
+    idx_list 
 ):
     """ """
     X_obs = (idx_list/Num_way_point * T)[:, None]

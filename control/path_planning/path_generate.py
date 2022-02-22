@@ -6,6 +6,8 @@ import math
 import seaborn as sns
 sns.set_theme()
 sns.set(font_scale=0.5)
+from scipy import interpolate
+from .plot_path import * 
 
 import cv2
 
@@ -104,6 +106,32 @@ def generate_stroke_stiffness_path(
     return params_list
 
 
+def generate_stroke_path_new(
+    traj, inter_type=1, inverse=True,  
+    center_shift=np.array([-WIDTH/2, 0.23]),  
+    velocity=0.04, Ts=0.001, filter_size=17,  
+    plot_show=False, save_path=False, word_name=None, stroke_name=0
+):
+    data_sample = traj.shape[0]
+    print(data_sample) 
+    x_list_ori = traj[:, 1]
+    y_list_ori = traj[:, 0] 
+    Num_waypoints = 1000
+    index = np.linspace(0, data_sample-1, data_sample)
+    index_list = np.linspace(0, data_sample-1, Num_waypoints)
+
+    fx = interpolate.interp1d(index, x_list_ori, kind='linear')
+    fy = interpolate.interp1d(index, y_list_ori, kind='linear')
+    x_list = fx(index_list)
+    y_list = fy(index_list)
+
+    plot_ori_osc_2d_path(
+    x_list,
+    y_list, 
+    linewidth=1,  
+)
+
+
 def generate_stroke_path(
     traj, inter_type=1, inverse=True,  
     center_shift=np.array([-WIDTH/2, 0.23]),  
@@ -116,8 +144,8 @@ def generate_stroke_path(
     """
     # calculate length of path
     dist = 0.0
-    for i in range(len(traj) - 1):
-        point_1 = np.array([traj[i, 1], traj[i, 0]])
+    for i in range(len(traj) - 1): 
+        point_1 = np.array([traj[i, 1], traj[i, 0]])  
         point_2 = np.array([traj[i+1, 1], traj[i+1, 0]])
         dist += np.linalg.norm((point_2.copy() - point_1.copy()), ord=2)
 
@@ -149,64 +177,65 @@ def generate_stroke_path(
     print("Period (s) :", np.array(period))
     N = np.array(period / Ts).astype(int)
 
-    start_point = np.array([path_data[0, 1], path_data[0, 0]])
-    end_point = np.array([path_data[-1, 1], path_data[-1, 0]])
-    dir = end_point - start_point
-    angle = math.atan2(dir[1], dir[0])
+    # start_point = np.array([path_data[0, 1], path_data[0, 0]])
+    # end_point = np.array([path_data[-1, 1], path_data[-1, 0]])
+    # dir = end_point - start_point
+    # angle = math.atan2(dir[1], dir[0])
 
-    if angle > -math.pi/4 and angle < 0:
-        inter_type = 2
-        inverse = False
-    if angle > 3.0 or angle < -3.0:
-        inter_type = 2
-    if angle > -math.pi/2 and angle < - math.pi/4:
-        inter_type = 1
-    if angle > math.pi/4 and angle < math.pi *3/4:
-        inverse = False
-    if angle > math.pi *3/4 and angle < math.pi:
-        inter_type = 2
+    # if angle > -math.pi/4 and angle < 0:
+    #     inter_type = 2
+    #     inverse = False
+    # if angle > 3.0 or angle < -3.0:
+    #     inter_type = 2
+    # if angle > -math.pi/2 and angle < - math.pi/4:
+    #     inter_type = 1
+    # if angle > math.pi/4 and angle < math.pi *3/4:
+    #     inverse = False
+    # if angle > math.pi *3/4 and angle < math.pi:
+    #     inter_type = 2
 
-    sample_x = []
-    sample_y = []
-    if inter_type==1:
-        if inverse:
-            y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
-            x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
-        else:
-            y_list = np.linspace(path_data[0, 0], path_data[-1, 0], N)
-            x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
+    # sample_x = []
+    # sample_y = []
+    # if inter_type==1:
+    #     if inverse:
+    #         y_list = np.linspace(path_data[-1, 0], path_data[0, 0], N)
+    #         x_list = np.interp(y_list, path_data[:, 0][::-1], path_data[:, 1][::-1])
+    #     else:
+    #         y_list = np.linspace(path_data[0, 0], path_data[-1, 0], N)
+    #         x_list = np.interp(y_list, path_data[:, 0], path_data[:, 1])
+    #     # sample_y = np.array(path_data[:, 0])
+    #     # sample_x = np.array(path_data[:, 1])
+    #     #
+    #     # # 进行三次样条拟合
+    #     # ipo3 = spi.splrep(sample_y, sample_x, k=3)  # 样本点导入，生成参数
+    #     # x_list = spi.splev(y_list, ipo3)  # 根据观测点和样条参数，生成插值
+    # elif inter_type==2:
+    #     if inverse:
+    #         x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
+    #         y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
+    #     else:
+    #         x_list = np.linspace(path_data[0, 1], path_data[-1, 1], N)
+    #         y_list = np.interp(x_list, path_data[:, 1], path_data[:, 0])
+    # else:
+    #     print("Please check the given stroke path !!!") 
 
-            # sample_y = np.array(path_data[:, 0])
-            # sample_x = np.array(path_data[:, 1])
-            #
-            # # 进行三次样条拟合
-            # ipo3 = spi.splrep(sample_y, sample_x, k=3)  # 样本点导入，生成参数
-            # x_list = spi.splev(y_list, ipo3)  # 根据观测点和样条参数，生成插值
-    elif inter_type==2:
-        if inverse:
-            x_list = np.linspace(path_data[-1, 1], path_data[0, 1], N)
-            y_list = np.interp(x_list, path_data[:, 1][::-1], path_data[:, 0][::-1])
-        else:
-            x_list = np.linspace(path_data[0, 1], path_data[-1, 1], N)
-            y_list = np.interp(x_list, path_data[:, 1], path_data[:, 0])
-    else:
-        print("Please check the given stroke path !!!")
+    data_sample = traj.shape[0]
+    x_list_ori = traj[:, 1]
+    y_list_ori = traj[:, 0] 
+    index = np.linspace(0, data_sample-1, data_sample)
+    index_list = np.linspace(0, data_sample-1, N)
+
+    fx = interpolate.interp1d(index, x_list_ori, kind='linear')
+    fy = interpolate.interp1d(index, y_list_ori, kind='linear')
+    x_list = fx(index_list)
+    y_list = fy(index_list)
 
     image_points = np.vstack((x_list, y_list)).transpose()
 
-    x_1_list = x_list/ratio + center_shift[0]
-    x_2_list = y_list/ratio + center_shift[1]
+    x_1_list = x_list/ratio + center_shift[1]
+    x_2_list = y_list/ratio + center_shift[0]
 
-    task_points = np.vstack((x_1_list, x_2_list)).transpose()
-
-    # print("x_1_list :::", x_1_list)
-    # print("x_2_list :::", x_2_list)
-
-    # inverse
-    # x_1_list = np.hstack([x_1_list, x_1_list[::-1]])
-    # x_2_list = np.hstack([x_2_list, x_2_list[::-1]])
-    # x_1_list = np.hstack([x_1_list])
-    # x_2_list = np.hstack([x_2_list])
+    task_points = np.vstack((x_1_list[::-1], x_2_list[::-1])).transpose() 
 
     angle_1_list_e = []
     angle_2_list_e = []
@@ -245,7 +274,7 @@ def generate_stroke_path(
         plot_stroke_path(period, traj, image_points, task_points, way_points)
 
     if save_path:
-        np.savetxt('control/data/font_data/' + word_name + '/' + 'angle_list_' + str(stroke_name) + '.txt', way_points, fmt='%.05f')
+        np.savetxt('data/font_data/' + word_name + '/' + 'angle_list_' + str(stroke_name) + '.txt', way_points, fmt='%.05f')
 
     return way_points, image_points, task_points, period
 

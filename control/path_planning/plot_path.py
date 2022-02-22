@@ -647,7 +647,7 @@ def plot_external_force(
     # for i range(1, np.array(torque_list).shape[0]):
     #     external_force.append(torque_list[i, :].dot(np.linalg.inv()))
     
-    plt.subplot(1, 1, 1)
+    plt.subplot(1, 1, 1)  
     plt.plot(torque_list[1:, 0], linewidth=linewidth, label='torque 1')
     plt.plot(torque_list[1:, 1], linewidth=linewidth, label='torque 2')
     
@@ -824,8 +824,8 @@ def plot_sea_angle_torque_path(
 
 
 def plot_move_target_path(
-    angle_list=np.loadtxt('./data/move_target_angle_list.txt', delimiter=',', skiprows=1),
-    torque_list=np.loadtxt('./data/move_target_torque_list.txt', delimiter=',', skiprows=1)
+    angle_list=None,
+    torque_list=None
 ):
     fig = plt.figure(figsize=(20, 8))
     plt.subplot(1, 2, 1)
@@ -857,6 +857,31 @@ def plot_move_target_path(
     plt.tight_layout()
     plt.show()
 
+
+def plot_ori_osc_2d_path(
+    x_list,
+    y_list, 
+    linewidth=1,  
+):
+    """
+        Plot writing trajectory in cartesian space
+    """
+    FONT_SIZE = 28
+    
+    fig = plt.figure(figsize=(8, 8))
+    
+    plt.subplot(1, 1, 1) 
+    plt.plot(x_list, y_list, linewidth=linewidth)
+    
+    plt.xlabel('$x(m)$', fontsize=FONT_SIZE)
+    plt.ylabel('$y(m)$', fontsize=FONT_SIZE)
+    plt.tick_params(labelsize=FONT_SIZE)
+    # plt.ylim([-WIDTH / 2, WIDTH / 2])
+    # plt.xlim([0.13, 0.13 + WIDTH]) 
+    plt.tight_layout()
+    # plt.legend()
+    
+    plt.show()
 
 if __name__ == "__main__":
     
