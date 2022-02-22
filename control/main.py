@@ -4,6 +4,7 @@ from motor_control import motor_control
 import time
 
 from scipy import interpolate
+from ctl_utils import * 
 
 # path prediction
 from utils.word_preprocess import *
@@ -39,86 +40,6 @@ Angle_initial = np.array([-0.294084, -0.126821, 1.981514])
 
 # impedance params :::
 Move_Impedance_Params = np.array([30.0, 30.0, 4.0, 0.2])
-    
-
-def set_pen_up():
-    """
-        pull pen up
-    """
-    # motor_control.motor_3_stop()
-    up_angle = np.int32(9000)
-    done = motor_control.set_position(0.0, up_angle)
-    time.sleep(1.0)
-
-    return done
-
-
-def set_pen_down():
-    """
-        pull pen down
-    """
-    # motor_control.motor_3_stop()
-    down_angle = np.int32(11200)
-    done = motor_control.set_position(0.0, down_angle)
-    time.sleep(2.0)
-
-    return done
-
-
-def motor_stop():
-    """
-        sometimes need to stop motors
-    """
-    motor_control.motor_two_link_stop()
-    motor_control.motor_3_stop()
-
-
-def reset_and_calibration():
-    print("Please make sure two links are at zero position !!!")
-    angle_initial = np.zeros(3)
-    
-    angle_initial[0] = motor_control.read_initial_angle_1()
-    angle_initial[1] = motor_control.read_initial_angle_2()
-    angle_initial[2] = motor_control.read_initial_angle_3()
-    
-    return angle_initial
-
-
-def get_demo_writting():
-    """
-        zero impedance control
-    """
-    buff_size = np.zeros((100, 2))
-    impedance_params = np.array([35.0, 25.0, 0.4, 0.1])
-
-    set_pen_down()
-    motor_control.get_demonstration(Angle_initial[0], Angle_initial[1],
-    2.0, 2.0, 0.0, 0.0, buff_size)
-
-
-def get_observation(angle_initial=Angle_initial):
-    """
-        obtain joint angles and cartesian state
-    """
-    # ######################################################
-    # ############## get current state #####################
-    # ######################################################
-    angle = np.zeros(action_dim)
-    point = np.zeros(action_dim)
-    
-    print('+' * 20)
-    angle[0] = motor_control.read_angle_1(angle_initial[0])
-    # print("Joint 1 angles (rad) :", angle[0])
-    angle[1] = motor_control.read_angle_2(angle_initial[1], angle[0].copy())
-    # print("Joint 2 angles (rad) :", angle[1])
-    # angle[2] = motor_control.read_angle_3(angle_initial[2])
-    print("Joint angles (rad) :", np.array(angle))
-    
-    point[0] = L_1 * math.cos(angle[0]) + L_2 * math.cos(angle[0] + angle[1])
-    point[1] = L_1 * math.sin(angle[0]) + L_2 * math.sin(angle[0] + angle[1])
-    print("Position (m) :", np.array(point))
-    
-    return angle, point
 
 
 def move_to_target_point(
@@ -199,6 +120,9 @@ def write_stroke(
         stroke_name='0',
         epi_time=0
     ):
+    """
+        write a stroke and plot
+    """
     way_points = stroke_points
     Num_way_points = way_points.shape[0]
 
@@ -317,54 +241,6 @@ def eval_stroke(
     return done
 
 
-def load_word_path(
-    root_path='./data/font_data',
-    word_name=None,
-    task_params=None,
-    joint_params=None
-):
-    # load original training way points :::
-    word_file = root_path + '/' + word_name + '/'
-    stroke_list_file = glob.glob(word_file + 'angle_list_*txt')
-    print("Load stroke data %d", len(stroke_list_file))
-
-    word_path = []
-    word_joint_params = []
-    word_task_params = []
-    
-    for i in range(len(stroke_list_file)):
-        way_points = np.loadtxt(word_file + 'angle_list_' + str(i) + '.txt', delimiter=' ')
-
-        if joint_params is not None:
-            joint_params_list = np.tile(joint_params, (way_points.shape[0], 1))
-        else:
-            joint_params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')
-         
-        N_way_points = way_points.shape[0]
-        print("N_way_points :", N_way_points)
-
-        word_path.append(way_points.copy())
-        word_joint_params.append(joint_params_list.copy())
-    
-        # word parameters
-        if task_params is not None:
-            task_params_list = np.tile(task_params, (way_points.shape[0], 1))
-        else:
-            task_params_list = np.loadtxt(word_file + 'params_list_' + str(i) + '.txt', delimiter=' ')
-
-        angle_list = way_points
-        stiffness_list = task_params_list[:, :2]
-        damping_list = task_params_list[:, 2:]
-        joint_params_list = generate_stroke_stiffness_path(
-            angle_list, stiffness_list, damping_list,
-            save_path=False, save_root='', word_name='yi', stroke_index=0
-        )
-        
-        word_task_params.append(joint_params_list)
-
-    return word_path, word_joint_params, word_task_params
-
-
 def generate_training_path(
     word_name='mu',  
     eval_word_name='',  
@@ -384,16 +260,16 @@ def generate_training_path(
 
     folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + training_name
     print('folder_name :', folder_name)
-    if os.path.exists(folder_name):
-        pass 
-    else:
-        os.makedirs(folder_name)
+    if os.path.exists(folder_name): 
+        pass  
+    else: 
+        os.makedirs(folder_name) 
     
     dt = 0.01
     font_size = 30
     input_dim = 1  # time
     output_dim = 2  # x, y
-    re_sample_index = int(40)
+    re_sample_index = int(60)  
 
     # training hyper-parameters
     in_idx = [0]
@@ -401,7 +277,7 @@ def generate_training_path(
     nb_states = 5
     nb_prior_samples = 10
     nb_posterior_samples = training_times
-    train_gmr = True
+    train_gmr = True 
     train_gp = True
 
     # ====================== data processing ======================
@@ -426,12 +302,12 @@ def generate_training_path(
     train_stroke_path = train_word_path[stroke_index]
     stroke_list = Forward_list(
         stroke_path=train_stroke_path
-    )
+    )  
     Num_way_point = train_stroke_path.shape[0]
-    down_stroke_list, idx_list = fps(stroke_list, 0.002)
-    idx_list = np.sort(idx_list)
-    down_stroke_list = down_stroke_list[idx_list]
-    down_stroke_list = np.array(down_stroke_list)
+    down_stroke_list, idx_list = fps(stroke_list, 0.001) 
+    idx_list = np.sort(idx_list) 
+    down_stroke_list = down_stroke_list[idx_list] 
+    down_stroke_list = np.array(down_stroke_list) 
     
     # offset_eval_stroke_path = np.zeros_like(eval_stroke_path)
     for i in range(eval_stroke_path.shape[0]):
@@ -522,7 +398,7 @@ def generate_training_path(
     
             plt.show()
 
-    if train_gp:
+    if train_gp: 
         # ========================================================
         # ========================= GPR ==========================
         # ========================================================
@@ -531,9 +407,9 @@ def generate_training_path(
         Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
     
         likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=1) for j in range(output_dim)]
-        kernel_list = [GPy.kern.Matern52(1, variance=1., lengthscale=0.5) for i in range(gmr_model.nb_states)]
+        kernel_list = [GPy.kern.Matern52(1, variance=5, lengthscale=1) for i in range(gmr_model.nb_states)]
         # kernel_list = [GPy.kern.RBF(1, variance=1, lengthscale=0.5) for i in range(gmr_model.nb_states)]
-        # kernel_list = [GPy.kern.RBF(1, variance=5, lengthscale=2) for i in range(gmr_model.nb_states)]
+        # kernel_list = [GPy.kern.RBF(1, variance=1, lengthscale=5) for i in range(gmr_model.nb_states)]
     
         # Fix variance of kernels
         for kernel in kernel_list:
@@ -542,7 +418,7 @@ def generate_training_path(
         
         # Bound noise parameters
         for likelihood in likelihoods_list:
-            likelihood.variance.constrain_bounded(0.001, 0.05)
+            likelihood.variance.constrain_bounded(0.01, 0.5)
     
         # GPR model
         K = Gmr_based_kernel(gmr_model=gmr_model, kernel_list=kernel_list)
@@ -620,7 +496,8 @@ def generate_training_path(
             plt.scatter(Y_obs[:, 0], Y_obs[:, 1], color=[0, 0, 0], zorder=60, s=100)
     
             axes = plt.gca()
-            axes.set_xlim([-10, 10])
+            axes.set_xlim([-20, 20])
+            # axes.set_xlim([-10, 10])
             # axes.set_xlim([-10, 10])
             axes.set_ylim([-20, 20])
             # axes.set_ylim([-10, 10])
@@ -735,39 +612,6 @@ def training_samples_to_waypoints(
     return angle_list, joint_params_list
 
 
-def load_impedance_list(
-    word_name='mu', 
-    stroke_index=0, 
-    desired_angle_list=None, 
-    current_angle_list=None, 
-    joint_params=None,  
-    task_params=None  
-):
-    print("============== {} ============".format('Load Impedance !!!'))
-    way_points = desired_angle_list  
-    N_way_points = way_points.shape[0]  
-    
-    # joint parameters
-    if joint_params is not None:
-        joint_params_list = np.tile(joint_params, (way_points.shape[0], 1))
-    else:  
-        joint_params_list = np.loadtxt(FILE_TRAIN_NAME + '/' + word_name + '/' + 'params_stroke_list_' + str(stroke_index) + '.txt', delimiter=' ')
-    
-    # task parameters
-    if task_params is not None:
-        task_params_list = np.tile(task_params, (way_points.shape[0], 1))
-    else:
-        task_params_list = np.loadtxt(FILE_TRAIN_NAME + '/' + word_name + '/' + 'params_stroke_list_' + str(stroke_index) + '.txt', delimiter=' ')
-    
-    # stiffness_list = task_params_list[:, :2] 
-    # damping_list = task_params_list[:, 2:] 
-    # joint_params_list = generate_stroke_stiffness_path(
-    #     desired_angle_list, stiffness_list, damping_list,
-    #     save_path=False, save_root=FILE_TRAIN_NAME, word_name=word_name, stroke_index=stroke_index
-    # )
-    
-    return joint_params_list
-
 
 def main(args):
     # ===========================================================
@@ -829,7 +673,7 @@ def main(args):
 
     if args.sample:
         stroke_training_samples = generate_training_path(
-            word_name=args.word_name,
+            word_name=args.word_name, 
             eval_word_name=args.eval_word_name,
             training_name=args.training_name,
             training_times=args.training_times,
@@ -903,21 +747,22 @@ def main(args):
         motor_stop()
 
     if args.plot:
+
         # plot_real_stroke_2d_path(
         #     root_path='./data/font_data/xing/',
         #     file_name='angle_list_5',
-        #     stroke_num=5,
-        #     delimiter=' ',
-        #     skiprows=1
+        #     stroke_num=5, 
+        #     delimiter=' ', 
+        #     skiprows=1 
         # )
 
         plot_real_2d_path(
             root_path=FILE_EVAL_NAME + '/' + args.training_name + '/' + args.word_name + '/',
-            file_name='real_angle_list_',
-            stroke_num=1,
-            epi_times=args.eval_times,
-            delimiter=',',
-            skiprows=1
+            file_name='real_angle_list_', 
+            stroke_num=1, 
+            epi_times=args.eval_times, 
+            delimiter=',', 
+            skiprows=1 
         )
         
         # word_path, word_joint_params, word_task_params= \
@@ -969,10 +814,9 @@ def main(args):
         # skiprows=1
         # )
 
-    if args.generate_path: 
-        
-        traj = np.loadtxt('data/font_data/ju/句_1_font1.txt')
-        print("traj :", traj) 
+    if args.generate_path:   
+        traj = np.loadtxt(FILE_FONT_NAME + '/' + args.word_name + '/句_1_font1.txt')  
+        print("traj :", traj)  
         generate_stroke_path(
             traj, inter_type=1, inverse=True,  
             center_shift=np.array([-WIDTH/2, 0.15]),  
@@ -982,22 +826,22 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser() 
     parser.add_argument('--test', type=bool, default=False, help='hardware design')  
     parser.add_argument('--assist', type=bool, default=False, help='assist mode') 
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results')
-    parser.add_argument('--plot', type=bool, default=False, help='whether plot results')
-    parser.add_argument('--sample', type=bool, default=False, help='whether plot results')
-    parser.add_argument('--generate_path', type=bool, default=False, help='whether plot results')
-    parser.add_argument('--word_name', type=str, default='yi', help='give write word name')
-    parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name')
-    parser.add_argument('--save_word_name', type=str, default='yi_5_5', help='give write word name')
+    parser.add_argument('--plot', action='store_true', default=False, help='whether plot results')
+    parser.add_argument('--sample', action='store_true', default=False, help='whether sample new training results') 
+    parser.add_argument('--generate_path', type=bool, default=False, help='whether plot results') 
+
+    parser.add_argument('--word_name', type=str, default='yi', help='give write word name') 
+    parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name') 
+    parser.add_argument('--save_word_name', type=str, default='yi_5_5', help='give write word name') 
     parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
     parser.add_argument('--sample_index', type=int, default=0, help='give write word name')
+
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
-
     parser.add_argument('--training_name', type=str, default='second_time', help='give write word name')
-
     parser.add_argument('--eval_times', type=int, default=5, help='give write word name')
     parser.add_argument('--training_times', type=int, default=5, help='give write word name')
 
