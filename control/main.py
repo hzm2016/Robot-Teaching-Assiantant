@@ -581,7 +581,7 @@ def main(args):
                 task_params=task_params,  
                 joint_params=joint_params,   
                 desire_angle_list=angle_list,   
-                plot=True
+                plot=False
             )   
 
             # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
