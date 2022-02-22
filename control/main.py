@@ -545,8 +545,8 @@ def main(args):
     
     if args.eval:
 
-        joint_params = np.array([30, 30, 4, 0.5])  
-        task_params = np.array([30, 30, 4, 0.5])  
+        joint_params = np.array([40, 40, 5, 0.5])  
+        task_params = np.array([40, 40, 5, 0.5])  
         
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
