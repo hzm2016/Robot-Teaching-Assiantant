@@ -27,11 +27,11 @@ WRITING_Y = [-WIDTH / 2, WIDTH / 2]
 WRITING_X = [0.13, 0.13 + WIDTH]
 
 # initial angle (rad) :::
-Initial_angle = np.array([-1.31, 1.527])
+Initial_angle = np.array([-1.31, 1.527])  
 
-Initial_point = np.array([0.32299, -0.23264])
+Initial_point = np.array([0.32299, -0.23264])   
 
-Angle_initial = np.array([-0.294084, -0.126821, 1.981514]) 
+Angle_initial = np.array([-0.314727, -0.122983, 1.981514]) 
 
 # impedance params :::
 Move_Impedance_Params = np.array([30.0, 30.0, 4.0, 0.2])
@@ -198,3 +198,144 @@ def get_demo_writting():
     set_pen_down()
     motor_control.get_demonstration(Angle_initial[0], Angle_initial[1],
     2.0, 2.0, 0.0, 0.0, buff_size)
+
+
+def write_word(
+    word_path, 
+    word_params=None, 
+    word_name='yi', 
+    epi_times=0
+):
+    """
+        write a word and plot
+    """
+    for index in range(len(word_path)):
+        print("*" * 50)
+        print("*" * 50)
+        print("Write Stroke : {}".format(index))
+        stroke_points_index = word_path[index]
+ 
+        if index < (len(word_path) - 1):
+            next_index = index + 1
+            stroke_points_next_index = word_path[next_index]
+
+            target_angle = np.zeros(2)
+            target_angle[0] = stroke_points_next_index[0, 0]
+            target_angle[1] = stroke_points_next_index[0, 1]
+            stroke_target_point = forward_ik(target_angle)
+        else:
+            stroke_target_point = Initial_point
+        
+        write_stroke(
+            stroke_points=stroke_points_index,
+            stroke_params=word_params[index],
+            target_point=stroke_target_point,
+            word_name=word_name,
+            stroke_name=str(index),
+            epi_time=epi_times
+        )
+
+        motor_stop()
+
+
+def write_stroke(
+    stroke_points=None,
+    stroke_params=None,
+    target_point=Initial_point,  
+    word_name='yi',   
+    stroke_name='0',   
+    epi_time=0
+    ):
+    """
+        write a stroke and plot
+    """
+    way_points = stroke_points
+    Num_way_points = way_points.shape[0]
+
+    initial_angle = np.zeros(2)
+    initial_angle[0] = way_points[0, 0]
+    initial_angle[1] = way_points[0, 1]
+    start_point = forward_ik(initial_angle)
+
+    # move to target point
+    done = set_pen_up()
+    # time.sleep(0.5)
+    
+    done = move_to_target_point(start_point, Move_Impedance_Params, velocity=0.1)
+    # time.sleep(0.5)
+
+    done = set_pen_down()
+
+    time.sleep(0.5)
+    
+    # params_list = np.tile(impedance_params, (Num_way_points, 1))
+    if stroke_params is None:
+        exit()
+    else:
+        params_list = stroke_params
+
+    folder_name = FILE_EVAL_NAME + '/' + word_name
+    stroke_angle_name = folder_name + '/' + 'real_angle_list_' + stroke_name + '_' + str(epi_time) + '.txt'
+    stroke_torque_name = folder_name + '/' + 'real_torque_list_' + stroke_name + '_' + str(epi_time) + '.txt'
+    
+    if os.path.exists(folder_name):
+        pass
+    else:
+        os.makedirs(folder_name)
+
+    done = motor_control.run_one_loop(
+         way_points[:, 0].copy(), way_points[:, 1].copy(),
+         params_list[:, 0].copy(), params_list[:, 1].copy(),
+         params_list[:, 2].copy(), params_list[:, 3].copy(),
+         Num_way_points,
+         Angle_initial[0], Angle_initial[1],
+         1,
+         stroke_angle_name, stroke_torque_name
+    )
+    # print("curr_path_list", curr_path_list.shape)
+    # np.savetxt('curr_path_list.txt', curr_path_list)
+    
+    # time.sleep(0.5)
+
+    # move to target point
+    done = set_pen_up()
+    # time.sleep(0.5)
+
+    done = move_to_target_point(target_point, Move_Impedance_Params, velocity=0.1)
+
+    print("Write stroke once done !!!")
+    print("*" * 50)
+
+    return done
+
+
+def move_to_target_point(
+    target_point,
+    impedance_params=Move_Impedance_Params,
+    velocity=0.05
+):
+    """
+        move to target point
+    """
+    # done = False
+
+    curr_angle, curr_point = get_observation()
+    # dist = np.linalg.norm((curr_point - target_point), ord=2)
+    # print("Curr_point (m) :", curr_point)
+    # print("Initial dist (m) :", dist)
+
+    angle_list, N = path_planning(curr_point[:2], target_point, velocity=velocity)
+    # angle_list = np.loadtxt('angle_list.txt', delimiter=',', skiprows=1)
+
+    N = angle_list.shape[0]
+
+    angle_1_list = angle_list[:, 0].copy()
+    angle_2_list = angle_list[:, 1].copy()
+
+    dist_threshold = 0.05
+    done = motor_control.move_to_target_point(
+        impedance_params[0], impedance_params[1], impedance_params[2], impedance_params[3],
+        angle_1_list, angle_2_list, N,
+        Angle_initial[0], Angle_initial[1],
+        dist_threshold
+    )
