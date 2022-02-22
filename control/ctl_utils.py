@@ -7,7 +7,7 @@ import numpy as np
 # path prediction
 from utils.word_preprocess import * 
 
-L_1 = 0.3
+L_1 = 0.3 
 L_2 = 0.25
 action_dim = 3
 DIST_THREHOLD = 0.05
