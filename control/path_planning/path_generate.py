@@ -135,7 +135,7 @@ def generate_stroke_path_new(
 def generate_stroke_path(
     traj, inter_type=1, inverse=True,  
     center_shift=np.array([-WIDTH/2, 0.23]),  
-    velocity=0.04, Ts=0.001, filter_size=17,  
+    velocity=0.02, Ts=0.001, filter_size=17,  
     plot_show=False, save_path=False, word_name=None, stroke_name=0
 ):
     """
