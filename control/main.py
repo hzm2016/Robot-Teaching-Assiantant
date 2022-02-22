@@ -35,7 +35,7 @@ Initial_angle = np.array([-1.31, 1.527])
 
 Initial_point = np.array([0.32299, -0.23264])
 
-Angle_initial = np.array([-0.311965, -0.139875, 1.981514])
+Angle_initial = np.array([-0.294084, -0.126821, 1.981514]) 
 
 # impedance params :::
 Move_Impedance_Params = np.array([30.0, 30.0, 4.0, 0.2])
@@ -153,7 +153,12 @@ def move_to_target_point(
     )
 
 
-def write_word(word_path, word_params=None, word_name='yi', epi_times=0):
+def write_word(
+    word_path, 
+    word_params=None, 
+    word_name='yi', 
+    epi_times=0
+):
     """
         write a word and plot
     """
@@ -772,34 +777,34 @@ def main(args):
 
     if args.test:
 
-        # theta_1 = motor_control.read_initial_angle_1()
-        # print("theta_1 :", theta_1)
-        # theta_2 = motor_control.read_initial_angle_2()
-        # print("theta_2 :", theta_2)
-        # theta_3 = motor_control.read_initial_angle_3()
-        # print("theta_3 :", theta_3)
+        theta_1 = motor_control.read_initial_angle_1()
+        print("theta_1 :", theta_1)
+        theta_2 = motor_control.read_initial_angle_2()
+        print("theta_2 :", theta_2)
+        theta_3 = motor_control.read_initial_angle_3()
+        print("theta_3 :", theta_3)
 
         angle, point = get_observation()
         # print("angle :", angle)
         print("point :", point)
 
         # set_pen_up()
-        # # set_pen_down()
+        # set_pen_down()
 
         # motor_stop()
 
-        target_point = np.array([0.35, -0.15])
-        move_to_target_point(
-            target_point,
-            # impedance_params=np.array([420.0, 420.0, 15.5, 15.5]),
-            impedance_params=np.array([40.0, 40.0, 5.0, 0.2]),
-            velocity=0.1  
-        )  
+        # target_point = np.array([0.35, -0.15])
+        # move_to_target_point(
+        #     target_point,
+        #     # impedance_params=np.array([420.0, 420.0, 15.5, 15.5]),
+        #     impedance_params=np.array([40.0, 40.0, 5.0, 0.2]),
+        #     velocity=0.1  
+        # )  
         
-        time.sleep(0.2)  
-        angle, point = get_observation()  
-        # print("angle :", angle)
-        print("point :", point)
+        # time.sleep(0.2)  
+        # angle, point = get_observation()  
+        # # print("angle :", angle)
+        # print("point :", point)
 
         # stiff_joint, damping_joint = Stiff_convert(np.array([0.5, 0.5])
         # np.diag([40, 40]), np.diag([1.0, 1.0]))
@@ -835,8 +840,8 @@ def main(args):
         )
     
     if args.eval:
-        joint_params = np.array([5, 5, 1, 0.5])
-        task_params = np.array([5, 5, 1, 0.5])
+        joint_params = np.array([30, 30, 4, 0.5])
+        task_params = np.array([30, 30, 4, 0.5])
         
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
@@ -860,39 +865,39 @@ def main(args):
         
         # evaluation writing
         for i in range(args.eval_times):
-            stroke_points, joint_params_list = \
-            training_samples_to_waypoints(
-                word_name=args.word_name,
-                eval_word_name=args.eval_word_name,
-                training_name=args.training_name,
-                stroke_index=args.stroke_index,
-                Num_waypoints=Num_waypoints,
-                sample_index=i,
-                task_params=task_params,
-                joint_params=joint_params,  
-                desire_angle_list=angle_list,  
-                plot=False
-            )
-
-            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
-            # eval_stroke(
-            #     stroke_points=word_path[args.stroke_index],
-            #     stroke_params=word_joint_params[args.stroke_index],
-            #     target_point=Initial_point,
-            #     word_name=args.word_name + '_35', 
-            #     stroke_index=args.stroke_index,  
-            #     epi_time=i  
+            # stroke_points, joint_params_list = \
+            # training_samples_to_waypoints(
+            #     word_name=args.word_name,
+            #     eval_word_name=args.eval_word_name,
+            #     training_name=args.training_name,
+            #     stroke_index=args.stroke_index,
+            #     Num_waypoints=Num_waypoints,
+            #     sample_index=i,
+            #     task_params=task_params,
+            #     joint_params=joint_params,  
+            #     desire_angle_list=angle_list,  
+            #     plot=False
             # )
 
+            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
             eval_stroke(
-                stroke_points=stroke_points,
-                stroke_params=joint_params_list,
+                stroke_points=word_path[args.stroke_index],
+                stroke_params=word_joint_params[args.stroke_index],
                 target_point=Initial_point,
-                word_name=args.save_word_name,
-                training_name=args.training_name,
-                stroke_index=args.stroke_index,
-                epi_time=i
+                word_name=args.word_name + '_20', 
+                stroke_index=args.stroke_index,  
+                epi_time=i  
             )
+
+            # eval_stroke(
+            #     stroke_points=stroke_points,
+            #     stroke_params=joint_params_list,
+            #     target_point=Initial_point,
+            #     word_name=args.save_word_name,
+            #     training_name=args.training_name,
+            #     stroke_index=args.stroke_index,
+            #     epi_time=i
+            # )
         
         motor_stop()
 
@@ -977,8 +982,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test', type=bool, default=False, help='hardware design')
-    parser.add_argument('--assist', type=bool, default=False, help='assist mode')
+    parser.add_argument('--test', type=bool, default=False, help='hardware design')  
+    parser.add_argument('--assist', type=bool, default=False, help='assist mode') 
     parser.add_argument('--eval', type=bool, default=False, help='evaluate writing results')
     parser.add_argument('--plot', type=bool, default=False, help='whether plot results')
     parser.add_argument('--sample', type=bool, default=False, help='whether plot results')
@@ -992,10 +997,10 @@ if __name__ == "__main__":
 
     parser.add_argument('--training_name', type=str, default='second_time', help='give write word name')
 
-    parser.add_argument('--eval_times', type=int, default=5, help='give write word name')
+    parser.add_argument('--eval_times', type=int, default=1, help='give write word name')
     parser.add_argument('--training_times', type=int, default=5, help='give write word name')
 
-    args = parser.parse_args()
+    args = parser.parse_args() 
     
     main(args)
 
