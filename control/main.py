@@ -534,7 +534,7 @@ def main(args):
     if args.sample:
         stroke_training_samples = generate_training_path(
             word_name=args.word_name, 
-            eval_word_name=args.eval_word_name,
+            eval_word_name=args.eval_word_name,  
             training_name=args.training_name,
             training_times=args.training_times,
             stroke_index=args.stroke_index,
