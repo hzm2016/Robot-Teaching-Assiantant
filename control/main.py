@@ -526,7 +526,7 @@ def main(args):
         
         word_params = word_joint_params
         # evaluation writing
-        for i in range(eval_times):
+        for i in range(eval_times): 
             # word
             write_word(word_path, word_params=word_params, word_name=args.word_name, epi_times=i)
             # stroke
