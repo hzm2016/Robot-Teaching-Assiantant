@@ -266,7 +266,7 @@ def generate_training_path(
         Xtest, _, output_index = GPy.util.multioutput.build_XY([np.hstack((Xt, Xt)) for i in range(output_dim)])
     
         likelihoods_list = [GPy.likelihoods.Gaussian(name="Gaussian_noise_%s" %j, variance=1) for j in range(output_dim)]
-        kernel_list = [GPy.kern.Matern52(1, variance=5, lengthscale=1) for i in range(gmr_model.nb_states)]
+        kernel_list = [GPy.kern.Matern52(1, variance=0.1, lengthscale=5) for i in range(gmr_model.nb_states)]
         # kernel_list = [GPy.kern.RBF(1, variance=1, lengthscale=0.5) for i in range(gmr_model.nb_states)]
         # kernel_list = [GPy.kern.RBF(1, variance=1, lengthscale=5) for i in range(gmr_model.nb_states)]
     
@@ -296,10 +296,10 @@ def generate_training_path(
         print(m)
     
         # GPR prior (no observations)
-        prior_traj = []
-        prior_mean = mf.f(Xtest)[:, 0]
-        prior_kernel = m.kern.K(Xtest)
-        for i in range(nb_prior_samples):
+        prior_traj = []  
+        prior_mean = mf.f(Xtest)[:, 0]  
+        prior_kernel = m.kern.K(Xtest)  
+        for i in range(nb_prior_samples):  
             # print("prior_kernel :", prior_kernel.shape)
             prior_traj_tmp = np.random.multivariate_normal(prior_mean, prior_kernel)
             # print("prior_traj_tmp :", prior_traj_tmp.shape)
@@ -545,8 +545,8 @@ def main(args):
     
     if args.eval:
 
-        joint_params = np.array([20, 20, 3, 0.5])  
-        task_params = np.array([20, 20, 3, 0.5])  
+        joint_params = np.array([30, 30, 4, 0.5])  
+        task_params = np.array([30, 30, 4, 0.5])  
         
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
@@ -694,10 +694,10 @@ if __name__ == "__main__":
     parser.add_argument('--sample', action='store_true', default=False, help='whether sample new training results')   
     parser.add_argument('--generate_path', type=bool, default=False, help='whether plot results')   
 
-    parser.add_argument('--word_name', type=str, default='yi', help='give write word name') 
-    parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name') 
+    parser.add_argument('--word_name', type=str, default='yi', help='give write word name')  
+    parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name')  
     parser.add_argument('--save_word_name', type=str, default='yi_5_5', help='give write word name')    
-    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')   
+    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')    
     parser.add_argument('--sample_index', type=int, default=0, help='give write word name')   
 
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')   
