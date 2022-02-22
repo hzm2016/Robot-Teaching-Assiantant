@@ -5,15 +5,15 @@ from forward_mode.utils.gmr import Gmr
 from path_planning.path_generate import *
 # from forward_mode.GMR_based_GPR01 import X_list, Y_list
 from path_planning.plot_path import *
-from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.metrics.pairwise import pairwise_distances  
 
 
-sns.set(font_scale=2.5)
-np.set_printoptions(precision=5)
+sns.set(font_scale=2.5) 
+np.set_printoptions(precision=5)  
 
-Length = [0.30, 0.150, 0.25, 0.125] 
-L_1 = Length[0]
-L_2 = Length[2]
+Length = [0.30, 0.150, 0.25, 0.125]  
+L_1 = Length[0]  
+L_2 = Length[2]  
 
 action_dim = 2
 Ts = 0.001
@@ -68,9 +68,10 @@ def load_real_word_path(
     training_name='',
     file_name='real_angle_list_',
     epi_times=1,  
-    num_stroke=3,
+    num_stroke=3, 
     plot=True
 ): 
+    # load real word path  
     delimiter=','  
     skiprows=1
     word_path = []
@@ -139,44 +140,6 @@ def fps(points, frac):
         lambdas[i] = ds[idx]
         ds = np.minimum(ds, D[idx, :])
     return P, perm[:num_points]
-
- 
-def load_new_obs_path(
-    Num_way_point,
-    T,
-    x_list_1,
-    y_list_1,
-    idx_list 
-):
-    """ """
-    X_obs = (idx_list/Num_way_point * T)[:, None]
-    print("X_obs :", X_obs)
-    # word mu stroke : 0
-    # X_obs = np.array([0.3, 1.0])[:, None]
-    # x_list_1 = np.array([0.285, 0.275])
-    # y_list_1 = np.array([-0.06, 0.07])
-
-    # # word mu stroke : 1
-    # X_obs = np.array([0.15, 1.0])[:, None]
-    # x_list_1 = np.array([0.23, 0.35])
-    # y_list_1 = np.array([-0.01, 0.01])
-
-    # # word mu stroke : 2
-    # X_obs = np.array([0.05, 1.1])[:, None]
-    # x_list_1 = np.array([0.3, 0.38])
-    # y_list_1 = np.array([-0.03, -0.15])
-
-    # # word mu stroke : 3
-    # X_obs = np.array([0.05, 0.9, 1.3])[:, None]
-    # x_list_1 = np.array([0.3, 0.37, 0.38])
-    # y_list_1 = np.array([-0.01, 0.09, 0.15])
-
-    X_obs_list, Y_obs_list, X_obs, Y_obs = obs_data_preprocess(
-        X_obs,
-        x_list_1,
-        y_list_1
-    )
-    return X_obs_list, Y_obs_list, X_obs, Y_obs
     
 
 def eval_data_preprocess(
@@ -243,16 +206,16 @@ def eval_data_preprocess(
     print("Process Data Done!!!") 
     print("X_list :", np.array(X_list).shape, "Y_list :", np.array(Y_list).shape, "Demo Data :", np.array(demos_np).shape)
 
-    if plot:
+    if plot: 
         fig = plt.figure(figsize=(8, 8))  
         for p in range(epi_times):
             plt.plot(Y[p * nb_data:(p + 1) * nb_data, 0], Y[p * nb_data:(p + 1) * nb_data, 1], color=[.7, .7, .7])
             plt.plot(Y[p * nb_data, 0], Y[p * nb_data, 1], color=[.7, .7, .7], marker='o')
         
             # plot_gmm(np.array(gmr_model.mu)[:, 1:], np.array(gmr_model.sigma)[:, 1:, 1:], alpha=0.6, color=[0.1, 0.34, 0.73])
-        axes = plt.gca()
-        axes.set_xlim([-14., 14.])
-        axes.set_ylim([-14., 14.])
+        axes = plt.gca()  
+        axes.set_xlim([-14., 14.])  
+        axes.set_ylim([-14., 14.])  
         plt.xlabel('$x(m)$', fontsize=30)  
         plt.ylabel('$y(m)$', fontsize=30)  
         plt.locator_params(nbins=3)  
@@ -268,6 +231,9 @@ def obs_data_preprocess(
     x_list_1,
     y_list_1
 ):
+    """
+        get obs data for one stroke
+    """
     output_dim = 2
     x_obs_1, y_obs_1 = \
     scale_translate_process_main(
@@ -276,8 +242,7 @@ def obs_data_preprocess(
         trans_value=TRANS_VALUE
     )
     
-    Y_obs = np.hstack((x_obs_1[:, None], y_obs_1[:, None])).reshape(-1, 2)
-    # print("x_obs_1", x_obs_1, "Y_obs :", Y_obs)
+    Y_obs = np.hstack((x_obs_1[:, None], y_obs_1[:, None])).reshape(-1, 2)  
     X_obs_list = [np.hstack((X_obs, X_obs)) for i in range(output_dim)]
     Y_obs_list = [Y_obs[:, i][:, None] for i in range(output_dim)]
 
@@ -285,13 +250,13 @@ def obs_data_preprocess(
 
 
 def update_impedance(
-        desired_angle_list,
-        d_desired_angle_list,
-        current_angle_list,
-        d_current_angle_list,
-        alpha=10,
-        beta=0.1,
-        last_impedance=None
+    desired_angle_list,  
+    d_desired_angle_list,  
+    current_angle_list,
+    d_current_angle_list,
+    alpha=10,
+    beta=0.1,
+    last_impedance=None
 ):
     """
         update impedance
@@ -666,3 +631,42 @@ if __name__ == "__main__":
     # plt.tick_params(labelsize=20)
     # plt.tight_layout()
     # plt.show()
+
+
+def load_new_obs_path(
+    Num_way_point,
+    T,  
+    x_list_1,  
+    y_list_1,  
+    idx_list 
+):
+    """ """
+    X_obs = (idx_list/Num_way_point * T)[:, None]
+    print("X_obs :", X_obs)
+
+    X_obs_list, Y_obs_list, X_obs, Y_obs = obs_data_preprocess(
+        X_obs,
+        x_list_1,
+        y_list_1
+    )
+
+    # word mu stroke : 0
+    # X_obs = np.array([0.3, 1.0])[:, None]
+    # x_list_1 = np.array([0.285, 0.275])
+    # y_list_1 = np.array([-0.06, 0.07])
+
+    # # word mu stroke : 1
+    # X_obs = np.array([0.15, 1.0])[:, None]
+    # x_list_1 = np.array([0.23, 0.35])
+    # y_list_1 = np.array([-0.01, 0.01])
+
+    # # word mu stroke : 2
+    # X_obs = np.array([0.05, 1.1])[:, None]
+    # x_list_1 = np.array([0.3, 0.38])
+    # y_list_1 = np.array([-0.03, -0.15])
+
+    # # word mu stroke : 3
+    # X_obs = np.array([0.05, 0.9, 1.3])[:, None]
+    # x_list_1 = np.array([0.3, 0.37, 0.38])
+    # y_list_1 = np.array([-0.01, 0.09, 0.15])
+    return X_obs_list, Y_obs_list, X_obs, Y_obs
