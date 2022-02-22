@@ -975,7 +975,7 @@ def main(args):
         generate_stroke_path(
             traj, inter_type=1, inverse=True,  
             center_shift=np.array([-WIDTH/2, 0.15]),  
-            velocity=0.04, Ts=0.001, filter_size=17,  
+            velocity=0.02, Ts=0.001, filter_size=17,  
             plot_show=True, save_path=True, word_name='ju', stroke_name=1 
         )
 
