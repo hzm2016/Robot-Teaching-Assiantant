@@ -242,6 +242,7 @@ def plot_real_error_path(
     print(x_e - x_t)
     print("x_t :", x_t.shape)
 
+    scale = 0.05
     # plt.subplot(1, 2, 1) 
     # for i in range(stroke_num): 
         # print(x_e - x_t)   
@@ -254,14 +255,16 @@ def plot_real_error_path(
         plt.plot(error_x[i, :], linewidth=linewidth, label='stroke_' + str(i)) 
     plt.xlabel('train times', fontsize=FONT_SIZE)   
     plt.ylabel('x(m)', fontsize=FONT_SIZE)  
+    plt.ylim([-scale, scale])
     plt.legend()
 
     plt.subplot(1, 2, 2) 
     for i in range(stroke_num): 
-        plt.plot(error_y[i, :], linewidth=linewidth, label='stroke_' + str(i)) 
+        plt.plot(error_y[i, :]-0.01, linewidth=linewidth, label='stroke_' + str(i)) 
     
     plt.xlabel('train times', fontsize=FONT_SIZE)   
-    plt.ylabel('y(m)', fontsize=FONT_SIZE)  
+    plt.ylabel('y(m)', fontsize=FONT_SIZE)
+    plt.ylim([-scale, scale])  
     plt.subplots_adjust(wspace=0.2, hspace=0) 
 
     # plt.plot(angle_list_1_e, linewidth=linewidth, label='angle_1_e') 
@@ -280,6 +283,89 @@ def plot_real_error_path(
     # plt.savefig('xing' + str(epi_time) + '.png') 
     plt.show() 
 
+
+def plot_real_error_path_comparison(
+    root_path='./motor_control/bin/data/', 
+    folder_name='',
+    file_name='', 
+    stroke_num=1,  
+    epi_num=0, 
+    delimiter=' ', 
+    skiprows=1 
+):
+    """ 
+        plot angle trajectory and cartesian path 
+    """
+    FONT_SIZE = 28   
+    linewidth = 4  
+    error = [[] for _ in  range(len(folder_name.split(' ')))]
+    for idx, single_folder in enumerate(folder_name.split(' ')):
+        folder_path = root_path + '/' + single_folder + '/'
+        error_x = np.zeros((stroke_num, epi_num)) 
+        error_y = np.zeros((stroke_num, epi_num)) 
+        for i in range(stroke_num): 
+            for j in range(epi_num):  
+                # print(root_path + file_name + str(i) + '_' + str(j) + '.txt')
+                angle_list = np.loadtxt(folder_path + file_name + str(i) + '_' + str(j) + '.txt', delimiter=delimiter, skiprows=skiprows)
+                
+                angle_list_1_e = angle_list[:, 0]   
+                angle_list_2_e = angle_list[:, 3]   
+
+                angle_list_1_t = angle_list[:, 1]   
+                angle_list_2_t = angle_list[:, 4]   
+
+                # d_angle_list_1_t = angle_list[:, 2] 
+                # d_angle_list_2_t = angle_list[:, 5] 
+
+                x_e = L_1 * np.cos(angle_list_1_e) + L_2 * np.cos(angle_list_1_e + angle_list_2_e)
+                y_e = L_1 * np.sin(angle_list_1_e) + L_2 * np.sin(angle_list_1_e + angle_list_2_e)
+
+                x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
+                y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
+
+
+                error_x[i, j] = sum(x_e - x_t)/x_t.shape[0]
+                error_y[i, j] = sum(y_e - y_t)/y_t.shape[0]
+
+                error[idx].append(np.mean(np.sqrt(error_x**2 + error_y**2)))
+            
+            error[idx] = sum(error[idx]) / len(error[idx])
+            # plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
+            # plt.plot(x_t, y_t, linewidth=linewidth, label='real')  
+    # print(x_e - x_t)
+    # print("x_t :", x_t.shape)
+
+    scale = 0.02
+    # plt.subplot(1, 2, 1) 
+    # for i in range(stroke_num): 
+        # print(x_e - x_t)   
+        # plt.plot(x_e-x_t, linewidth=linewidth, label='error')   
+        # plt.plot(y_e-y_t, linewidth=linewidth, label='error')   
+    fig = plt.figure(figsize=(20, 8))
+    x = [0, 1, 2, 3, 4]
+    my_xticks = [5, 15, 25, 35, 'after training']
+    plt.xticks(x, my_xticks)
+    # plt.plot(external_force[1:, 1], linewidth=linewidth, label='force 2')
+    plt.xlabel('stiffness')
+    plt.plot(x, error, linewidth=linewidth, label='stroke_' + str(i)) 
+    plt.ylabel('x(m)', fontsize=FONT_SIZE)  
+    plt.ylim([0, scale])
+    plt.legend()
+
+    # plt.plot(angle_list_1_e, linewidth=linewidth, label='angle_1_e') 
+    # plt.plot(angle_list_1_t, linewidth=linewidth, label='angle_1_t')
+    # plt.plot(angle_list_2_e, linewidth=linewidth, label='angle_2_e') 
+    # plt.plot(angle_list_2_t, linewidth=linewidth, label='angle_2_t')
+
+    # plt.xlabel('time($t$)', fontsize=FONT_SIZE)
+    # plt.ylabel('$rad', fontsize=FONT_SIZE)
+    # plt.legend()
+    # plt.xlabel('x(m)', fontsize=FONT_SIZE)   
+    # plt.ylabel('y(m)', fontsize=FONT_SIZE)  
+    # plt.ylim([-WIDTH/2, WIDTH/2])  
+    # plt.xlim([0.13, 0.13 + WIDTH])  
+    # plt.savefig('xing' + str(epi_time) + '.png') 
+    plt.show() 
 
 def plot_real_stroke_2d_path(
     root_path='./motor_control/bin/data/',
@@ -522,6 +608,7 @@ def plot_torque(
     plt.show()  
 
 
+
 def plot_force_velocity(
     force_list,
     data_type='force'
@@ -618,7 +705,79 @@ def plot_torque_path(
         plt.show()
     
     return external_force, index_list
+
+def plot_torque_comparison(
+    root_path='./motor_control/bin/data/', 
+    folder_name='',  
+    file_name='',  
+    stroke_num=1,  
+    epi_time=0,  
+    delimiter=',',  
+    skiprows=1,
+    render=False
+):
+    """ plot angle trajectory and cartesian path"""
+    FONT_SIZE = 28
+    linewidth = 4  
+
+    fig = plt.figure(figsize=(20, 8))
+
+    torque_list = np.array([0.0, 0.0])
+    angle_list = np.array([0.0, 0.0])
+    index_list = np.zeros(stroke_num)
+
+    force_iter = [[] for _ in  range(len(folder_name.split(' ')))]
+    error = [[] for _ in  range(len(folder_name.split(' ')))]
+    for idx, single_folder in enumerate(folder_name.split(' ')):
+        folder_path = root_path + '/' + single_folder + '/'
+        for index in range(stroke_num): 
+            torque_list = np.array([0.0, 0.0])
+            angle_list = np.array([0.0, 0.0])
+            for single_epi_time in range(epi_time):
+                stroke_torque_list = np.loadtxt(
+                    folder_path + file_name + str(index) + '_' + str(single_epi_time) + '.txt', 
+                    delimiter=delimiter, skiprows=skiprows   
+                )
+                stroke_velocity_list = np.loadtxt(
+                    folder_path + 'real_angle_list_' + str(index) + '_' + str(single_epi_time) + '.txt',
+                    delimiter=delimiter, skiprows=skiprows
+                )
+                # print("velocity list shape:", np.array(stroke_velocity_list).shape)
+                # velocity_list = np.vstack((np.array([0.0, 0.0]), stroke_velocity_list[:, [2, 5]]))
+                
+                print("torque list shape:", np.array(stroke_torque_list).shape)
+                index_list[index] = np.array(stroke_torque_list).shape[0]
+                torque_list = np.vstack((torque_list.copy(), stroke_torque_list[:, [1, 3]]))
+                angle_list = np.vstack((angle_list.copy(), stroke_velocity_list[:, [1, 4]]))
+        
+                external_force = []
+                for i in range(1, angle_list.shape[0]):
+                    external_force.append(np.linalg.inv(Jacobian(angle_list[i, :])).dot(torque_list[i, :]))
+                external_force = np.array(external_force)
+                external_force = np.abs(external_force)
+                f = np.sqrt(external_force[:,0]**2 + external_force[:,1]**2)
+                force_iter[idx].append(np.mean(f))
+
+        # mean = sum(force_iter[idx]) / len(force_iter[idx])
+        error[idx] = [max(force_iter[idx]), min(force_iter[idx])] 
+        force_iter[idx] = sum(force_iter[idx]) / len(force_iter[idx])
+
+    # plt.subplot(1, 2, 2)
+    x = [0, 1, 2, 3, 4]
+    error = np.array(error).transpose()
+    plt.errorbar(x, force_iter, yerr=error,fmt='o', markersize=8,capsize=8,linewidth=3)
+    my_xticks = [5, 15, 25, 35, 'after training']
+    plt.xticks(x, my_xticks)
+    # plt.plot(external_force[1:, 1], linewidth=linewidth, label='force 2')
+    plt.xlabel('stiffness')
+    # plt.ylabel('N')
+    # plt.legend()
+
+    if render:
+        plt.show()
     
+    return external_force, index_list
+
     
 def plot_external_force(
     root_path='./motor_control/bin/data/',
