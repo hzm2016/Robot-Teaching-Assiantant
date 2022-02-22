@@ -361,13 +361,13 @@ def load_word_path(
 
 
 def generate_training_path(
-    word_name='mu',
-    eval_word_name='',
-    training_name='',
-    stroke_index=3,
-    epi_times=5,
-    training_times=5,
-    num_stroke=4,
+    word_name='mu',  
+    eval_word_name='',  
+    training_name='',  
+    stroke_index=3,  
+    epi_times=5,  
+    training_times=5,  
+    num_stroke=4,  
     plot=False
 ):
     from forward_mode.utils.gmr import Gmr
@@ -375,12 +375,12 @@ def generate_training_path(
     from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
     from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
     from forward_mode.utils.gmr_kernels import Gmr_based_kernel
-    import GPy
+    import GPy  
 
     folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + training_name
     print('folder_name :', folder_name)
     if os.path.exists(folder_name):
-        pass
+        pass 
     else:
         os.makedirs(folder_name)
     
@@ -468,7 +468,7 @@ def generate_training_path(
     #     trans_value=TRANS_VALUE
     # )
     
-    if train_gmr:
+    if train_gmr: 
         # ========================================================
         # ========================= GMM ==========================
         # ========================================================
@@ -501,10 +501,10 @@ def generate_training_path(
             axes = plt.gca()
             # axes.set_xlim([0.1, 0.45])
             # axes.set_ylim([-0.25, 0.25])
-            # axes.set_xlim([-10, 10])
-            axes.set_xlim([-20, 20])
-            axes.set_ylim([-20, 20])
-            # axes.set_ylim([-10, 10])
+            # axes.set_xlim([-10, 10]) 
+            axes.set_xlim([-20, 20]) 
+            axes.set_ylim([-20, 20]) 
+            # axes.set_ylim([-10, 10]) 
             # axes.set_xlim([-15, 15])
             # axes.set_ylim([-15, 15])
             plt.xlabel('$x(m)$', fontsize=font_size)
@@ -637,11 +637,11 @@ def generate_training_path(
 
 
 def training_samples_to_waypoints(
-    word_name='mu',
-    eval_word_name='',
-    training_name='',
-    stroke_index=0,
-    Num_waypoints=10000,
+    word_name='mu',  
+    eval_word_name='',  
+    training_name='',  
+    stroke_index=0,  
+    Num_waypoints=10000,  
     sample_index=0,
     task_params=None,
     joint_params=None,

@@ -4,6 +4,7 @@
     <list default="true" id="c686d4b2-8e57-4ead-a10c-15488c6be441" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/motor_control/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/motor_control/CMakeLists.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -207,7 +208,10 @@
       <workItem from="1643204649635" duration="60160000" />
       <workItem from="1644068397231" duration="8436000" />
       <workItem from="1644717014584" duration="792000" />
-      <workItem from="1644932593010" duration="51510000" />
+      <workItem from="1644932593010" duration="52749000" />
+      <workItem from="1645146418262" duration="6000" />
+      <workItem from="1645269875828" duration="883000" />
+      <workItem from="1645339654354" duration="4877000" />
     </task>
     <servers />
   </component>
