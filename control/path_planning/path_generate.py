@@ -235,7 +235,10 @@ def generate_stroke_path(
     x_1_list = x_list/ratio + center_shift[1]
     x_2_list = y_list/ratio + center_shift[0]
 
-    task_points = np.vstack((x_1_list[::-1], x_2_list[::-1])).transpose() 
+    x_1_list = x_1_list[::-1]
+    x_2_list = x_2_list[::-1]
+
+    task_points = np.vstack((x_1_list, x_2_list)).transpose() 
 
     angle_1_list_e = []
     angle_2_list_e = []
