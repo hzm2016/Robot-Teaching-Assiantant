@@ -840,8 +840,9 @@ def main(args):
         )
     
     if args.eval:
-        joint_params = np.array([30, 30, 4, 0.5])
-        task_params = np.array([30, 30, 4, 0.5])
+
+        joint_params = np.array([10, 10, 2, 0.5])
+        task_params = np.array([10, 10, 2, 0.5])
         
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
@@ -884,7 +885,7 @@ def main(args):
                 stroke_points=word_path[args.stroke_index],
                 stroke_params=word_joint_params[args.stroke_index],
                 target_point=Initial_point,
-                word_name=args.word_name + '_20', 
+                word_name=args.word_name + '_5', 
                 stroke_index=args.stroke_index,  
                 epi_time=i  
             )
@@ -975,7 +976,7 @@ def main(args):
         generate_stroke_path(
             traj, inter_type=1, inverse=True,  
             center_shift=np.array([-WIDTH/2, 0.15]),  
-            velocity=0.02, Ts=0.001, filter_size=17,  
+            velocity=0.04, Ts=0.001, filter_size=13,  
             plot_show=True, save_path=True, word_name='ju', stroke_name=1 
         )
 
@@ -997,7 +998,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--training_name', type=str, default='second_time', help='give write word name')
 
-    parser.add_argument('--eval_times', type=int, default=1, help='give write word name')
+    parser.add_argument('--eval_times', type=int, default=5, help='give write word name')
     parser.add_argument('--training_times', type=int, default=5, help='give write word name')
 
     args = parser.parse_args() 
