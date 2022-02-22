@@ -725,14 +725,14 @@ def main(args):
             # )
 
             # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
-            eval_stroke(
-                stroke_points=word_path[args.stroke_index],
-                stroke_params=word_joint_params[args.stroke_index],
-                target_point=Initial_point,
-                word_name=args.word_name + '_5', 
-                stroke_index=args.stroke_index,  
-                epi_time=i  
-            )
+            # eval_stroke(
+            #     stroke_points=word_path[args.stroke_index],
+            #     stroke_params=word_joint_params[args.stroke_index],
+            #     target_point=Initial_point,
+            #     word_name=args.word_name + '_5', 
+            #     stroke_index=args.stroke_index,  
+            #     epi_time=i  
+            # )
 
             # eval_stroke(
             #     stroke_points=stroke_points,
@@ -836,9 +836,9 @@ if __name__ == "__main__":
 
     parser.add_argument('--word_name', type=str, default='yi', help='give write word name') 
     parser.add_argument('--eval_word_name', type=str, default='yi', help='give write word name') 
-    parser.add_argument('--save_word_name', type=str, default='yi_5_5', help='give write word name') 
-    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')
-    parser.add_argument('--sample_index', type=int, default=0, help='give write word name')
+    parser.add_argument('--save_word_name', type=str, default='yi_5_5', help='give write word name')   
+    parser.add_argument('--stroke_index', type=int, default=0, help='give write word name')  
+    parser.add_argument('--sample_index', type=int, default=0, help='give write word name')  
 
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')
     parser.add_argument('--training_name', type=str, default='second_time', help='give write word name')
