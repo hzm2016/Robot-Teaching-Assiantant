@@ -1,10 +1,10 @@
 import argparse
 import os
-from motor_control import motor_control
+# from motor_control import motor_control
 import time
 
 from scipy import interpolate
-from ctl_utils import * 
+# from ctl_utils import * 
 
 # path prediction
 from utils.word_preprocess import *
@@ -664,6 +664,16 @@ def main(args):
         #     stroke_num=6,
         #     epi_num=5,
         #     delimiter=' ',
+        #     skiprows=1
+        # )
+
+        # plot_real_error_path_comparison(
+        #     root_path=FILE_EVAL_NAME,
+        #     folder_name=args.word_name,
+        #     file_name='real_angle_list_',
+        #     stroke_num=1,
+        #     epi_num=5,
+        #     delimiter=',',
         #     skiprows=1
         # )
 
