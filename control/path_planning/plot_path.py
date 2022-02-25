@@ -322,7 +322,8 @@ def plot_real_error_path_comparison(
 
                 x_t = L_1 * np.cos(angle_list_1_t) + L_2 * np.cos(angle_list_1_t + angle_list_2_t) 
                 y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
-
+                
+                # Hungarian Matching
 
                 error_x[i, j] = sum(x_e - x_t)/x_t.shape[0]
                 error_y[i, j] = sum(y_e - y_t)/y_t.shape[0]
@@ -342,12 +343,12 @@ def plot_real_error_path_comparison(
         # plt.plot(x_e-x_t, linewidth=linewidth, label='error')   
         # plt.plot(y_e-y_t, linewidth=linewidth, label='error')   
     fig = plt.figure(figsize=(20, 8))
-    x = [0, 1, 2, 3, 4]
-    my_xticks = [5, 15, 25, 35, 'after training']
-    plt.xticks(x, my_xticks)
+    x = range(len(folder_name.split(' ')))
+    # my_xticks = [5, 15, 25, 35, 'after training']
+    # plt.xticks(x, my_xticks)
     # plt.plot(external_force[1:, 1], linewidth=linewidth, label='force 2')
     plt.xlabel('stiffness')
-    plt.plot(x, error, linewidth=linewidth, label='stroke_' + str(i)) 
+    plt.bar(x, error, linewidth=linewidth, label='stroke_' + str(i)) 
     plt.ylabel('x(m)', fontsize=FONT_SIZE)  
     plt.ylim([0, scale])
     plt.legend()
@@ -714,7 +715,7 @@ def plot_torque_comparison(
     epi_time=0,  
     delimiter=',',  
     skiprows=1,
-    render=False
+    render=True
 ):
     """ plot angle trajectory and cartesian path"""
     FONT_SIZE = 28
@@ -763,12 +764,13 @@ def plot_torque_comparison(
         force_iter[idx] = sum(force_iter[idx]) / len(force_iter[idx])
 
     # plt.subplot(1, 2, 2)
-    x = [0, 1, 2, 3, 4]
+    # import pdb;pdb.set_trace()
+    x = range(len(folder_name.split(' ')))
     error = np.array(error).transpose()
-    plt.errorbar(x, force_iter, yerr=error,fmt='o', markersize=8,capsize=8,linewidth=3)
-    my_xticks = [5, 15, 25, 35, 'after training']
-    plt.xticks(x, my_xticks)
-    # plt.plot(external_force[1:, 1], linewidth=linewidth, label='force 2')
+    # plt.errorbar(x, force_iter, yerr=error,fmt='o', markersize=8,capsize=8,linewidth=3)
+    # my_xticks = [5, 15, 25, 35, 'after training']
+    # plt.xticks(x, my_xticks)
+    plt.bar(x, force_iter, linewidth=linewidth, label='force 2')
     plt.xlabel('stiffness')
     # plt.ylabel('N')
     # plt.legend()
