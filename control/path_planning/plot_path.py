@@ -1,4 +1,5 @@
 import glob
+from nis import match
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
@@ -6,7 +7,45 @@ import numpy as np
 # from path_planning.path_generate import *
 from matplotlib.animation import FuncAnimation
 from path_planning.utils import Jacobian
+from scipy.spatial.distance import cdist
+from sklearn.metrics.pairwise import paired_distances, pairwise_distances
+import munkres
 from scipy import signal
+
+from functools import wraps
+from time import time
+def measure(func):
+    @wraps(func)
+    def _time_it(*args, **kwargs):
+        start = int(round(time() * 1000))
+        try:
+            return func(*args, **kwargs)
+        finally:
+            end_ = int(round(time() * 1000)) - start
+            print(f"Total execution time: {end_ if end_ > 0 else 0} ms")
+    return _time_it
+
+def fps(points, frac=0.02, num=None):
+    P = np.array(points)
+    if num is None:
+        num_points = int(P.shape[0] * frac)
+    else:
+        num_points = num
+    D = pairwise_distances(P, metric='euclidean')
+    #By default, takes the first point in the list to be the
+    #first point in the permutation, but could be random
+    perm = np.zeros(num_points, dtype=np.int64)
+    lambdas = np.zeros(num_points)
+    ds = D[0, :]
+    idx_list =[]
+    for i in range(1, num_points):
+        idx = np.argmax(ds)
+        idx_list.append(idx)
+        perm[i] = idx
+        lambdas[i] = ds[idx]
+        ds = np.minimum(ds, D[idx, :])
+    return P, perm[:num_points]
+    
 
 """ ================================= Plot result ===================================== """
 COLORS = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'purple', 'pink',
@@ -62,6 +101,51 @@ params = {
 # sns.axes_style(rc=params)
 sns.set(font_scale=3.5)
 
+
+def squarify(M,val=10000):
+    (a,b)=M.shape
+
+    if a == b:
+        return M
+
+    if a>b: 
+        padding=((0,0),(0,a-b))
+    else:
+        padding=((0,b-a),(0,0))
+
+    return np.pad(M,padding,mode='constant',constant_values=val)
+
+
+def pad_length(a, b, val=1000):
+
+    len_a = len(a)
+    len_b = len(b)
+
+    if len_a == len_b:     
+        return a, b, len_a, 0
+    
+    if len_a > len_b: 
+        padding=((0,len_a - len_b),(0,0))
+        b = np.pad(b,padding,mode='constant',constant_values=val)
+    else:
+        padding=((0,len_b - len_a),(0,0))
+        a = np.pad(a,padding,mode='constant',constant_values=val)
+        
+    return a, b, min(len_a, len_b), int(len_a > len_b)
+@measure
+def hungarian_matching(a, b):
+    m = munkres.Munkres()
+    a, b, min_length, index  = pad_length(a, b)
+    dist = cdist(a,b)
+    matching = m.compute(dist)
+    
+    # if index == 0:
+    #     matching = matching[:min_length]
+    # else:
+    #     matching = sorted(matching, key=lambda x: x[1], reverse=False)
+    #     matching = matching[:min_length]
+
+    return matching
 
 def plot_real_trajectory(
     root_path='./motor_control/bin/data/',  
@@ -255,7 +339,7 @@ def plot_real_error_path(
         plt.plot(error_x[i, :], linewidth=linewidth, label='stroke_' + str(i)) 
     plt.xlabel('train times', fontsize=FONT_SIZE)   
     plt.ylabel('x(m)', fontsize=FONT_SIZE)  
-    plt.ylim([-scale, scale])
+    # plt.ylim([-scale, scale])
     plt.legend()
 
     plt.subplot(1, 2, 2) 
@@ -324,11 +408,27 @@ def plot_real_error_path_comparison(
                 y_t = L_1 * np.sin(angle_list_1_t) + L_2 * np.sin(angle_list_1_t + angle_list_2_t) 
                 
                 # Hungarian Matching
+                e = np.array(list(zip(x_e, y_e)))
+                t = np.array(list(zip(x_t, y_t)))
 
+                num_points = 100
+                # _, idx_list = fps(e, num=num_points)   
+                # idx_list = np.sort(idx_list)  
+                # e = e[idx_list]   
+                # _, idx_list = fps(t, num=num_points)   
+                # idx_list = np.sort(idx_list)  
+                # t = t[idx_list]  
+                sample_points = np.random.choice(range(e.shape[0]), num_points)
+                e = e[sample_points]
+                t = t[sample_points]
+
+                matching = hungarian_matching(e,t)
+                matching = np.array(matching)
+                dist = np.sum(paired_distances(e[matching[:, 0]], t[matching[:, 1]])) / e.shape[0]
                 error_x[i, j] = sum(x_e - x_t)/x_t.shape[0]
                 error_y[i, j] = sum(y_e - y_t)/y_t.shape[0]
-
-                error[idx].append(np.mean(np.sqrt(error_x**2 + error_y**2)))
+                # error[idx].append(np.mean(np.sqrt(error_x**2 + error_y**2)))
+                error[idx].append(dist)
             
             error[idx] = sum(error[idx]) / len(error[idx])
             # plt.plot(x_e, y_e, linewidth=linewidth, label='desired')  
@@ -336,21 +436,22 @@ def plot_real_error_path_comparison(
     # print(x_e - x_t)
     # print("x_t :", x_t.shape)
 
-    scale = 0.02
+    print(error)
+    scale = 0.2
     # plt.subplot(1, 2, 1) 
     # for i in range(stroke_num): 
         # print(x_e - x_t)   
         # plt.plot(x_e-x_t, linewidth=linewidth, label='error')   
         # plt.plot(y_e-y_t, linewidth=linewidth, label='error')   
-    fig = plt.figure(figsize=(20, 8))
+    # fig = plt.figure(figsize=(20, 8))
     x = range(len(folder_name.split(' ')))
     # my_xticks = [5, 15, 25, 35, 'after training']
     # plt.xticks(x, my_xticks)
     # plt.plot(external_force[1:, 1], linewidth=linewidth, label='force 2')
     plt.xlabel('stiffness')
-    plt.bar(x, error, linewidth=linewidth, label='stroke_' + str(i)) 
+    plt.plot(x, error, linewidth=linewidth, label='stroke_' + str(i)) 
     plt.ylabel('x(m)', fontsize=FONT_SIZE)  
-    plt.ylim([0, scale])
+    # plt.ylim([0, scale])
     plt.legend()
 
     # plt.plot(angle_list_1_e, linewidth=linewidth, label='angle_1_e') 

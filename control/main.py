@@ -674,7 +674,7 @@ def main(args):
         # )
 
         plot_real_error_path_comparison(
-            root_path=FILE_EVAL_NAME + '/second_time',
+            root_path=FILE_EVAL_NAME + '/second',
             folder_name=args.word_name,
             file_name='real_angle_list_',
             stroke_num=1,
@@ -683,15 +683,15 @@ def main(args):
             skiprows=1
         )
 
-        plot_torque_comparison(
-            root_path=FILE_EVAL_NAME + '/second_time',
-            folder_name=args.word_name,
-            file_name='real_torque_list_',
-            stroke_num=1,
-            epi_time=5,
-            delimiter=',',
-            skiprows=1
-        )
+        # plot_torque_comparison(
+        #     root_path=FILE_EVAL_NAME + '/second_time',
+        #     folder_name=args.word_name,
+        #     file_name='real_torque_list_',
+        #     stroke_num=1,
+        #     epi_time=5,
+        #     delimiter=',',
+        #     skiprows=1
+        # )
 
         # plot_real_2d_demo_path(
         # root_path='',

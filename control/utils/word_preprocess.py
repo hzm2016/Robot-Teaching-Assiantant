@@ -119,9 +119,12 @@ def Forward_list(
     return trajectory_list
     
 
-def fps(points, frac):
+def fps(points, frac=0.02, num=None):
     P = np.array(points)
-    num_points = int(P.shape[0] * frac)
+    if num is None:
+        num_points = int(P.shape[0] * frac)
+    else:
+        num_points = num
     D = pairwise_distances(P, metric='euclidean')
     N = D.shape[0]
     #By default, takes the first point in the list to be the
