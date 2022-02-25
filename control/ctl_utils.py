@@ -339,3 +339,33 @@ def move_to_target_point(
         Angle_initial[0], Angle_initial[1],
         dist_threshold
     )
+
+
+    # load_eval_path(
+    #     root_path='./data/real_path_data',
+    #     word_name=None,
+    #     epi_times=5
+    # )
+
+    # word_path = cope_real_word_path(
+    #     root_path='./data/font_data',
+    #     word_name='mu',
+    #     file_name='real_angle_list_',
+    #     epi_times=5,
+    #     num_stroke=4,
+    #     plot=True
+    # )
+    # print(trajectory_list.shape)
+
+    # predict_training_samples(
+    #     word_name='mu',
+    #     stroke_index=0,
+    #     re_sample_index=20,
+    #     epi_times=5,
+    #     num_stroke=4,
+    #     plot=True
+    # )
+
+    # training_samples_to_waypoints(
+    #     word_name='mu'
+    # )

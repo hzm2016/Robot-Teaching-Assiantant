@@ -1,28 +1,29 @@
 import argparse
 import os
 # from motor_control import motor_control
-import time
+from ctl_utils import *   
+import time  
 
 from scipy import interpolate
-# from ctl_utils import * 
 
 # path prediction
 from utils.word_preprocess import *
-
+ 
 sns.set(font_scale=1.5)
-np.set_printoptions(precision=5)
+np.set_printoptions(precision=5)  
+
 
 L_1 = 0.3
 L_2 = 0.25
 action_dim = 3
-DIST_THREHOLD = 0.05
+DIST_THREHOLD = 0.05  
 
-FILE_FIG_NAME = './data/predicted_images/'
-FILE_FONT_NAME = './data/font_data'
-FILE_TRAIN_NAME = './data/training_data'
-FILE_EVAL_NAME = './data/real_path_data'
+FILE_FIG_NAME = './data/predicted_img/'
+FILE_FONT_NAME = './data/font'
+FILE_TRAIN_NAME = './data/training_path'
+FILE_EVAL_NAME = './data/real_path'
 
-ANGLE_1_RANGE = np.array([-1.90, 1.90])
+ANGLE_1_RANGE = np.array([-1.90, 1.90])  
 ANGLE_2_RANGE = np.array([-2.2, 2.5])
 center_shift = np.array([0.15, -WIDTH / 2])
 
@@ -32,14 +33,14 @@ WRITING_Y = [-WIDTH / 2, WIDTH / 2]
 WRITING_X = [0.13, 0.13 + WIDTH]
 
 # initial angle (rad) :::
-Initial_angle = np.array([-1.31, 1.527])
+Initial_angle = np.array([-1.31, 1.527])  
 
 Initial_point = np.array([0.32299, -0.23264])
 
 Angle_initial = np.array([-0.314727, -0.122983, 1.981514]) 
 
 # impedance params ::: 
-Move_Impedance_Params = np.array([30.0, 30.0, 4.0, 0.2])
+Move_Impedance_Params = np.array([30.0, 30.0, 4.0, 0.2])  
 
 
 def eval_stroke(
@@ -47,7 +48,7 @@ def eval_stroke(
     stroke_params=None,   
     target_point=Initial_point,  
     word_name='yi',   
-    training_name='second_time',  
+    training_name='second',  
     stroke_index=0,   
     epi_time=0   
 ):
@@ -102,83 +103,89 @@ def eval_stroke(
 
 def generate_training_path(
     word_name='mu',  
-    eval_word_name='',  
-    training_name='',  
-    stroke_index=3,  
+    eval_word_name='',   
+    training_name='',   
+    stroke_index=0,  
     epi_times=5,  
     training_times=5,  
     num_stroke=4,  
-    plot=False
+    plot=False   
 ):
     from forward_mode.utils.gmr import Gmr
     from forward_mode.utils.gmr import plot_gmm
     from forward_mode.utils.gp_coregionalize_with_mean_regression import GPCoregionalizedWithMeanRegression
-    from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping
-    from forward_mode.utils.gmr_kernels import Gmr_based_kernel
-    import GPy  
+    from forward_mode.utils.gmr_mean_mapping import GmrMeanMapping 
+    from forward_mode.utils.gmr_kernels import Gmr_based_kernel  
+    import GPy   
 
-    folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + training_name
-    print('folder_name :', folder_name)
-    if os.path.exists(folder_name): 
+    folder_name = FILE_TRAIN_NAME + '/' + training_name + '/' + word_name  
+    print('folder_name :', folder_name)   
+    if os.path.exists(folder_name):   
         pass  
-    else: 
-        os.makedirs(folder_name) 
+    else:   
+        os.makedirs(folder_name)   
     
     dt = 0.01
     font_size = 30
     input_dim = 1  # time
     output_dim = 2  # x, y
-    re_sample_index = int(60)  
+    re_sample_index = int(60)   
+    sample_factors = 0.001  
 
-    # training hyper-parameters
-    in_idx = [0]
-    out_idx = [1, 2]
-    nb_states = 5
-    nb_prior_samples = 10
-    nb_posterior_samples = training_times
-    train_gmr = True 
-    train_gp = True
+    # training hyper-parameters  
+    in_idx = [0]  
+    out_idx = [1, 2]   
+    nb_states = 5  
+    nb_prior_samples = 10  
+    nb_posterior_samples = training_times 
+    train_gmr = True   
+    train_gp = True  
 
-    # ====================== data processing ======================
-    word_path = load_real_word_path(
-        root_path=FILE_EVAL_NAME,
-        word_name=eval_word_name,
-        training_name=training_name,
-        file_name='real_angle_list_',
-        epi_times=epi_times,
-        num_stroke=num_stroke,
-        plot=False
-    )
-    eval_stroke_path = np.array(word_path[stroke_index])
-    # print("eval_stroke :", eval_stroke_path[:, 0, :])
-    # load from font data
+    # ====================== data processing ======================    
+    # load from font
     train_word_path, _, _ = load_word_path(
         word_name=word_name,
         task_params=np.array([35, 35, 5, 0.5]),
         joint_params=np.array([35, 35, 5, 0.5]),
     )
     
-    train_stroke_path = train_word_path[stroke_index]
+    train_stroke_path = train_word_path[stroke_index]  
     stroke_list = Forward_list(
-        stroke_path=train_stroke_path
+        stroke_path=train_stroke_path     
     )  
-    Num_way_point = train_stroke_path.shape[0]
-    down_stroke_list, idx_list = fps(stroke_list, 0.001) 
-    idx_list = np.sort(idx_list) 
-    down_stroke_list = down_stroke_list[idx_list] 
-    down_stroke_list = np.array(down_stroke_list) 
+    Num_way_point = train_stroke_path.shape[0]   
+    down_stroke_list, idx_list = fps(stroke_list, sample_factors)   
+    idx_list = np.sort(idx_list)  
+    down_stroke_list = down_stroke_list[idx_list]   
+    down_stroke_list = np.array(down_stroke_list)    
     
-    # offset_eval_stroke_path = np.zeros_like(eval_stroke_path)
+    # load real path data
+    word_path = load_real_word_path(
+        root_path=FILE_EVAL_NAME,   
+        word_name=eval_word_name,   
+        training_name=training_name,  
+        file_name='real_angle_list_',   
+        epi_times=epi_times,  
+        num_stroke=num_stroke,  
+        plot=False
+    )
+    eval_stroke_path = np.array(word_path[stroke_index])
+    # print("eval_stroke :", eval_stroke_path[:, 0, :])
+
+    # =====================================================
+    ################ deal with initial position ###########
+    # =====================================================
+    # offset_eval_stroke_path = np.zeros_like(eval_stroke_path)  
     for i in range(eval_stroke_path.shape[0]):
-        # print('iteration :', i, eval_stroke_path[i, :, :].shape)
+        # print('iteration :', i, eval_stroke_path[i, :, :].shape)  
         offset_value = eval_stroke_path[i, 0, :] - np.array([stroke_list[0, 0], stroke_list[0, 1], stroke_list[0, 0], stroke_list[0, 1]])
         eval_stroke_path[i, :, :] = eval_stroke_path[i, :, :] - offset_value
         # print(eval_stroke_path[i, 0, :] - np.array([stroke_list[0, 0], stroke_list[0, 1], stroke_list[0, 0], stroke_list[0, 1]]))
         # eval_stroke_path = eval_stroke_path[i, :, :] - (eval_stroke_path[i, 0, :] - np.array([stroke_list[0, 0], stroke_list[0, 1], stroke_list[0, 0], stroke_list[0, 1]]))
 
-    # =====================================================
-    ############# process data before prediction ##########
-    # =====================================================
+    # =====================================================  
+    ############# process data before prediction ##########  
+    # =====================================================  
     X_list, Y_list, X, Y, Xt, demos_np, nb_data = \
             eval_data_preprocess(
             # word_path,
@@ -187,26 +194,20 @@ def generate_training_path(
             epi_times=epi_times,
             re_sample_index=re_sample_index,
             dt=dt,
-            plot=False
-    )
-    T = Xt[-1][0]
-    print("Xt", T)
+            plot=False   
+    )   
+    T = Xt[-1][0]  
+    print("Xt", T)  
     
     # ===================== generate new samples =============
     X_obs_list, Y_obs_list, X_obs, Y_obs = \
         load_new_obs_path(
-            Num_way_point,
-            T,
-            down_stroke_list[:, 0].copy(),
+            Num_way_point,  
+            T,   
+            down_stroke_list[:, 0].copy(),  
             down_stroke_list[:, 1].copy(),
-            idx_list.copy()
-        )
-
-    # X_obs_list, Y_obs_list = scale_translate_process_main(
-    #     down_stroke_list[:, 0].copy(), down_stroke_list[:, 1].copy(),
-    #     scale_factor=SCALE_FACTOR,
-    #     trans_value=TRANS_VALUE
-    # )
+            idx_list.copy()  
+    )
     
     if train_gmr: 
         # ========================================================
@@ -383,11 +384,11 @@ def training_samples_to_waypoints(
     training_name='',  
     stroke_index=0,  
     Num_waypoints=10000,  
-    sample_index=0,
-    task_params=None,
-    joint_params=None,
-    desire_angle_list=None,
-    plot=True
+    sample_index=0,  
+    task_params=None,   
+    joint_params=None,  
+    desire_angle_list=None,   
+    plot=True  
 ):
     print("============== {} ============".format('Load Training Samples !!!'))
     folder_name = FILE_TRAIN_NAME + '/' + word_name + '/' + training_name + '/training_stroke_' + eval_word_name + '_' + str(stroke_index) + '_samples.npy'
@@ -472,11 +473,7 @@ def training_samples_to_waypoints(
 
 
 
-def main(args):
-    # ===========================================================
-
-    # motor stop
-    # motor_control.motor_two_link_stop()
+def main(args): 
 
     if args.test:
 
@@ -524,29 +521,32 @@ def main(args):
             joint_params=np.array([40, 40, 5, 0.5]),
             )
         
-        word_params = word_joint_params
+        word_params = word_joint_params  
         # evaluation writing
-        for i in range(eval_times):
+        for i in range(eval_times):   
             # word
             write_word(word_path, word_params=word_params, word_name=args.word_name, epi_times=i)
             # stroke
 
     if args.sample:
+        # generate new training samples
         stroke_training_samples = generate_training_path(
-            word_name=args.word_name, 
-            eval_word_name=args.eval_word_name,  
-            training_name=args.training_name,
-            training_times=args.training_times,
-            stroke_index=args.stroke_index,
-            epi_times=args.eval_times,
+            word_name=args.word_name,   
+            eval_word_name=args.eval_word_name,   
+            training_name=args.training_name,   
+            training_times=args.training_times,  
+            stroke_index=args.stroke_index,  
+            epi_times=args.eval_times, 
             num_stroke=1,
             plot=True
         )
     
     if args.eval:
 
-        joint_params = np.array([5, 5, 1, 0.5])  
-        task_params = np.array([5, 5, 1, 0.5])  
+        stiffness = 5.0
+        damping = 1.0
+        joint_params = np.array([stiffness, stiffness, damping, 0.5])  
+        task_params = np.array([stiffness, stiffness, damping, 0.5])  
         
         # eval_times = 1
         word_path, word_joint_params, word_task_params = load_word_path(
@@ -570,6 +570,22 @@ def main(args):
         
         # evaluation writing
         for i in range(args.eval_times):
+            # write_word(
+            #     word_path, 
+            #     word_params=word_params, 
+            #     word_name=write_name, 
+            #     epi_times=i
+            # )
+            
+            # eval_stroke(
+            #     stroke_points=word_path[args.stroke_index],
+            #     stroke_params=word_joint_params[args.stroke_index],
+            #     target_point=Initial_point,
+            #     word_name=args.word_name + '_5', 
+            #     stroke_index=args.stroke_index,  
+            #     epi_time=i  
+            # )
+
             stroke_points, joint_params_list = \
             training_samples_to_waypoints(   
                 word_name=args.word_name,  
@@ -583,16 +599,6 @@ def main(args):
                 desire_angle_list=angle_list,   
                 plot=False
             )   
-
-            # write_word(word_path, word_params=word_params, word_name=write_name, epi_times=i)
-            # eval_stroke(
-            #     stroke_points=word_path[args.stroke_index],
-            #     stroke_params=word_joint_params[args.stroke_index],
-            #     target_point=Initial_point,
-            #     word_name=args.word_name + '_5', 
-            #     stroke_index=args.stroke_index,  
-            #     epi_time=i  
-            # )
 
             eval_stroke(
                 stroke_points=stroke_points,   
@@ -694,14 +700,14 @@ def main(args):
         # skiprows=1
         # )
 
-    if args.generate_path:   
-        traj = np.loadtxt(FILE_FONT_NAME + '/' + args.word_name + '/句_1_font1.txt')  
-        print("traj :", traj)  
+    if args.generate_path:    
+        traj = np.loadtxt(FILE_FONT_NAME + '/' + args.word_name + '/句_1_font1.txt')   
+        print("traj :", traj)   
         generate_stroke_path(
             traj, inter_type=1, inverse=True,  
             center_shift=np.array([-WIDTH/2, 0.15]),  
             velocity=0.04, Ts=0.001, filter_size=13,  
-            plot_show=True, save_path=True, word_name='ju', stroke_name=1 
+            plot_show=True, save_path=True, word_name='ju', stroke_name=1  
         )
 
 
@@ -721,39 +727,10 @@ if __name__ == "__main__":
     parser.add_argument('--sample_index', type=int, default=0, help='give write word name')   
 
     parser.add_argument('--file_name', type=str, default='real_angle_list_', help='give write word name')   
-    parser.add_argument('--training_name', type=str, default='second_time', help='give write word name')   
+    parser.add_argument('--training_name', type=str, default='second', help='give write word name')   
     parser.add_argument('--eval_times', type=int, default=5, help='give write word name')   
     parser.add_argument('--training_times', type=int, default=5, help='give write word name')   
 
-    args = parser.parse_args()  
+    args = parser.parse_args()   
     
     main(args)  
-
-    # load_eval_path(
-    #     root_path='./data/real_path_data',
-    #     word_name=None,
-    #     epi_times=5
-    # )
-
-    # word_path = cope_real_word_path(
-    #     root_path='./data/font_data',
-    #     word_name='mu',
-    #     file_name='real_angle_list_',
-    #     epi_times=5,
-    #     num_stroke=4,
-    #     plot=True
-    # )
-    # print(trajectory_list.shape)
-
-    # predict_training_samples(
-    #     word_name='mu',
-    #     stroke_index=0,
-    #     re_sample_index=20,
-    #     epi_times=5,
-    #     num_stroke=4,
-    #     plot=True
-    # )
-
-    # training_samples_to_waypoints(
-    #     word_name='mu'
-    # )
