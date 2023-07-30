@@ -2,9 +2,10 @@ import os.path as osp
 import cv2
 import numpy as np
 from PIL import Image
-import os
+import io
 from cairosvg import svg2png
 from tqdm import tqdm
+from lxml import etree
 from svgpathtools import parse_path, disvg, wsvg
 
 def list_to_str(list):
@@ -45,17 +46,35 @@ def svg_2_img(out_path, path_list):
 def svg2img(paths):
 
     paths = parse_path(paths)
-
-    transform = [r'<g transform="scale(1, -1) translate(0, -900)">', r'</g>']    
-    path_str = wsvg(paths, dimensions=(1024,1024))
+    # transform = [r'<g transform="scale(1, -1) translate(0, -900)">', r'</g>']    
+    transform = [r'<g transform="scale(1, -1) translate(0, -900)"> ', r'</g>']    
+    path_str = wsvg(paths, filename='test.svg', dimensions=(1024, 1024), stroke_widths=[1])
     path_str_list = path_str.split('\n')
     path_str_list.insert(2, transform[0])
     path_str_list.insert(-2, transform[1])
     path_str = list_to_str(path_str_list)
-    io = svg2png(bytestring=path_str,background_color='white',output_width=128, output_height=128)
-    io.seek(0)
-    byteImg = np.asarray(Image.open(io))
 
+    # change the fill color of the svg
+    root = etree.fromstring(path_str)
+    tree = etree.ElementTree(root)
+    color = '#000000'
+    root.attrib["fill"] = color
+    root.attrib["width"] = '128'
+    root.attrib["height"] = '128'
+
+    for path in root.iter():
+        path.attrib["fill"] = color
+
+    path_str = etree.tostring(tree.getroot(), pretty_print=True).decode('utf-8')
+    image_io = svg2png(bytestring=path_str,background_color='white')#,output_width=128, output_height=128)
+    # io.seek(0)
+    image_io = io.BytesIO(image_io)
+    byteImg = np.asarray(Image.open(image_io))
+    # cv2.imwrite('test.jpg',byteImg[:,:,0])
+    # aa = byteImg[:,:,0]
+    # aa = aa - 255
+    # print(np.nonzero(aa))
+    # import pdb;pdb.set_trace()  
     return byteImg[:,:,0]
 
 

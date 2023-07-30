@@ -4,16 +4,17 @@ import os
 import torch
 import torchvision
 import cv2
+import imutils
 
 import torchvision.transforms as transforms
 import numpy as np
 
 from tools import skeletonize, stroke2img, svg2img
 from tqdm import tqdm
-from .learner import Learner
-from .controller import Controller
-from .utils import load_class
-from .imgprocessor import Postprocessor
+from core.learner import Learner
+from core.controller import Controller
+from core.utils import load_class
+from core.imgprocessor import Postprocessor
 from sklearn.metrics.pairwise import pairwise_distances
 
 
@@ -32,7 +33,6 @@ class Executor(object):
         self.save_traj = args.get('SAVE_TRAJ', False)
 
         self.__init_parameters(args)
-        self.__init_network(args)
         self.__parse_feedback()
 
     def __parse_feedback(self,):
@@ -52,16 +52,6 @@ class Executor(object):
     def __init_parameters(self, args):
 
         self.generation_only = args.get('GENERATIION_ONLY', False)
-
-        self.gan_path = args.get('GAN_MODEL_PATH')
-        self.dis_path = args.get('DIS_MODEL_PATH')
-
-        self.gan_type = args.get('GAN_MODEL_TYPE')
-        self.dis_type = args.get('DIS_MODEL_TYPE')
-
-        self.input_channel = args.get('INPUT_CHANNEL')
-        self.output_channel = args.get('OUTPUT_CHANNEL')
-
         self.font_type = args.get('TTF_FILE')
         self.font_size = args.get('FONT_SIZE', 128)
         self.stylelization = args.get('STYLELIZATION',False)
@@ -87,29 +77,6 @@ class Executor(object):
             char_info = eval(line)
             char = char_info['character']
             self.char_list[char] = char_info
-
-    def __init_network(self, args):
-
-        self.gan = load_class(self.gan_type)(128, 512)
-        self.dis = load_class(self.dis_type)(128, 512)
-
-        mapping_device = 'cpu'
-        if self.cuda:
-            self.gan = self.gan.cuda()
-            self.dis = self.dis.cuda()
-            mapping_device = 'cuda'
-
-        if self.gan_path is not None:
-            self.gan.load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(self.gan_path,
-                                                                    map_location=torch.device(mapping_device)).items()})
-
-        if self.dis_path is not None:
-            self.dis.load_state_dict(
-                {k.replace('module.', ''): v for k, v in torch.load(self.dis_path,
-                                                                    map_location=torch.device(mapping_device)).items()})
-
-        logging.info('Finish Loading networks')
 
     def interact(self, traj, score=None):
         """TO DO: interaction part
@@ -160,25 +127,6 @@ class Executor(object):
             np.savetxt(file_stream,  traj[0])
 
         return filename
-
-    def __generate_written_traj(self, written_image, source_image):
-
-        source_image = self.pre_process(source_image).unsqueeze(0)
-        written_image = self.pre_process(written_image).unsqueeze(0)
-
-        styled_written_image = self.gan(written_image, source_image)
-
-        styled_written_image = 0.5*(styled_written_image.data + 1.0)
-        grid = torchvision.utils.make_grid(styled_written_image)
-        # Add 0.5 after unnormalizing to [0, 255] to round to nearest integer
-
-        styled_written_image = grid.mul(255).add_(0.5).clamp_(
-            0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
-
-        styled_written_image = cv2.cvtColor(
-            styled_written_image, cv2.COLOR_BGR2GRAY)
-
-        return styled_written_image
 
     def __filter(self, points, mask, head, tail, condition=0):
         '''
@@ -259,8 +207,8 @@ class Executor(object):
         num_points = int(P.shape[0] * frac)
         D = pairwise_distances(P, metric='euclidean')
         N = D.shape[0]
-        #By default, takes the first point in the list to be the
-        #first point in the permutation, but could be random
+        # By default, takes the first point in the list to be the
+        # first point in the permutation, but could be random
         perm = np.zeros(N, dtype=np.int64)
         lambdas = np.zeros(N)
         # import random
@@ -273,6 +221,7 @@ class Executor(object):
             lambdas[i] = ds[idx]
             ds = np.minimum(ds, D[idx, :])
         return P[perm[:num_points]].tolist()
+
 
     def merge_keypoints(self, points):
 
@@ -350,6 +299,63 @@ class Executor(object):
 
         return styled_image
 
+    # Function to calculate curvature
+    def curvature(self, x, y):
+        # First derivatives
+        import pdb; pdb.set_trace()
+        dx = np.gradient(x)
+        dy = np.gradient(y)
+
+        # Second derivatives
+        ddx = np.gradient(dx)
+        ddy = np.gradient(dy)
+
+        # Curvature calculation
+        curvature = np.abs(ddx * dy - dx * ddy) / (dx * dx + dy * dy)**1.5
+        return curvature
+
+    def resample(self, points, n):
+
+        n = min(n, len(points))
+
+        total_length = np.sum(np.sqrt(np.sum(np.diff(points, axis=0)**2, axis=1)))
+        distance_between_keypoints = total_length / (n - 1)
+
+        keypoints = [points[0]] 
+        current_distance = 0
+
+        for i in range(1, len(points)):
+            point1 = points[i - 1]
+            point2 = points[i]
+
+            distance = np.sqrt(np.sum((point2 - point1)**2))
+
+            if current_distance + distance >= distance_between_keypoints:
+                t = (distance_between_keypoints - current_distance) / distance
+                new_point = (1 - t) * point1 + t * point2
+                keypoints.append(new_point)
+                points.insert(i, new_point)
+                current_distance = 0
+            else:
+                current_distance += distance
+  
+        while len(keypoints) < n:
+            keypoints.append(points[-1])
+
+        return np.array(keypoints)
+
+    def __keypoint_extraction(self, points, n=5):
+        """ Extract Keypoints from image including turning points
+        """
+
+        resampled_points = self.resample(points, 30)
+        resampled_points = resampled_points[0]
+        curvature = self.curvature(resampled_points[:, 0], resampled_points[:, 1])
+        keypoints = np.argsort(curvature)[-5:]
+        keypoints = resampled_points[keypoints]
+
+        return keypoints
+
     def pipeline(self,):
         """ Full pipeline
         Obtain target character -> generate target character's trajectory -> Interact with learner -> Get learner output
@@ -357,7 +363,7 @@ class Executor(object):
 
         while True:
 
-            character = '一'
+            character = '猴'
             # input('Please provide a character you want to learn: ')
             written_image = None
 
@@ -377,17 +383,19 @@ class Executor(object):
 
             char_info = self.char_list[character]
             strokes = char_info['strokes']
+
             # print('char_info', char_info)
             # for ch in tqdm(self.char_list):
             #     strokes = self.char_list[ch]['strokes']
 
             img_list = []
-            if self.stylelization:
-                for stroke in strokes:
-                    img_list.append(self.stylelize(svg2img(stroke)))
-            else:
-                for stroke in strokes:
-                    img_list.append(svg2img(stroke))
+            # if self.stylelization:
+            #     for stroke in strokes:
+            #         img_list.append(self.stylelize(svg2img(stroke)))
+            # else:
+            for stroke in strokes:
+                img_list.append(svg2img(stroke))
+
 
             while not self.learner.satisfied:
 
@@ -403,12 +411,17 @@ class Executor(object):
                         traj, traj_img = skeletonize(~img)
                         img_ske_list.append(traj_img)
                         if len(traj) > 1:
-                            for k in traj:
-                                print(k)
+                            # for k in traj:
+                            #     print(k)
                             traj = [self.merge_keypoints(traj)]
                         # num_points_frac is the fraction of points needs to be sampled
-                        num_points_frac = 0.2
-                        traj = self.fps(traj, num_points_frac)
+                        starting_point = traj[0][0]
+                        ending_point = traj[0][-1]
+                        # num_points_frac = 0.2
+                        # import pdb;pdb.set_trace()
+                        # traj = self.fps(traj, num_points_frac)
+                        key_points = self.__keypoint_extraction(traj)
+                        import pdb;pdb.set_trace()
                         traj_list.append(traj)
 
                     for idx, traj in enumerate(traj_list):
@@ -417,11 +430,8 @@ class Executor(object):
 
                     logging.info('{} traj stored'.format(character))
 
-
                 if self.generation_only:
                     continue
-
-            written_image = self.controller.interact(traj_list, img_ske_list)
 
         self.__quit()
 

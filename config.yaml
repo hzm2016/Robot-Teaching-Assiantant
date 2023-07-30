@@ -16,13 +16,13 @@ FONT_SIZE: 128
 MAX_PADDING: 0
 
 NUM_REFERENCE_POINTS: 4
-TTF_FILE: ./tools/ttf/font1.ttf
+TTF_FILE: ./tools/ttf/font3.ttf
 GRAPHICS_TXT: ./tools/src/graphics.txt
 
 CUDA: True
 SAVE_TRAJ: True
 GENERATIION_ONLY: True
-STYLELIZATION: True
+STYLELIZATION: False
 
 FEEDBACK:
   WITH_FEEDBACK: True

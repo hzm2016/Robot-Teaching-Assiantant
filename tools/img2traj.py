@@ -32,6 +32,9 @@ def skeletonize(img, chunk_size=3, show_image=False):
     if show_image:
         cv2.imshow('',img_canvas);cv2.waitKey(0)
 
+    # save the image
+    cv2.imwrite('test.png', img_canvas)
+
     return polys, img_canvas
 
 def _extract_points(img):

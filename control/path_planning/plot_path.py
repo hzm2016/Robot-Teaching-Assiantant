@@ -6,7 +6,7 @@ import seaborn as sns
 import numpy as np
 # from path_planning.path_generate import *
 from matplotlib.animation import FuncAnimation
-from path_planning.utils import Jacobian
+from control.path_planning.utils import Jacobian
 from scipy.spatial.distance import cdist
 from sklearn.metrics.pairwise import paired_distances, pairwise_distances
 import munkres
